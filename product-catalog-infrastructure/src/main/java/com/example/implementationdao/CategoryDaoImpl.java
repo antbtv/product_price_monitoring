@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public class CategoryDaoImpl implements CategoryDao {
 
-    private final String SELECT_ALL = "from Category";
+    private final String SELECT_ALL = "SELECT c FROM Category c LEFT JOIN FETCH c.subCategories";
 
     private final HibernateSessionFactory hibernateSessionFactory;
 

@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public class PriceDaoImpl implements PriceDao {
 
-    private final String SELECT_ALL = "from Price";
+    private final String SELECT_ALL = "SELECT p FROM Price p JOIN FETCH p.product JOIN FETCH p.store";
 
     private final HibernateSessionFactory hibernateSessionFactory;
 

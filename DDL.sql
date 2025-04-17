@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS categories
 (
     category_id   SERIAL PRIMARY KEY,
     category_name VARCHAR(100) UNIQUE NOT NULL,
+    parent_id     INT                 REFERENCES categories (category_id) ON DELETE SET NULL,
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -59,4 +60,15 @@ CREATE TABLE IF NOT EXISTS price_history
     store_id         INT REFERENCES stores (store_id) ON DELETE CASCADE,
     price            INT NOT NULL,
     recorded_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS data_log
+(
+    log_id          SERIAL PRIMARY KEY,
+    operation_type  VARCHAR(10)  NOT NULL CHECK (operation_type IN ('EXPORT', 'IMPORT')),
+    operation_time  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    table_name      VARCHAR(100) NOT NULL,
+    record_count    INT          NOT NULL,
+    user_id         INT          REFERENCES users (user_id) ON DELETE SET NULL,
+    additional_info TEXT
 );
