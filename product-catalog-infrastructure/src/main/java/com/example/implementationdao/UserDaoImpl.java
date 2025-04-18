@@ -1,59 +1,55 @@
 package com.example.implementationdao;
 
-import com.example.dao.PriceHistoryDao;
+import com.example.dao.security.UserDao;
 import com.example.dbconnection.HibernateSessionFactory;
-import com.example.entity.PriceHistory;
+import com.example.entity.User;
 import org.hibernate.Session;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public class PriceHistoryDaoImpl implements PriceHistoryDao {
+public class UserDaoImpl implements UserDao {
 
-    private static final String SELECT_ALL = "from PriceHistory";
+    private static final String SELECT_ALL = "from User";
 
     private final HibernateSessionFactory hibernateSessionFactory;
 
-    public PriceHistoryDaoImpl(HibernateSessionFactory hibernateSessionFactory) {
+    public UserDaoImpl(HibernateSessionFactory hibernateSessionFactory) {
         this.hibernateSessionFactory = hibernateSessionFactory;
     }
 
     @Override
-    public void create(PriceHistory priceHistory) {
+    public void create(User user) {
         Session session = hibernateSessionFactory.getCurrentSession();
-
-        session.persist(priceHistory);
+        session.persist(user);
     }
 
     @Override
-    public PriceHistory findById(Long id) {
+    public User findById(Long id) {
         Session session = hibernateSessionFactory.getCurrentSession();
-
-        return session.get(PriceHistory.class, id);
+        return session.get(User.class, id);
     }
 
     @Override
-    public void update(PriceHistory priceHistory) {
+    public void update(User user) {
         Session session = hibernateSessionFactory.getCurrentSession();
-
-        session.merge(priceHistory);
+        session.merge(user);
     }
 
     @Override
     public void delete(Long id) {
         Session session = hibernateSessionFactory.getCurrentSession();
+        User user = session.get(User.class, id);
 
-        PriceHistory priceHistory = session.get(PriceHistory.class, id);
-        if (priceHistory != null) {
-            session.remove(priceHistory);
+        if (user != null) {
+            session.remove(user);
         }
     }
 
     @Override
-    public List<PriceHistory> findAll() {
+    public List<User> findAll() {
         Session session = hibernateSessionFactory.getCurrentSession();
-
-        return session.createQuery(SELECT_ALL, PriceHistory.class).list();
+        return session.createQuery(SELECT_ALL, User.class).list();
     }
 }

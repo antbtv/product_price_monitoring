@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public class StoreDaoImpl implements StoreDao {
 
-    private final String SELECT_ALL = "from Store";
+    private static final String SELECT_ALL = "from Store";
 
     private final HibernateSessionFactory hibernateSessionFactory;
 
@@ -27,7 +27,7 @@ public class StoreDaoImpl implements StoreDao {
     }
 
     @Override
-    public Store findById(int id) {
+    public Store findById(Long id) {
         Session session = hibernateSessionFactory.getCurrentSession();
 
         return session.get(Store.class, id);
@@ -41,7 +41,7 @@ public class StoreDaoImpl implements StoreDao {
     }
 
     @Override
-    public void delete(int id) {
+    public void delete(Long id) {
         Session session = hibernateSessionFactory.getCurrentSession();
         Store store = session.get(Store.class, id);
 

@@ -25,7 +25,7 @@ public class StoreServiceImpl implements StoreService {
 
     @Transactional(readOnly = true)
     @Override
-    public Store getStoreById(int id) {
+    public Store getStoreById(Long id) {
         return storeDao.findById(id);
     }
 
@@ -37,7 +37,7 @@ public class StoreServiceImpl implements StoreService {
 
     @Transactional
     @Override
-    public void deleteStore(int id) {
+    public void deleteStore(Long id) {
         storeDao.delete(id);
     }
 

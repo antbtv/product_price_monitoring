@@ -1,7 +1,6 @@
 package com.example.service;
 
 import com.example.entity.Store;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -9,11 +8,11 @@ public interface StoreService {
 
     void createStore(Store store);
 
-    Store getStoreById(int id);
+    Store getStoreById(Long id);
 
     void updateStore(Store store);
 
-    void deleteStore(int id);
+    void deleteStore(Long id);
 
     List<Store> getAllStores();
 }

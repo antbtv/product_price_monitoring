@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public class PriceDaoImpl implements PriceDao {
 
-    private final String SELECT_ALL = "SELECT p FROM Price p JOIN FETCH p.product JOIN FETCH p.store";
+    private static final String SELECT_ALL = "SELECT p FROM Price p JOIN FETCH p.product JOIN FETCH p.store";
 
     private final HibernateSessionFactory hibernateSessionFactory;
 
@@ -27,7 +27,7 @@ public class PriceDaoImpl implements PriceDao {
     }
 
     @Override
-    public Price findById(int id) {
+    public Price findById(Long id) {
         Session session = hibernateSessionFactory.getCurrentSession();
 
         return session.get(Price.class, id);
@@ -41,7 +41,7 @@ public class PriceDaoImpl implements PriceDao {
     }
 
     @Override
-    public void delete(int id) {
+    public void delete(Long id) {
         Session session = hibernateSessionFactory.getCurrentSession();
 
         Price price = session.get(Price.class, id);

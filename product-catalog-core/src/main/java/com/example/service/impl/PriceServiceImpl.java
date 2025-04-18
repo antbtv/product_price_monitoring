@@ -25,7 +25,7 @@ public class PriceServiceImpl implements PriceService {
 
     @Transactional(readOnly = true)
     @Override
-    public Price getPriceById(int id) {
+    public Price getPriceById(Long id) {
         return priceDao.findById(id);
     }
 
@@ -37,7 +37,7 @@ public class PriceServiceImpl implements PriceService {
 
     @Transactional
     @Override
-    public void deletePrice(int id) {
+    public void deletePrice(Long id) {
         priceDao.delete(id);
     }
 

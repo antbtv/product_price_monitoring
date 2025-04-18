@@ -11,8 +11,8 @@ import java.util.List;
 @Repository
 public class ProductDaoImpl implements ProductDao {
 
-    private final String SELECT_ALL = "SELECT p FROM Product p JOIN FETCH p.category c";
-    private final String SELECT_BY_CATEGORY = "from Product p where p.category.categoryId = :categoryId";
+    private static final String SELECT_ALL = "SELECT p FROM Product p JOIN FETCH p.category c";
+    private static final String SELECT_BY_CATEGORY = "from Product p where p.category.categoryId = :categoryId";
 
     private final HibernateSessionFactory hibernateSessionFactory;
 
@@ -28,7 +28,7 @@ public class ProductDaoImpl implements ProductDao {
     }
 
     @Override
-    public Product findById(int id) {
+    public Product findById(Long id) {
         Session session = hibernateSessionFactory.getCurrentSession();
 
         return session.get(Product.class, id);
@@ -42,7 +42,7 @@ public class ProductDaoImpl implements ProductDao {
     }
 
     @Override
-    public void delete(int id) {
+    public void delete(Long id) {
         Session session = hibernateSessionFactory.getCurrentSession();
 
         Product product = session.get(Product.class, id);
@@ -54,8 +54,7 @@ public class ProductDaoImpl implements ProductDao {
     @Override
     public List<Product> findAll() {
         Session session = hibernateSessionFactory.getCurrentSession();
-        List<Product> products = session.createQuery(SELECT_ALL).list();
-        System.out.println(products.size());
+
         return session.createQuery(SELECT_ALL, Product.class).list();
     }
 

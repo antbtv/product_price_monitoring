@@ -1,7 +1,6 @@
 package com.example.service;
 
 import com.example.entity.Category;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -9,11 +8,11 @@ public interface CategoryService {
 
     void createCategory(Category category);
 
-    Category getCategoryById(int id);
+    Category getCategoryById(Long id);
 
     void updateCategory(Category category);
 
-    void deleteCategory(int id);
+    void deleteCategory(Long id);
 
     List<Category> getAllCategories();
 }

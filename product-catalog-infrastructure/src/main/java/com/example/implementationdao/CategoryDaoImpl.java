@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public class CategoryDaoImpl implements CategoryDao {
 
-    private final String SELECT_ALL = "SELECT c FROM Category c LEFT JOIN FETCH c.subCategories";
+    private static final String SELECT_ALL = "SELECT c FROM Category c LEFT JOIN FETCH c.subCategories";
 
     private final HibernateSessionFactory hibernateSessionFactory;
 
@@ -29,7 +29,7 @@ public class CategoryDaoImpl implements CategoryDao {
     }
 
     @Override
-    public Category findById(int id) {
+    public Category findById(Long id) {
         Session session = hibernateSessionFactory.getCurrentSession();
 
         return session.get(Category.class, id);
@@ -43,7 +43,7 @@ public class CategoryDaoImpl implements CategoryDao {
     }
 
     @Override
-    public void delete(int id) {
+    public void delete(Long id) {
         Session session = hibernateSessionFactory.getCurrentSession();
 
         Category category = session.get(Category.class, id);

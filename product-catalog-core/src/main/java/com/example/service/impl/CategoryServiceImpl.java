@@ -25,7 +25,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Transactional(readOnly = true)
     @Override
-    public Category getCategoryById(int id) {
+    public Category getCategoryById(Long id) {
         return categoryDao.findById(id);
     }
 
@@ -37,7 +37,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Transactional
     @Override
-    public void deleteCategory(int id) {
+    public void deleteCategory(Long id) {
         categoryDao.delete(id);
     }
 

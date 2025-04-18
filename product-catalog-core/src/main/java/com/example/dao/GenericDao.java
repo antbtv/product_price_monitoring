@@ -22,7 +22,7 @@ public interface GenericDao<T> {
      * @param id id сущности
      * @return сущности с заданным id
      */
-    T findById(int id);
+    T findById(Long id);
 
     /**
      * Обновление сущности в базе данных
@@ -36,7 +36,7 @@ public interface GenericDao<T> {
      *
      * @param id id сущности
      */
-    void delete(int id);
+    void delete(Long id);
 
     /**
      * Поиск всех сущностей в базе данных
