@@ -27,15 +27,31 @@
         <core-module.version>1.0-SNAPSHOT</core-module.version>
         <postgresql.version>42.7.2</postgresql.version>
         <hibernate.version>6.1.0.Final</hibernate.version>
-        <spring.version>6.1.14</spring.version>
+        <spring.version>6.1.19</spring.version>
+        <spring-boot.version>3.3.10</spring-boot.version>
         <jakarta.version>3.0.0</jakarta.version>
+        <servlet-api.version>6.1.0</servlet-api.version>
         <mapstruct.version>1.5.2.Final</mapstruct.version>
         <lombok.version>1.18.24</lombok.version>
     </properties>
 
     <build>
         <plugins>
-
+<!--            <plugin>-->
+<!--                <groupId>org.springframework.boot</groupId>-->
+<!--                <artifactId>spring-boot-maven-plugin</artifactId>-->
+<!--                <version>${spring-boot.version}</version>-->
+<!--                <configuration>-->
+<!--                    <mainClass>com.example.ProductCatalogApplication</mainClass>-->
+<!--                </configuration>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <goals>-->
+<!--                            <goal>repackage</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
         </plugins>
     </build>
 
@@ -81,5 +97,21 @@
             <version>${lombok.version}</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>${servlet-api.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>${spring-boot.version}</version>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.boot</groupId>-->
+<!--            <artifactId>spring-boot-starter-tomcat</artifactId>-->
+<!--            <version>${spring-boot.version}</version>-->
+<!--        </dependency>-->
     </dependencies>
 </project>

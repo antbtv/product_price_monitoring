@@ -1,4 +1,4 @@
-package com.example.entity;
+package com.example.entity.security;
 
 import com.example.enums.UserRole;
 import jakarta.persistence.Column;
@@ -32,7 +32,7 @@ public class User {
     @Column(name = "username", nullable = false, unique = true, length = 50)
     private String username;
 
-    @Column(name = "password", nullable = false, length = 255)
+    @Column(name = "password", nullable = false)
     private String password;
 
     @Column(name = "email", nullable = false, unique = true, length = 100)

@@ -1,6 +1,7 @@
 package com.example.controller;
 
 import com.example.entity.Price;
+import com.example.service.PriceService;
 import com.example.service.impl.PriceServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,9 +20,9 @@ import java.util.List;
 @RequestMapping("/prices")
 public class PriceController {
 
-    private final PriceServiceImpl priceService;
+    private final PriceService priceService;
 
-    public PriceController(PriceServiceImpl priceService) {
+    public PriceController(PriceService priceService) {
         this.priceService = priceService;
     }
 

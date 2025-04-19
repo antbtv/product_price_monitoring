@@ -1,6 +1,7 @@
 package com.example.controller;
 
 import com.example.entity.Store;
+import com.example.service.StoreService;
 import com.example.service.impl.StoreServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,9 +20,9 @@ import java.util.List;
 @RequestMapping("/stores")
 public class StoreController {
 
-    private final StoreServiceImpl storeService;
+    private final StoreService storeService;
 
-    public StoreController(StoreServiceImpl storeService) {
+    public StoreController(StoreService storeService) {
         this.storeService = storeService;
     }
 

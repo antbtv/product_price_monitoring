@@ -1,6 +1,6 @@
 package com.example.service.security;
 
-import com.example.entity.User;
+import com.example.entity.security.User;
 
 import java.util.List;
 

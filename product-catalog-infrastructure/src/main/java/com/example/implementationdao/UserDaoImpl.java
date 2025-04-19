@@ -2,7 +2,7 @@ package com.example.implementationdao;
 
 import com.example.dao.security.UserDao;
 import com.example.dbconnection.HibernateSessionFactory;
-import com.example.entity.User;
+import com.example.entity.security.User;
 import org.hibernate.Session;
 import org.springframework.stereotype.Repository;
 
