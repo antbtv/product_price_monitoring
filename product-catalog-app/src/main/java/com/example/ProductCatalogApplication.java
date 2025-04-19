@@ -17,39 +17,39 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 
 import java.util.List;
 
-//public class ProductCatalogApplication {
-//    public static void main(String[] args) {
-//        ApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
-//
-//        StoreService storeService = context.getBean(StoreService.class);
-//        ProductService productService = context.getBean(ProductService.class);
-//        PriceService priceService = context.getBean(PriceService.class);
-//        CategoryService categoryService = context.getBean(CategoryService.class);
-//
-//        List<Product> products = productService.getAllProducts();
-//        for (Product product : products) {
-//            System.out.println(product);
-//        }
-//
-//        List<Price> prices = priceService.getAllPrices();
-//        for (Price price : prices) {
-//            System.out.println(price);
-//        }
-//
-//        List<Store> stores = storeService.getAllStores();
-//        for (Store store : stores) {
-//            System.out.println(store);
-//        }
-//
-//        List<Category> categories = categoryService.getAllCategories();
-//        for (Category category : categories) {
-//            System.out.println(category);
-//        }
-//    }
-//}
-@SpringBootApplication
-public class ProductCatalogApplication extends SpringBootServletInitializer {
+public class ProductCatalogApplication {
     public static void main(String[] args) {
-        SpringApplication.run(ProductCatalogApplication.class, args);
+        ApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
+
+        StoreService storeService = context.getBean(StoreService.class);
+        ProductService productService = context.getBean(ProductService.class);
+        PriceService priceService = context.getBean(PriceService.class);
+        CategoryService categoryService = context.getBean(CategoryService.class);
+
+        List<Product> products = productService.getAllProducts();
+        for (Product product : products) {
+            System.out.println(product);
+        }
+
+        List<Price> prices = priceService.getAllPrices();
+        for (Price price : prices) {
+            System.out.println(price);
+        }
+
+        List<Store> stores = storeService.getAllStores();
+        for (Store store : stores) {
+            System.out.println(store);
+        }
+
+        List<Category> categories = categoryService.getAllCategories();
+        for (Category category : categories) {
+            System.out.println(category);
+        }
     }
 }
+//@SpringBootApplication
+//public class ProductCatalogApplication extends SpringBootServletInitializer {
+//    public static void main(String[] args) {
+//        SpringApplication.run(ProductCatalogApplication.class, args);
+//    }
+//}
