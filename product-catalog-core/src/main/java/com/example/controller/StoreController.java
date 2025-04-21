@@ -1,8 +1,9 @@
 package com.example.controller;
 
+import com.example.dto.StoreDTO;
 import com.example.entity.Store;
+import com.example.mapper.StoreMapper;
 import com.example.service.StoreService;
-import com.example.service.impl.StoreServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -33,19 +34,23 @@ public class StoreController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Store> getStoreById(@PathVariable Long id) {
+    public ResponseEntity<StoreDTO> getStoreById(@PathVariable Long id) {
         Store store = storeService.getStoreById(id);
         if (store == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(store);
+
+        StoreDTO storeDTO = StoreMapper.INSTANCE.toDto(store);
+        return ResponseEntity.ok(storeDTO);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Store> updateStore(@PathVariable Long id, @RequestBody Store store) {
+    public ResponseEntity<StoreDTO> updateStore(@PathVariable Long id, @RequestBody Store store) {
         store.setStoreId(id);
         storeService.updateStore(store);
-        return ResponseEntity.ok(store);
+
+        StoreDTO storeDTO = StoreMapper.INSTANCE.toDto(store);
+        return ResponseEntity.ok(storeDTO);
     }
 
     @DeleteMapping("/{id}")
@@ -55,8 +60,10 @@ public class StoreController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Store>> getAllStores() {
+    public ResponseEntity<List<StoreDTO>> getAllStores() {
         List<Store> stores = storeService.getAllStores();
-        return ResponseEntity.ok(stores);
+
+        List<StoreDTO> storeDTOS = StoreMapper.INSTANCE.toDtoList(stores);
+        return ResponseEntity.ok(storeDTOS);
     }
 }

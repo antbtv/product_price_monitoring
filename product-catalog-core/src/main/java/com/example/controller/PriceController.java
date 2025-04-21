@@ -1,8 +1,9 @@
 package com.example.controller;
 
+import com.example.dto.PriceDTO;
 import com.example.entity.Price;
+import com.example.mapper.PriceMapper;
 import com.example.service.PriceService;
-import com.example.service.impl.PriceServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,25 +28,31 @@ public class PriceController {
     }
 
     @PostMapping
-    public ResponseEntity<Price> createPrice(@RequestBody Price price) {
+    public ResponseEntity<PriceDTO> createPrice(@RequestBody Price price) {
         priceService.createPrice(price);
-        return ResponseEntity.status(HttpStatus.CREATED).body(price);
+
+        PriceDTO priceDTO = PriceMapper.INSTANCE.toDto(price);
+        return ResponseEntity.status(HttpStatus.CREATED).body(priceDTO);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Price> getPriceById(@PathVariable Long id) {
+    public ResponseEntity<PriceDTO> getPriceById(@PathVariable Long id) {
         Price price = priceService.getPriceById(id);
         if (price == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(price);
+
+        PriceDTO priceDTO = PriceMapper.INSTANCE.toDto(price);
+        return ResponseEntity.ok(priceDTO);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Price> updatePrice(@PathVariable Long id, @RequestBody Price price) {
+    public ResponseEntity<PriceDTO> updatePrice(@PathVariable Long id, @RequestBody Price price) {
         price.setPriceId(id);
         priceService.updatePrice(price);
-        return ResponseEntity.ok(price);
+
+        PriceDTO priceDTO = PriceMapper.INSTANCE.toDto(price);
+        return ResponseEntity.ok(priceDTO);
     }
 
     @DeleteMapping("/{id}")
@@ -55,8 +62,10 @@ public class PriceController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Price>> getAllPrices() {
+    public ResponseEntity<List<PriceDTO>> getAllPrices() {
         List<Price> prices = priceService.getAllPrices();
-        return ResponseEntity.ok(prices);
+
+        List<PriceDTO> priceDTOS = PriceMapper.INSTANCE.toDtoList(prices);
+        return ResponseEntity.ok(priceDTOS);
     }
 }

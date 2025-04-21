@@ -1,6 +1,8 @@
 package com.example.controller;
 
+import com.example.dto.CategoryDTO;
 import com.example.entity.Category;
+import com.example.mapper.CategoryMapper;
 import com.example.service.CategoryService;
 import com.example.service.impl.CategoryServiceImpl;
 import org.springframework.http.HttpStatus;
@@ -27,25 +29,30 @@ public class CategoryController {
     }
 
     @PostMapping
-    public ResponseEntity<Category> createCategory(@RequestBody Category category) {
+    public ResponseEntity<CategoryDTO> createCategory(@RequestBody Category category) {
         categoryService.createCategory(category);
-        return ResponseEntity.status(HttpStatus.CREATED).body(category);
+
+        CategoryDTO categoryDTO = CategoryMapper.INSTANCE.toDto(category);
+        return ResponseEntity.status(HttpStatus.CREATED).body(categoryDTO);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Category> getCategoryById(@PathVariable Long id) {
+    public ResponseEntity<CategoryDTO> getCategoryById(@PathVariable Long id) {
         Category category = categoryService.getCategoryById(id);
         if (category == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(category);
+        CategoryDTO categoryDTO = CategoryMapper.INSTANCE.toDto(category);
+        return ResponseEntity.ok(categoryDTO);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Category> updateCategory(@PathVariable Long id, @RequestBody Category category) {
+    public ResponseEntity<CategoryDTO> updateCategory(@PathVariable Long id, @RequestBody Category category) {
         category.setCategoryId(id);
         categoryService.updateCategory(category);
-        return ResponseEntity.ok(category);
+
+        CategoryDTO categoryDTO = CategoryMapper.INSTANCE.toDto(category);
+        return ResponseEntity.ok(categoryDTO);
     }
 
     @DeleteMapping("/{id}")
@@ -55,8 +62,10 @@ public class CategoryController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Category>> getAllCategories() {
+    public ResponseEntity<List<CategoryDTO>> getAllCategories() {
         List<Category> categories = categoryService.getAllCategories();
-        return ResponseEntity.ok(categories);
+
+        List<CategoryDTO> categoryDTOS = CategoryMapper.INSTANCE.toDtoList(categories);
+        return ResponseEntity.ok(categoryDTOS);
     }
 }
