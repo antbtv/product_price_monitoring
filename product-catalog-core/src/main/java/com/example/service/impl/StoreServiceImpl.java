@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -42,6 +43,7 @@ public class StoreServiceImpl implements StoreService {
     @Transactional
     @Override
     public void updateStore(Store store) {
+        store.setUpdatedAt(LocalDateTime.now());
         storeDao.update(store);
     }
 

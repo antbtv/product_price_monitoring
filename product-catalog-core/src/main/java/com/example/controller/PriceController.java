@@ -3,11 +3,14 @@ package com.example.controller;
 import com.example.dto.HistoryRequestDTO;
 import com.example.dto.PriceDTO;
 import com.example.dto.PriceHistoryDTO;
+import com.example.dto.PricePartialUpdateDTO;
 import com.example.entity.Price;
 import com.example.entity.PriceHistory;
 import com.example.mapper.PriceHistoryMapper;
 import com.example.mapper.PriceMapper;
 import com.example.service.PriceService;
+import com.example.service.ProductService;
+import com.example.service.StoreService;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
@@ -19,6 +22,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -36,9 +40,14 @@ import java.util.stream.Collectors;
 public class PriceController {
 
     private final PriceService priceService;
+    private final ProductService productService;
+    private final StoreService storeService;
 
-    public PriceController(PriceService priceService) {
+    public PriceController(PriceService priceService,
+                           ProductService productService, StoreService storeService) {
         this.priceService = priceService;
+        this.productService = productService;
+        this.storeService = storeService;
     }
 
     @PostMapping
@@ -68,6 +77,29 @@ public class PriceController {
         PriceDTO priceDTO = PriceMapper.INSTANCE.toDto(price);
         return ResponseEntity.ok(priceDTO);
     }
+    @PatchMapping("/{id}")
+    public ResponseEntity<PriceDTO> partialUpdateCategory(@PathVariable Long id,
+                                                             @RequestBody PricePartialUpdateDTO updateDTO) {
+        Price price = priceService.getPriceById(id);
+        if (price == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        if (updateDTO.getProductId() != null) {
+            price.setProduct(productService.getProductById(updateDTO.getProductId()));
+        }
+        if (updateDTO.getStoreId() != null) {
+            price.setStore(storeService.getStoreById(updateDTO.getStoreId()));
+        }
+        if (updateDTO.getPrice() != null) {
+            price.setPrice(price.getPrice() + updateDTO.getPrice());
+        }
+
+        priceService.updatePrice(price);
+        PriceDTO priceDTO = PriceMapper.INSTANCE.toDto(price);
+        return ResponseEntity.ok(priceDTO);
+    }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePrice(@PathVariable Long id) {

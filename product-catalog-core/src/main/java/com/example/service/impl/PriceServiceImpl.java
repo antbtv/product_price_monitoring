@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -47,7 +48,18 @@ public class PriceServiceImpl implements PriceService {
     @Transactional
     @Override
     public void updatePrice(Price price) {
-        priceDao.update(price);
+        Price currentPrice = priceDao.findById(price.getPriceId());
+        if (currentPrice != null) {
+            PriceHistory priceHistory = new PriceHistory();
+            priceHistory.setProduct(currentPrice.getProduct());
+            priceHistory.setStore(currentPrice.getStore());
+            priceHistory.setPrice(price.getPrice());
+            priceHistory.setRecordedAt(LocalDateTime.now());
+
+            priceHistoryDao.create(priceHistory);
+
+            priceDao.update(price);
+        }
     }
 
     @Transactional

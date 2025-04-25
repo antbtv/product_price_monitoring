@@ -1,6 +1,7 @@
 package com.example.controller;
 
 import com.example.dto.StoreDTO;
+import com.example.dto.StorePartialUpdateDTO;
 import com.example.entity.Store;
 import com.example.mapper.StoreMapper;
 import com.example.service.StoreService;
@@ -8,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -49,6 +51,26 @@ public class StoreController {
         store.setStoreId(id);
         storeService.updateStore(store);
 
+        StoreDTO storeDTO = StoreMapper.INSTANCE.toDto(store);
+        return ResponseEntity.ok(storeDTO);
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<StoreDTO> partialUpdateStore(@PathVariable Long id,
+                                                             @RequestBody StorePartialUpdateDTO updateDTO) {
+        Store store = storeService.getStoreById(id);
+        if (store == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        if (updateDTO.getStoreName() != null) {
+            store.setStoreName(updateDTO.getStoreName());
+        }
+        if (updateDTO.getAddress() != null) {
+            store.setAddress(updateDTO.getAddress());
+        }
+
+        storeService.updateStore(store);
         StoreDTO storeDTO = StoreMapper.INSTANCE.toDto(store);
         return ResponseEntity.ok(storeDTO);
     }

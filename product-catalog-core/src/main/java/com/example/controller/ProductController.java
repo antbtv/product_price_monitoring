@@ -1,8 +1,10 @@
 package com.example.controller;
 
 import com.example.dto.ProductDTO;
+import com.example.dto.ProductPartialUpdateDTO;
 import com.example.entity.Product;
 import com.example.mapper.ProductMapper;
+import com.example.service.CategoryService;
 import com.example.service.ProductService;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -12,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -28,9 +31,11 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+    private final CategoryService categoryService;
 
-    public ProductController(ProductService productService) {
+    public ProductController(ProductService productService, CategoryService categoryService) {
         this.productService = productService;
+        this.categoryService = categoryService;
     }
 
     @PostMapping
@@ -93,5 +98,24 @@ public class ProductController {
                 .contentType(MediaType.APPLICATION_JSON)
                 .contentLength(data.length)
                 .body(resource);
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<ProductDTO> partialUpdateProduct(@PathVariable Long id, @RequestBody ProductPartialUpdateDTO updateDTO) {
+        Product product = productService.getProductById(id);
+        if (product == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        if (updateDTO.getProductName() != null) {
+            product.setProductName(updateDTO.getProductName());
+        }
+        if (updateDTO.getCategoryId() != null) {
+            product.setCategory(categoryService.getCategoryById(updateDTO.getCategoryId()));
+        }
+
+        productService.updateProduct(product);
+        ProductDTO productDTO = ProductMapper.INSTANCE.toDto(product);
+        return ResponseEntity.ok(productDTO);
     }
 }
