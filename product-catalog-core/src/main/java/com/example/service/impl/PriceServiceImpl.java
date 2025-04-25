@@ -1,20 +1,35 @@
 package com.example.service.impl;
 
 import com.example.dao.PriceDao;
+import com.example.dao.PriceHistoryDao;
+import com.example.dto.PriceDTO;
+import com.example.dto.StoreDTO;
 import com.example.entity.Price;
+import com.example.entity.PriceHistory;
+import com.example.entity.Store;
+import com.example.mapper.PriceMapper;
+import com.example.mapper.StoreMapper;
 import com.example.service.PriceService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
+import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
 public class PriceServiceImpl implements PriceService {
 
     private final PriceDao priceDao;
+    private final PriceHistoryDao priceHistoryDao;
 
-    public PriceServiceImpl(PriceDao priceDao) {
+    public PriceServiceImpl(PriceDao priceDao, PriceHistoryDao priceHistoryDao) {
         this.priceDao = priceDao;
+        this.priceHistoryDao = priceHistoryDao;
     }
 
     @Transactional
@@ -45,5 +60,34 @@ public class PriceServiceImpl implements PriceService {
     @Override
     public List<Price> getAllPrices() {
         return priceDao.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<PriceDTO> getPricesByProductId(Long productId) {
+        List<Price> prices = priceDao.findByProductId(productId);
+        return PriceMapper.INSTANCE.toDtoList(prices);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public void exportPricesToJson(String filePath) throws IOException {
+        List<Price> prices = priceDao.findAll();
+        List<PriceDTO> priceDTOS = PriceMapper.INSTANCE.toDtoList(prices);
+
+        ObjectMapper objectMapper = new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+
+        objectMapper.writeValue(new File(filePath), priceDTOS);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<PriceHistory> getPriceHistoryByProductIdAndDataRange(Long productId,
+                                                                     Long storeId,
+                                                                     LocalDate startDate,
+                                                                     LocalDate endDate) {
+        return priceHistoryDao.findPriceHistoryByProductAndDateRange(productId, storeId, startDate, endDate);
     }
 }

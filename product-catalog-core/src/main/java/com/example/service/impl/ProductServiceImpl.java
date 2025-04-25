@@ -1,11 +1,20 @@
 package com.example.service.impl;
 
 import com.example.dao.ProductDao;
+import com.example.dto.ProductDTO;
 import com.example.entity.Product;
+import com.example.mapper.ProductMapper;
 import com.example.service.ProductService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -51,5 +60,19 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<Product> getProductsByCategoryId(Long categoryId) {
         return productDao.findByCategoryId(categoryId);
+    }
+
+    @Transactional(readOnly = true)
+    public byte[] exportProductsToJson() throws IOException {
+        List<Product> products = productDao.findAll();
+        List<ProductDTO> productDTOs = ProductMapper.INSTANCE.toDtoList(products);
+
+        ObjectMapper objectMapper = new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        objectMapper.writeValue(outputStream, productDTOs);
+        return outputStream.toByteArray();
     }
 }

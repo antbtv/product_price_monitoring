@@ -6,12 +6,16 @@ import com.example.entity.PriceHistory;
 import org.hibernate.Session;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
 public class PriceHistoryDaoImpl implements PriceHistoryDao {
 
     private static final String SELECT_ALL = "from PriceHistory";
+    private static final String SELECT_PRICES_BY_PRODUCT_IN_DATA_RANGE = "FROM PriceHistory ph " +
+            "WHERE ph.product.id = :productId AND ph.store.storeId = :storeId " +
+            "AND ph.recordedAt BETWEEN :startDate AND :endDate";
 
     private final HibernateSessionFactory hibernateSessionFactory;
 
@@ -56,4 +60,19 @@ public class PriceHistoryDaoImpl implements PriceHistoryDao {
 
         return session.createQuery(SELECT_ALL, PriceHistory.class).list();
     }
+
+    @Override
+    public List<PriceHistory> findPriceHistoryByProductAndDateRange(Long productId,
+                                                                      Long stroeId,
+                                                                      LocalDate startDate,
+                                                                      LocalDate endDate) {
+        Session session = hibernateSessionFactory.getCurrentSession();
+        return session.createQuery(SELECT_PRICES_BY_PRODUCT_IN_DATA_RANGE, PriceHistory.class)
+                .setParameter("productId", productId)
+                .setParameter("stroeId", stroeId)
+                .setParameter("startDate", startDate.atStartOfDay())
+                .setParameter("endDate", endDate.atTime(23, 59, 59))
+                .list();
+    }
+
 }

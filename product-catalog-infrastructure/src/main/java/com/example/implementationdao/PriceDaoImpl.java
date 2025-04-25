@@ -12,6 +12,7 @@ import java.util.List;
 public class PriceDaoImpl implements PriceDao {
 
     private static final String SELECT_ALL = "SELECT p FROM Price p JOIN FETCH p.product JOIN FETCH p.store";
+    private static final String SELECT_BY_PRODUCT_ID = "SELECT p FROM Price p WHERE p.product.productId = :productId";
 
     private final HibernateSessionFactory hibernateSessionFactory;
 
@@ -55,5 +56,13 @@ public class PriceDaoImpl implements PriceDao {
         Session session = hibernateSessionFactory.getCurrentSession();
 
         return session.createQuery(SELECT_ALL, Price.class).list();
+    }
+
+    @Override
+    public List<Price> findByProductId(Long productId) {
+        Session session = hibernateSessionFactory.getCurrentSession();
+        return session.createQuery(SELECT_BY_PRODUCT_ID, Price.class)
+                .setParameter("productId", productId)
+                .list();
     }
 }

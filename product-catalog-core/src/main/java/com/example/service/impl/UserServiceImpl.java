@@ -1,11 +1,18 @@
 package com.example.service.impl;
 
 import com.example.dao.security.UserDao;
+import com.example.dto.UserDTO;
 import com.example.entity.security.User;
+import com.example.mapper.UserMapper;
 import com.example.service.security.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -45,5 +52,17 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> getAllUsers() {
         return userDao.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public void exportUsersToJson(String filePath) throws IOException {
+        List<User> users = userDao.findAll();
+        List<UserDTO> userDTOS = UserMapper.INSTANCE.toDtoList(users);
+
+        ObjectMapper objectMapper = new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+
+        objectMapper.writeValue(new File(filePath), userDTOS);
     }
 }

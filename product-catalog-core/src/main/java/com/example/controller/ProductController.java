@@ -4,8 +4,11 @@ import com.example.dto.ProductDTO;
 import com.example.entity.Product;
 import com.example.mapper.ProductMapper;
 import com.example.service.ProductService;
-import com.example.service.impl.ProductServiceImpl;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -76,5 +81,17 @@ public class ProductController {
 
         List<ProductDTO> productDTOS = ProductMapper.INSTANCE.toDtoList(products);
         return ResponseEntity.ok(productDTOS);
+    }
+
+    @GetMapping("/export")
+    public ResponseEntity<Resource> exportProducts() throws IOException {
+        byte[] data = productService.exportProductsToJson();
+        InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(data));
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"products.json\"")
+                .contentType(MediaType.APPLICATION_JSON)
+                .contentLength(data.length)
+                .body(resource);
     }
 }
