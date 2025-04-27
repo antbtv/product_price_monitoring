@@ -24,10 +24,11 @@ public class PriceHistoryDaoImpl implements PriceHistoryDao {
     }
 
     @Override
-    public void create(PriceHistory priceHistory) {
+    public PriceHistory create(PriceHistory priceHistory) {
         Session session = hibernateSessionFactory.getCurrentSession();
 
         session.persist(priceHistory);
+        return priceHistory;
     }
 
     @Override

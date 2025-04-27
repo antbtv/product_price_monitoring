@@ -21,10 +21,11 @@ public class PriceDaoImpl implements PriceDao {
     }
 
     @Override
-    public void create(Price price) {
+    public Price create(Price price) {
         Session session = hibernateSessionFactory.getCurrentSession();
 
         session.persist(price);
+        return price;
     }
 
     @Override

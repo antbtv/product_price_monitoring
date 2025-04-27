@@ -20,10 +20,11 @@ public class StoreDaoImpl implements StoreDao {
     }
 
     @Override
-    public void create(Store store) {
+    public Store create(Store store) {
         Session session = hibernateSessionFactory.getCurrentSession();
 
         session.persist(store);
+        return store;
     }
 
     @Override

@@ -9,8 +9,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CategoryPartialUpdateDTO {
+public class StoreCreateDTO {
 
-    private String categoryName;
-    private Long parentId;
+    private String storeName;
+    private String address;
 }

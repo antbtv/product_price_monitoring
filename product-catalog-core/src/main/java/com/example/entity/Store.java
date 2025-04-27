@@ -37,6 +37,13 @@ public class Store {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    public Store(String storeName, String address) {
+        this.storeName = storeName;
+        this.address = address;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface PriceService {
 
-    void createPrice(Price price);
+    Price createPrice(Price price);
 
     Price getPriceById(Long id);
 

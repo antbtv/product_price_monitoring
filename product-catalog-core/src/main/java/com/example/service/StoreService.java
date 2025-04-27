@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface StoreService {
 
-    void createStore(Store store);
+    Store createStore(Store store);
 
     Store getStoreById(Long id);
 

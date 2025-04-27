@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 public class Price {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "price_id")
@@ -40,6 +41,13 @@ public class Price {
 
     @Column(name = "recorded_at", updatable = false)
     private LocalDateTime recordedAt;
+
+    public Price(Product product, Store store, Integer price) {
+        this.product = product;
+        this.store = store;
+        this.price = price;
+        recordedAt = LocalDateTime.now();
+    }
 
     @PrePersist
     protected void onCreate() {

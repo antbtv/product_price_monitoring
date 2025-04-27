@@ -1,7 +1,7 @@
 package com.example.controller;
 
 import com.example.dto.StoreDTO;
-import com.example.dto.StorePartialUpdateDTO;
+import com.example.dto.StoreCreateDTO;
 import com.example.entity.Store;
 import com.example.mapper.StoreMapper;
 import com.example.service.StoreService;
@@ -30,9 +30,12 @@ public class StoreController {
     }
 
     @PostMapping
-    public ResponseEntity<Store> createStore(@RequestBody Store store) {
-        storeService.createStore(store);
-        return ResponseEntity.status(HttpStatus.CREATED).body(store);
+    public ResponseEntity<StoreDTO> createStore(@RequestBody StoreCreateDTO createDTO) {
+        Store store = new Store(createDTO.getStoreName(), createDTO.getAddress());
+        Store createdStore = storeService.createStore(store);
+
+        StoreDTO storeDTO = StoreMapper.INSTANCE.toDto(createdStore);
+        return ResponseEntity.status(HttpStatus.CREATED).body(storeDTO);
     }
 
     @GetMapping("/{id}")
@@ -57,7 +60,7 @@ public class StoreController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<StoreDTO> partialUpdateStore(@PathVariable Long id,
-                                                             @RequestBody StorePartialUpdateDTO updateDTO) {
+                                                             @RequestBody StoreCreateDTO updateDTO) {
         Store store = storeService.getStoreById(id);
         if (store == null) {
             return ResponseEntity.notFound().build();

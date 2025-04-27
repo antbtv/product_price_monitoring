@@ -29,8 +29,8 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Transactional
     @Override
-    public void createCategory(Category category) {
-        categoryDao.create(category);
+    public Category createCategory(Category category) {
+        return categoryDao.create(category);
     }
 
     @Transactional(readOnly = true)

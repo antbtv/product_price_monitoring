@@ -9,9 +9,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PricePartialUpdateDTO {
+public class CategoryCreateDTO {
 
-    private Long productId;
-    private Long storeId;
-    private Integer price;
+    private String categoryName;
+    private Long parentId;
 }

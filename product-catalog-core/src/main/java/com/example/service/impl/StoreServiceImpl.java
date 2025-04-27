@@ -1,11 +1,8 @@
 package com.example.service.impl;
 
 import com.example.dao.StoreDao;
-import com.example.dto.ProductDTO;
 import com.example.dto.StoreDTO;
-import com.example.entity.Product;
 import com.example.entity.Store;
-import com.example.mapper.ProductMapper;
 import com.example.mapper.StoreMapper;
 import com.example.service.StoreService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,8 +27,8 @@ public class StoreServiceImpl implements StoreService {
 
     @Transactional
     @Override
-    public void createStore(Store store) {
-        storeDao.create(store);
+    public Store createStore(Store store) {
+        return storeDao.create(store);
     }
 
     @Transactional(readOnly = true)

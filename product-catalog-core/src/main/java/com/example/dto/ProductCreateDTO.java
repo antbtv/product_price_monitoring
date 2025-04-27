@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductPartialUpdateDTO {
+public class ProductCreateDTO {
 
     private String productName;
     private Long categoryId;

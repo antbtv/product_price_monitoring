@@ -20,9 +20,11 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public void create(User user) {
+    public User create(User user) {
         Session session = hibernateSessionFactory.getCurrentSession();
+
         session.persist(user);
+        return user;
     }
 
     @Override

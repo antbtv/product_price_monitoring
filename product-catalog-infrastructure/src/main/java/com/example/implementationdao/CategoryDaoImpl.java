@@ -22,10 +22,11 @@ public class CategoryDaoImpl implements CategoryDao {
 //  Стоит ли в таких методах именовать сущность как entity?
 //  Увидел в других кодах, будет хорошей практикой?
     @Override
-    public void create(Category category) {
+    public Category create(Category category) {
         Session session = hibernateSessionFactory.getCurrentSession();
 
         session.persist(category);
+        return category;
     }
 
     @Override

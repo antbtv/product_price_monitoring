@@ -1,7 +1,7 @@
 package com.example.controller;
 
 import com.example.dto.ProductDTO;
-import com.example.dto.ProductPartialUpdateDTO;
+import com.example.dto.ProductCreateDTO;
 import com.example.entity.Product;
 import com.example.mapper.ProductMapper;
 import com.example.service.CategoryService;
@@ -39,10 +39,12 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<ProductDTO> createProduct(@RequestBody Product product) {
-        productService.createProduct(product);
+    public ResponseEntity<ProductDTO> createProduct(@RequestBody ProductCreateDTO createDTO) {
+        Product product = new Product(createDTO.getProductName(),
+                categoryService.getCategoryById(createDTO.getCategoryId()));
+        Product createdProduct = productService.createProduct(product);
 
-        ProductDTO productDTO = ProductMapper.INSTANCE.toDto(product);
+        ProductDTO productDTO = ProductMapper.INSTANCE.toDto(createdProduct);
         return ResponseEntity.status(HttpStatus.CREATED).body(productDTO);
     }
 
@@ -101,7 +103,7 @@ public class ProductController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ProductDTO> partialUpdateProduct(@PathVariable Long id, @RequestBody ProductPartialUpdateDTO updateDTO) {
+    public ResponseEntity<ProductDTO> partialUpdateProduct(@PathVariable Long id, @RequestBody ProductCreateDTO updateDTO) {
         Product product = productService.getProductById(id);
         if (product == null) {
             return ResponseEntity.notFound().build();

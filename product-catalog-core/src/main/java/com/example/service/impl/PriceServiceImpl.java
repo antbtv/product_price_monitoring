@@ -35,8 +35,8 @@ public class PriceServiceImpl implements PriceService {
 
     @Transactional
     @Override
-    public void createPrice(Price price) {
-        priceDao.create(price);
+    public Price createPrice(Price price) {
+        return priceDao.create(price);
     }
 
     @Transactional(readOnly = true)

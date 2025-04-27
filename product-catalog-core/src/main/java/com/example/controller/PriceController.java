@@ -3,7 +3,7 @@ package com.example.controller;
 import com.example.dto.HistoryRequestDTO;
 import com.example.dto.PriceDTO;
 import com.example.dto.PriceHistoryDTO;
-import com.example.dto.PricePartialUpdateDTO;
+import com.example.dto.PriceCreateDTO;
 import com.example.entity.Price;
 import com.example.entity.PriceHistory;
 import com.example.mapper.PriceHistoryMapper;
@@ -51,10 +51,13 @@ public class PriceController {
     }
 
     @PostMapping
-    public ResponseEntity<PriceDTO> createPrice(@RequestBody Price price) {
-        priceService.createPrice(price);
+    public ResponseEntity<PriceDTO> createPrice(@RequestBody PriceCreateDTO createDTO) {
+        Price price = new Price(productService.getProductById(createDTO.getProductId()),
+                storeService.getStoreById(createDTO.getStoreId()),
+                createDTO.getPrice());
+        Price createdPrice = priceService.createPrice(price);
 
-        PriceDTO priceDTO = PriceMapper.INSTANCE.toDto(price);
+        PriceDTO priceDTO = PriceMapper.INSTANCE.toDto(createdPrice);
         return ResponseEntity.status(HttpStatus.CREATED).body(priceDTO);
     }
 
@@ -79,7 +82,7 @@ public class PriceController {
     }
     @PatchMapping("/{id}")
     public ResponseEntity<PriceDTO> partialUpdateCategory(@PathVariable Long id,
-                                                             @RequestBody PricePartialUpdateDTO updateDTO) {
+                                                             @RequestBody PriceCreateDTO updateDTO) {
         Price price = priceService.getPriceById(id);
         if (price == null) {
             return ResponseEntity.notFound().build();

@@ -49,6 +49,13 @@ public class Category {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    public Category(String categoryName, Category parent) {
+        this.categoryName = categoryName;
+        this.parent = parent;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

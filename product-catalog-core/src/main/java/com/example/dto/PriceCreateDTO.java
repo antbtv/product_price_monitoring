@@ -9,8 +9,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class StorePartialUpdateDTO {
+public class PriceCreateDTO {
 
-    private String storeName;
-    private String address;
+    private Long productId;
+    private Long storeId;
+    private Integer price;
 }

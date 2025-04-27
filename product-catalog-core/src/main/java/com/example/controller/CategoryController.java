@@ -1,7 +1,7 @@
 package com.example.controller;
 
 import com.example.dto.CategoryDTO;
-import com.example.dto.CategoryPartialUpdateDTO;
+import com.example.dto.CategoryCreateDTO;
 import com.example.entity.Category;
 import com.example.mapper.CategoryMapper;
 import com.example.service.CategoryService;
@@ -30,10 +30,12 @@ public class CategoryController {
     }
 
     @PostMapping
-    public ResponseEntity<CategoryDTO> createCategory(@RequestBody Category category) {
-        categoryService.createCategory(category);
+    public ResponseEntity<CategoryDTO> createCategory(@RequestBody CategoryCreateDTO createDTO) {
+        Category category = new Category(createDTO.getCategoryName(),
+                categoryService.getCategoryById(createDTO.getParentId()));
+        Category createdCategory = categoryService.createCategory(category);
 
-        CategoryDTO categoryDTO = CategoryMapper.INSTANCE.toDto(category);
+        CategoryDTO categoryDTO = CategoryMapper.INSTANCE.toDto(createdCategory);
         return ResponseEntity.status(HttpStatus.CREATED).body(categoryDTO);
     }
 
@@ -58,7 +60,7 @@ public class CategoryController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<CategoryDTO> partialUpdateCategory(@PathVariable Long id,
-                                                             @RequestBody CategoryPartialUpdateDTO updateDTO) {
+                                                             @RequestBody CategoryCreateDTO updateDTO) {
         Category category = categoryService.getCategoryById(id);
         if (category == null) {
             return ResponseEntity.notFound().build();

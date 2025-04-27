@@ -21,10 +21,11 @@ public class ProductDaoImpl implements ProductDao {
     }
 
     @Override
-    public void create(Product product) {
+    public Product create(Product product) {
         Session session = hibernateSessionFactory.getCurrentSession();
 
         session.persist(product);
+        return product;
     }
 
     @Override

@@ -14,7 +14,7 @@ public interface GenericDao<T> {
      *
      * @param entity сущность, которую надо создать
      */
-    void create(T entity);
+    T create(T entity);
 
     /**
      * Поиск сущности по заданному id
