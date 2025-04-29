@@ -68,6 +68,25 @@ public class ProductController {
         return ResponseEntity.ok(productDTO);
     }
 
+    @PatchMapping("/{id}")
+    public ResponseEntity<ProductDTO> partialUpdateProduct(@PathVariable Long id, @RequestBody ProductCreateDTO updateDTO) {
+        Product product = productService.getProductById(id);
+        if (product == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        if (updateDTO.getProductName() != null) {
+            product.setProductName(updateDTO.getProductName());
+        }
+        if (updateDTO.getCategoryId() != null) {
+            product.setCategory(categoryService.getCategoryById(updateDTO.getCategoryId()));
+        }
+
+        productService.updateProduct(product);
+        ProductDTO productDTO = ProductMapper.INSTANCE.toDto(product);
+        return ResponseEntity.ok(productDTO);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
@@ -100,24 +119,5 @@ public class ProductController {
                 .contentType(MediaType.APPLICATION_JSON)
                 .contentLength(data.length)
                 .body(resource);
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<ProductDTO> partialUpdateProduct(@PathVariable Long id, @RequestBody ProductCreateDTO updateDTO) {
-        Product product = productService.getProductById(id);
-        if (product == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        if (updateDTO.getProductName() != null) {
-            product.setProductName(updateDTO.getProductName());
-        }
-        if (updateDTO.getCategoryId() != null) {
-            product.setCategory(categoryService.getCategoryById(updateDTO.getCategoryId()));
-        }
-
-        productService.updateProduct(product);
-        ProductDTO productDTO = ProductMapper.INSTANCE.toDto(product);
-        return ResponseEntity.ok(productDTO);
     }
 }

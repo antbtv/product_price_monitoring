@@ -95,7 +95,7 @@ public class PriceController {
             price.setStore(storeService.getStoreById(updateDTO.getStoreId()));
         }
         if (updateDTO.getPrice() != null) {
-            price.setPrice(price.getPrice() + updateDTO.getPrice());
+            price.setPrice(updateDTO.getPrice());
         }
 
         priceService.updatePrice(price);
@@ -127,7 +127,9 @@ public class PriceController {
         return ResponseEntity.ok(prices);
     }
 
-    @GetMapping("/history/{productId}")
+    /*Здесь, из-за того, что я использую requestbody, мне нельзя использовать get запрос,
+    потому что он не будет видеть мой json*/
+    @PutMapping("/history/{productId}")
     public ResponseEntity<List<PriceHistoryDTO>> getPriceHistory(@PathVariable Long productId,
                                                                  @RequestBody HistoryRequestDTO request) {
         List<PriceHistoryDTO> priceHistoryDTOS = priceService.getPriceHistoryByProductIdAndDataRange(

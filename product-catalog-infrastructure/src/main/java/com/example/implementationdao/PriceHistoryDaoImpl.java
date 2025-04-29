@@ -70,7 +70,7 @@ public class PriceHistoryDaoImpl implements PriceHistoryDao {
         Session session = hibernateSessionFactory.getCurrentSession();
         return session.createQuery(SELECT_PRICES_BY_PRODUCT_IN_DATA_RANGE, PriceHistory.class)
                 .setParameter("productId", productId)
-                .setParameter("stroeId", stroeId)
+                .setParameter("storeId", stroeId)
                 .setParameter("startDate", startDate.atStartOfDay())
                 .setParameter("endDate", endDate.atTime(23, 59, 59))
                 .list();

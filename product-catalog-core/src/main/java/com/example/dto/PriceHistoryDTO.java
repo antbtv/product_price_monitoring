@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class PriceHistoryDTO {
 
-    private Long priceId;
+    private Long priceHistoryId;
     private Long productId;
     private Long storeId;
     private Integer price;

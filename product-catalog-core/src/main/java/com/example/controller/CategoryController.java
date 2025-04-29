@@ -31,8 +31,12 @@ public class CategoryController {
 
     @PostMapping
     public ResponseEntity<CategoryDTO> createCategory(@RequestBody CategoryCreateDTO createDTO) {
-        Category category = new Category(createDTO.getCategoryName(),
-                categoryService.getCategoryById(createDTO.getParentId()));
+        Category parentCategory = null;
+
+        if (createDTO.getParentId() != null) {
+            parentCategory = categoryService.getCategoryById(createDTO.getParentId());
+        }
+        Category category = new Category(createDTO.getCategoryName(), parentCategory);
         Category createdCategory = categoryService.createCategory(category);
 
         CategoryDTO categoryDTO = CategoryMapper.INSTANCE.toDto(createdCategory);
