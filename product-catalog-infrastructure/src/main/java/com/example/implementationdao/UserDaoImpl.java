@@ -12,6 +12,7 @@ import java.util.List;
 public class UserDaoImpl implements UserDao {
 
     private static final String SELECT_ALL = "from User";
+    private static final String SELECT_BY_USERNAME = "FROM User WHERE username = :username";
 
     private final HibernateSessionFactory hibernateSessionFactory;
 
@@ -53,5 +54,14 @@ public class UserDaoImpl implements UserDao {
     public List<User> findAll() {
         Session session = hibernateSessionFactory.getCurrentSession();
         return session.createQuery(SELECT_ALL, User.class).list();
+    }
+
+    @Override
+    public User findByUsername(String username) {
+        Session session = hibernateSessionFactory.getCurrentSession();
+
+        return session.createQuery(SELECT_BY_USERNAME, User.class)
+                .setParameter("username", username)
+                .uniqueResult();
     }
 }

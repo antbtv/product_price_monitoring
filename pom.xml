@@ -36,7 +36,7 @@
         <jfreechart.version>1.5.3</jfreechart.version>
         <jcommon.version>1.0.24</jcommon.version>
         <security.version>6.4.4</security.version>
-        <jwt.version>0.12.6 </jwt.version>
+        <jwt.version>0.9.1</jwt.version>
     </properties>
 
     <build>
