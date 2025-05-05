@@ -27,7 +27,7 @@
         <core-module.version>1.0-SNAPSHOT</core-module.version>
         <postgresql.version>42.7.2</postgresql.version>
         <hibernate.version>6.1.0.Final</hibernate.version>
-        <spring.version>6.1.19</spring.version>
+        <spring.version>6.1.14</spring.version>
         <spring-boot.version>3.3.10</spring-boot.version>
         <jakarta.version>3.0.0</jakarta.version>
         <servlet-api.version>6.1.0</servlet-api.version>
@@ -37,6 +37,7 @@
         <jcommon.version>1.0.24</jcommon.version>
         <security.version>6.4.4</security.version>
         <jwt.version>0.9.1</jwt.version>
+        <jackson.version>2.15.0</jackson.version>
     </properties>
 
     <build>
@@ -120,11 +121,11 @@
             <version>${servlet-api.version}</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-            <version>${spring-boot.version}</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.boot</groupId>-->
+<!--            <artifactId>spring-boot-starter-web</artifactId>-->
+<!--            <version>${spring-boot.version}</version>-->
+<!--        </dependency>-->
 <!--        <dependency>-->
 <!--            <groupId>org.springframework.boot</groupId>-->
 <!--            <artifactId>spring-boot-starter-tomcat</artifactId>-->
@@ -171,6 +172,26 @@
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt</artifactId>
             <version>${jwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
     </dependencies>
 </project>

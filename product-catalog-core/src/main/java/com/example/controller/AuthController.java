@@ -7,7 +7,6 @@ import com.example.enums.UserRole;
 import com.example.service.security.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -62,7 +61,13 @@ public class AuthController {
             User newUser = new User();
             newUser.setUsername(registerDTO.getUsername());
             newUser.setPassword(passwordEncoder.encode(registerDTO.getPassword()));
-            newUser.setRole(UserRole.valueOf(registerDTO.getRole()));
+            newUser.setRole(UserRole.valueOf(registerDTO.getRole().toUpperCase()));
+            newUser.setEmail(registerDTO.getEmail());
+            newUser.setFirstName(registerDTO.getFirstName());
+            newUser.setLastName(registerDTO.getLastName());
+            newUser.setBirthDate(registerDTO.getBirthDate());
+            newUser.setPhoneNumber(registerDTO.getPhoneNumber());
+            newUser.setIsVerified(false);
 
             userService.addUser(newUser);
 

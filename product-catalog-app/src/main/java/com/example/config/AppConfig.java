@@ -41,6 +41,7 @@ public class AppConfig {
         properties.put("hibernate.dialect", "${hibernate.dialect}");
         properties.put("hibernate.hbm2ddl.auto", "${hibernate.hbm2ddl.auto}");
         properties.put("hibernate.show_sql", "${hibernate.show_sql}");
+        properties.put("hibernate.format_sql", "${hibernate.format_sql}");
         return properties;
     }
 
