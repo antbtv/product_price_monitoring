@@ -38,6 +38,7 @@
         <security.version>6.4.4</security.version>
         <jwt.version>0.9.1</jwt.version>
         <jackson.version>2.15.0</jackson.version>
+        <log4j.version>2.24.3</log4j.version>
     </properties>
 
     <build>
@@ -192,6 +193,16 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
             <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
         </dependency>
     </dependencies>
 </project>
