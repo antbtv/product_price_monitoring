@@ -1,27 +1,29 @@
 package com.example.service.impl;
 
+import com.example.MessageSources;
 import com.example.dao.CategoryDao;
 import com.example.dto.CategoryDTO;
-import com.example.dto.PriceDTO;
 import com.example.entity.Category;
-import com.example.entity.Price;
 import com.example.mapper.CategoryMapper;
-import com.example.mapper.PriceMapper;
 import com.example.service.CategoryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryDao categoryDao;
+    private static final Logger logger = LogManager.getLogger(CategoryServiceImpl.class);
 
     public CategoryServiceImpl(CategoryDao categoryDao) {
         this.categoryDao = categoryDao;
@@ -30,31 +32,54 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     @Override
     public Category createCategory(Category category) {
-        return categoryDao.create(category);
+        try {
+            return categoryDao.create(category);
+        } catch (Exception e) {
+            logger.error(MessageSources.FAILURE_CREATE);
+            return null;
+        }
     }
 
     @Transactional(readOnly = true)
     @Override
     public Category getCategoryById(Long id) {
-        return categoryDao.findById(id);
+        try {
+            return categoryDao.findById(id);
+        } catch (Exception e) {
+            logger.error(MessageSources.FAILURE_READ_ONE);
+            return null;
+        }
     }
 
     @Transactional
     @Override
     public void updateCategory(Category category) {
-        categoryDao.update(category);
+        try {
+            categoryDao.update(category);
+        } catch (Exception e) {
+            logger.error(MessageSources.FAILURE_UPDATE);
+        }
     }
 
     @Transactional
     @Override
     public void deleteCategory(Long id) {
-        categoryDao.delete(id);
+        try {
+            categoryDao.delete(id);
+        } catch (Exception e) {
+            logger.error(MessageSources.FAILURE_DELETE);
+        }
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<Category> getAllCategories() {
-        return categoryDao.findAll();
+        try {
+            return categoryDao.findAll();
+        } catch (Exception e) {
+            logger.error(MessageSources.FAILURE_READ_MANY);
+            return Collections.emptyList();
+        }
     }
 
     @Transactional(readOnly = true)

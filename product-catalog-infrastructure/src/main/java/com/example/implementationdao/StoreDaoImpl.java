@@ -27,30 +27,19 @@ public class StoreDaoImpl implements StoreDao {
     public Store create(Store store) {
         Session session = hibernateSessionFactory.getCurrentSession();
 
-        try {
-            session.persist(store);
-            logger.debug(MessageSources.SUCCESS_CREATE);
-            return store;
-        } catch (Exception e) {
-            logger.error(MessageSources.FAILURE_CREATE);
-            return null;
-        }
+        session.persist(store);
+        logger.info(MessageSources.SUCCESS_CREATE);
+        return store;
     }
 
     @Override
     public Store findById(Long id) {
         Session session = hibernateSessionFactory.getCurrentSession();
-        Store store = null;
-
-        try {
-            store = session.get(Store.class, id);
-            if (store == null) {
-                logger.error(MessageSources.FAILURE_READ_ONE);
-            } else {
-                logger.debug(MessageSources.SUCCESS_READ_ONE);
-            }
-        } catch (Exception e) {
+        Store store = session.get(Store.class, id);
+        if (store == null) {
             logger.error(MessageSources.FAILURE_READ_ONE);
+        } else {
+            logger.info(MessageSources.SUCCESS_READ_ONE);
         }
 
         return store;
@@ -60,12 +49,8 @@ public class StoreDaoImpl implements StoreDao {
     public void update(Store store) {
         Session session = hibernateSessionFactory.getCurrentSession();
 
-        try {
-            session.merge(store);
-            logger.debug(MessageSources.SUCCESS_UPDATE);
-        } catch (Exception e) {
-            logger.error(MessageSources.FAILURE_UPDATE);
-        }
+        session.merge(store);
+        logger.info(MessageSources.SUCCESS_UPDATE);
     }
 
     @Override
@@ -73,14 +58,10 @@ public class StoreDaoImpl implements StoreDao {
         Session session = hibernateSessionFactory.getCurrentSession();
         Store store = session.get(Store.class, id);
 
-        try {
-            if (store != null) {
-                session.remove(store);
-                logger.debug(MessageSources.SUCCESS_DELETE);
-            } else {
-                logger.error(MessageSources.FAILURE_DELETE);
-            }
-        } catch (Exception e) {
+        if (store != null) {
+            session.remove(store);
+            logger.info(MessageSources.SUCCESS_DELETE);
+        } else {
             logger.error(MessageSources.FAILURE_DELETE);
         }
     }
@@ -90,11 +71,8 @@ public class StoreDaoImpl implements StoreDao {
         Session session = hibernateSessionFactory.getCurrentSession();
         List<Store> stores = session.createQuery(SELECT_ALL, Store.class).list();
 
-        try {
-            logger.debug(MessageSources.SUCCESS_READ_MANY);
-        } catch (Exception e) {
-            logger.error(MessageSources.FAILURE_READ_MANY);
-        }
+        logger.info(MessageSources.SUCCESS_READ_MANY);
+
         return stores;
     }
 }

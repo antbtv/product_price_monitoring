@@ -27,32 +27,22 @@ public class CategoryDaoImpl implements CategoryDao {
     public Category create(Category category) {
         Session session = hibernateSessionFactory.getCurrentSession();
 
-        try {
-            session.persist(category);
-            logger.debug(MessageSources.SUCCESS_CREATE);
-            return category;
-        } catch (Exception e) {
-            logger.error(MessageSources.FAILURE_CREATE);
-            return null;
-        }
+        session.persist(category);
+        logger.info(MessageSources.SUCCESS_CREATE);
+        return category;
     }
 
     @Override
     public Category findById(Long id) {
         Session session = hibernateSessionFactory.getCurrentSession();
-        Category category = null;
+        Category category = session.get(Category.class, id);
 
-        try {
-            category = session.get(Category.class, id);
-
-            if (category == null) {
-                logger.error(MessageSources.FAILURE_READ_ONE);
-            } else {
-                logger.debug(MessageSources.SUCCESS_READ_ONE);
-            }
-        } catch (Exception e) {
+        if (category == null) {
             logger.error(MessageSources.FAILURE_READ_ONE);
+        } else {
+            logger.info(MessageSources.SUCCESS_READ_ONE);
         }
+
         return category;
     }
 
@@ -60,28 +50,20 @@ public class CategoryDaoImpl implements CategoryDao {
     public void update(Category category) {
         Session session = hibernateSessionFactory.getCurrentSession();
 
-        try {
-            session.merge(category);
-            logger.debug(MessageSources.SUCCESS_UPDATE);
-        } catch (Exception e) {
-            logger.error(MessageSources.FAILURE_UPDATE);
-        }
+        session.merge(category);
+        logger.info(MessageSources.SUCCESS_UPDATE);
     }
 
     @Override
     public void delete(Long id) {
         Session session = hibernateSessionFactory.getCurrentSession();
 
-        try {
-            Category category = session.get(Category.class, id);
+        Category category = session.get(Category.class, id);
 
-            if (category != null) {
-                session.remove(category);
-                logger.debug(MessageSources.SUCCESS_DELETE);
-            } else {
-                logger.error(MessageSources.FAILURE_DELETE);
-            }
-        } catch (Exception e) {
+        if (category != null) {
+            session.remove(category);
+            logger.info(MessageSources.SUCCESS_DELETE);
+        } else {
             logger.error(MessageSources.FAILURE_DELETE);
         }
     }
@@ -89,14 +71,9 @@ public class CategoryDaoImpl implements CategoryDao {
     @Override
     public List<Category> findAll() {
         Session session = hibernateSessionFactory.getCurrentSession();
-        List<Category> categories = null;
+        List<Category> categories = session.createQuery(SELECT_ALL, Category.class).list();
+        logger.info(MessageSources.SUCCESS_READ_MANY);
 
-        try {
-            categories = session.createQuery(SELECT_ALL, Category.class).list();
-            logger.debug(MessageSources.SUCCESS_READ_MANY);
-        } catch (Exception e) {
-            logger.error(MessageSources.FAILURE_READ_MANY);
-        }
         return categories;
     }
 }

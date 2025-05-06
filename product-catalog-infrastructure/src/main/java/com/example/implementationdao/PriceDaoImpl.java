@@ -28,32 +28,22 @@ public class PriceDaoImpl implements PriceDao {
     public Price create(Price price) {
         Session session = hibernateSessionFactory.getCurrentSession();
 
-        try {
-            session.persist(price);
-            logger.debug(MessageSources.SUCCESS_CREATE);
-            return price;
-        } catch (Exception e) {
-            logger.error(MessageSources.FAILURE_CREATE);
-            return null;
-        }
+        session.persist(price);
+        logger.info(MessageSources.SUCCESS_CREATE);
+        return price;
     }
 
     @Override
     public Price findById(Long id) {
         Session session = hibernateSessionFactory.getCurrentSession();
-        Price price = null;
+        Price price = session.get(Price.class, id);
 
-        try {
-            price = session.get(Price.class, id);
-
-            if (price == null) {
-                logger.error(MessageSources.FAILURE_READ_ONE);
-            } else {
-                logger.debug(MessageSources.SUCCESS_READ_ONE);
-            }
-        } catch (Exception e) {
+        if (price == null) {
             logger.error(MessageSources.FAILURE_READ_ONE);
+        } else {
+            logger.info(MessageSources.SUCCESS_READ_ONE);
         }
+
         return price;
     }
 
@@ -61,28 +51,20 @@ public class PriceDaoImpl implements PriceDao {
     public void update(Price price) {
         Session session = hibernateSessionFactory.getCurrentSession();
 
-        try {
-            session.merge(price);
-            logger.debug(MessageSources.SUCCESS_UPDATE);
-        } catch (Exception e) {
-            logger.error(MessageSources.FAILURE_UPDATE);
-        }
+        session.merge(price);
+        logger.info(MessageSources.SUCCESS_UPDATE);
     }
 
     @Override
     public void delete(Long id) {
         Session session = hibernateSessionFactory.getCurrentSession();
 
-        try {
-            Price price = session.get(Price.class, id);
+        Price price = session.get(Price.class, id);
 
-            if (price != null) {
-                session.remove(price);
-                logger.debug(MessageSources.SUCCESS_DELETE);
-            } else {
-                logger.error(MessageSources.FAILURE_DELETE);
-            }
-        } catch (Exception e) {
+        if (price != null) {
+            session.remove(price);
+            logger.info(MessageSources.SUCCESS_DELETE);
+        } else {
             logger.error(MessageSources.FAILURE_DELETE);
         }
     }
@@ -90,30 +72,20 @@ public class PriceDaoImpl implements PriceDao {
     @Override
     public List<Price> findAll() {
         Session session = hibernateSessionFactory.getCurrentSession();
-        List<Price> prices = null;
+        List<Price> prices = session.createQuery(SELECT_ALL, Price.class).list();
+        logger.info(MessageSources.SUCCESS_READ_MANY);
 
-        try {
-            prices = session.createQuery(SELECT_ALL, Price.class).list();
-            logger.debug(MessageSources.SUCCESS_READ_MANY);
-        } catch (Exception e) {
-            logger.error(MessageSources.FAILURE_READ_MANY);
-        }
         return prices;
     }
 
     @Override
     public List<Price> findByProductId(Long productId) {
         Session session = hibernateSessionFactory.getCurrentSession();
-        List<Price> prices = null;
+        List<Price> prices = session.createQuery(SELECT_BY_PRODUCT_ID, Price.class)
+                .setParameter("productId", productId)
+                .list();
+        logger.info(MessageSources.SUCCESS_READ_MANY);
 
-        try {
-            prices = session.createQuery(SELECT_BY_PRODUCT_ID, Price.class)
-                    .setParameter("productId", productId)
-                    .list();
-            logger.debug(MessageSources.SUCCESS_READ_MANY);
-        } catch (Exception e) {
-            logger.error(MessageSources.FAILURE_READ_MANY);
-        }
         return prices;
     }
 }

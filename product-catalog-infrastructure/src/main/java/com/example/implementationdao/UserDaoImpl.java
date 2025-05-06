@@ -27,33 +27,22 @@ public class UserDaoImpl implements UserDao {
     @Override
     public User create(User user) {
         Session session = hibernateSessionFactory.getCurrentSession();
-
-        try {
-            session.persist(user);
-            logger.debug(MessageSources.SUCCESS_CREATE);
-            return user;
-        } catch (Exception e) {
-            logger.error(MessageSources.FAILURE_CREATE);
-            return null;
-        }
+        session.persist(user);
+        logger.info(MessageSources.SUCCESS_CREATE);
+        return user;
     }
 
     @Override
     public User findById(Long id) {
         Session session = hibernateSessionFactory.getCurrentSession();
-        User user = null;
+        User user = session.get(User.class, id);
 
-        try {
-            user = session.get(User.class, id);
-
-            if (user == null) {
-                logger.error(MessageSources.FAILURE_READ_ONE);
-            } else {
-                logger.debug(MessageSources.SUCCESS_READ_ONE);
-            }
-        } catch (Exception e) {
+        if (user == null) {
             logger.error(MessageSources.FAILURE_READ_ONE);
+        } else {
+            logger.info(MessageSources.SUCCESS_READ_ONE);
         }
+
         return user;
     }
 
@@ -61,27 +50,19 @@ public class UserDaoImpl implements UserDao {
     public void update(User user) {
         Session session = hibernateSessionFactory.getCurrentSession();
 
-        try {
-            session.merge(user);
-            logger.debug(MessageSources.SUCCESS_UPDATE);
-        } catch (Exception e) {
-            logger.error(MessageSources.FAILURE_UPDATE);
-        }
+        session.merge(user);
+        logger.info(MessageSources.SUCCESS_UPDATE);
     }
 
     @Override
     public void delete(Long id) {
         Session session = hibernateSessionFactory.getCurrentSession();
 
-        try {
-            User user = session.get(User.class, id);
-            if (user != null) {
-                session.remove(user);
-                logger.debug(MessageSources.SUCCESS_DELETE);
-            } else {
-                logger.error(MessageSources.FAILURE_DELETE);
-            }
-        } catch (Exception e) {
+        User user = session.get(User.class, id);
+        if (user != null) {
+            session.remove(user);
+            logger.info(MessageSources.SUCCESS_DELETE);
+        } else {
             logger.error(MessageSources.FAILURE_DELETE);
         }
     }
@@ -89,35 +70,25 @@ public class UserDaoImpl implements UserDao {
     @Override
     public List<User> findAll() {
         Session session = hibernateSessionFactory.getCurrentSession();
-        List<User> users = null;
+        List<User> users = session.createQuery(SELECT_ALL, User.class).list();
+        logger.info(MessageSources.SUCCESS_READ_MANY);
 
-        try {
-            users = session.createQuery(SELECT_ALL, User.class).list();
-            logger.debug(MessageSources.SUCCESS_READ_MANY);
-        } catch (Exception e) {
-            logger.error(MessageSources.FAILURE_READ_MANY);
-        }
         return users;
     }
 
     @Override
     public User findByUsername(String username) {
         Session session = hibernateSessionFactory.getCurrentSession();
-        User user = null;
+        User user = session.createQuery(SELECT_BY_USERNAME, User.class)
+                .setParameter("username", username)
+                .uniqueResult();
 
-        try {
-            user = session.createQuery(SELECT_BY_USERNAME, User.class)
-                    .setParameter("username", username)
-                    .uniqueResult();
-
-            if (user == null) {
-                logger.error(MessageSources.FAILURE_READ_ONE);
-            } else {
-                logger.debug(MessageSources.SUCCESS_READ_ONE);
-            }
-        } catch (Exception e) {
+        if (user == null) {
             logger.error(MessageSources.FAILURE_READ_ONE);
+        } else {
+            logger.info(MessageSources.SUCCESS_READ_ONE);
         }
+
         return user;
     }
 }

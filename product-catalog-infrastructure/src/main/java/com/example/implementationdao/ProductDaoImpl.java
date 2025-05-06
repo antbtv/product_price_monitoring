@@ -28,32 +28,22 @@ public class ProductDaoImpl implements ProductDao {
     public Product create(Product product) {
         Session session = hibernateSessionFactory.getCurrentSession();
 
-        try {
-            session.persist(product);
-            logger.debug(MessageSources.SUCCESS_CREATE);
-            return product;
-        } catch (Exception e) {
-            logger.error(MessageSources.FAILURE_CREATE);
-            return null;
-        }
+        session.persist(product);
+        logger.info(MessageSources.SUCCESS_CREATE);
+        return product;
     }
 
     @Override
     public Product findById(Long id) {
         Session session = hibernateSessionFactory.getCurrentSession();
-        Product product = null;
+        Product product = session.get(Product.class, id);
 
-        try {
-            product = session.get(Product.class, id);
-
-            if (product == null) {
-                logger.error(MessageSources.FAILURE_READ_ONE);
-            } else {
-                logger.debug(MessageSources.SUCCESS_READ_ONE);
-            }
-        } catch (Exception e) {
+        if (product == null) {
             logger.error(MessageSources.FAILURE_READ_ONE);
+        } else {
+            logger.info(MessageSources.SUCCESS_READ_ONE);
         }
+
         return product;
     }
 
@@ -61,28 +51,20 @@ public class ProductDaoImpl implements ProductDao {
     public void update(Product product) {
         Session session = hibernateSessionFactory.getCurrentSession();
 
-        try {
-            session.merge(product);
-            logger.debug(MessageSources.SUCCESS_UPDATE);
-        } catch (Exception e) {
-            logger.error(MessageSources.FAILURE_UPDATE);
-        }
+        session.merge(product);
+        logger.info(MessageSources.SUCCESS_UPDATE);
     }
 
     @Override
     public void delete(Long id) {
         Session session = hibernateSessionFactory.getCurrentSession();
 
-        try {
-            Product product = session.get(Product.class, id);
+        Product product = session.get(Product.class, id);
 
-            if (product != null) {
-                session.remove(product);
-                logger.debug(MessageSources.SUCCESS_DELETE);
-            } else {
-                logger.error(MessageSources.FAILURE_DELETE);
-            }
-        } catch (Exception e) {
+        if (product != null) {
+            session.remove(product);
+            logger.info(MessageSources.SUCCESS_DELETE);
+        } else {
             logger.error(MessageSources.FAILURE_DELETE);
         }
     }
@@ -90,30 +72,20 @@ public class ProductDaoImpl implements ProductDao {
     @Override
     public List<Product> findAll() {
         Session session = hibernateSessionFactory.getCurrentSession();
-        List<Product> products = null;
+        List<Product> products = session.createQuery(SELECT_ALL, Product.class).list();
+        logger.info(MessageSources.SUCCESS_READ_MANY);
 
-        try {
-            products = session.createQuery(SELECT_ALL, Product.class).list();
-            logger.debug(MessageSources.SUCCESS_READ_MANY);
-        } catch (Exception e) {
-            logger.error(MessageSources.FAILURE_READ_MANY);
-        }
         return products;
     }
 
     @Override
     public List<Product> findByCategoryId(Long categoryId) {
         Session session = hibernateSessionFactory.getCurrentSession();
-        List<Product> products = null;
+        List<Product> products = session.createQuery(SELECT_BY_CATEGORY, Product.class)
+                .setParameter("categoryId", categoryId)
+                .list();
+        logger.info(MessageSources.SUCCESS_READ_MANY);
 
-        try {
-            products = session.createQuery(SELECT_BY_CATEGORY, Product.class)
-                    .setParameter("categoryId", categoryId)
-                    .list();
-            logger.debug(MessageSources.SUCCESS_READ_MANY);
-        } catch (Exception e) {
-            logger.error(MessageSources.FAILURE_READ_MANY);
-        }
         return products;
     }
 }

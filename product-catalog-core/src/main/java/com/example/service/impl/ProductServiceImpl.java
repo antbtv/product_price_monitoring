@@ -1,5 +1,6 @@
 package com.example.service.impl;
 
+import com.example.MessageSources;
 import com.example.dao.ProductDao;
 import com.example.dto.ProductDTO;
 import com.example.entity.Product;
@@ -8,20 +9,22 @@ import com.example.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 @Service
 public class ProductServiceImpl implements ProductService {
 
     private final ProductDao productDao;
+    private static final Logger logger = LogManager.getLogger(ProductServiceImpl.class);
 
     public ProductServiceImpl(ProductDao productDao) {
         this.productDao = productDao;
@@ -30,40 +33,67 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     @Override
     public Product createProduct(Product product) {
-        return productDao.create(product);
+        try {
+            return productDao.create(product);
+        } catch (Exception e) {
+            logger.error(MessageSources.FAILURE_CREATE);
+            return null;
+        }
     }
 
     @Transactional(readOnly = true)
     @Override
     public Product getProductById(Long id) {
-        return productDao.findById(id);
+        try {
+            return productDao.findById(id);
+        } catch (Exception e) {
+            logger.error(MessageSources.FAILURE_READ_ONE);
+            return null;
+        }
     }
 
     @Transactional
     @Override
     public void updateProduct(Product product) {
-        product.setUpdatedAt(LocalDateTime.now());
-        productDao.update(product);
+        try {
+            product.setUpdatedAt(LocalDateTime.now());
+            productDao.update(product);
+        } catch (Exception e) {
+            logger.error(MessageSources.FAILURE_UPDATE);
+        }
     }
 
     @Transactional
     @Override
     public void deleteProduct(Long id) {
-        productDao.delete(id);
+        try {
+            productDao.delete(id);
+        } catch (Exception e) {
+            logger.error(MessageSources.FAILURE_DELETE);
+        }
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<Product> getAllProducts() {
-        return productDao.findAll();
+        try {
+            return productDao.findAll();
+        } catch (Exception e) {
+            logger.error(MessageSources.FAILURE_READ_MANY);
+            return Collections.emptyList();
+        }
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<Product> getProductsByCategoryId(Long categoryId) {
-        return productDao.findByCategoryId(categoryId);
+        try {
+            return productDao.findByCategoryId(categoryId);
+        } catch (Exception e) {
+            logger.error(MessageSources.FAILURE_READ_MANY);
+            return Collections.emptyList();
+        }
     }
-
     @Transactional(readOnly = true)
     public byte[] exportProductsToJson() throws IOException {
         List<Product> products = productDao.findAll();

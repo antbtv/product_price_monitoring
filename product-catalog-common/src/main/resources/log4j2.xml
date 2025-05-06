@@ -12,7 +12,7 @@
         <Logger name="com.example.implementationdao" level="DEBUG" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
-        <Logger name="com.example.controller" level="DEBUG" additivity="false">
+        <Logger name="com.example.controller" level="INFO" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
         <Logger name="com.example.service" level="ERROR" additivity="false">

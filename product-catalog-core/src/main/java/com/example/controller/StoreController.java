@@ -8,6 +8,7 @@ import com.example.service.StoreService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -58,19 +59,21 @@ public class StoreController {
         return ResponseEntity.ok(storeDTO);
     }
 
+    @ExceptionHandler(Exception.class)
     @PatchMapping("/{id}")
     public ResponseEntity<StoreDTO> partialUpdateStore(@PathVariable Long id,
-                                                             @RequestBody StoreCreateDTO updateDTO) {
+                                                             @RequestBody StoreCreateDTO creteDTO) {
         Store store = storeService.getStoreById(id);
         if (store == null) {
             return ResponseEntity.notFound().build();
         }
 
-        if (updateDTO.getStoreName() != null) {
-            store.setStoreName(updateDTO.getStoreName());
+        if (creteDTO.getStoreName() != null) {
+            store.setStoreName(creteDTO.getStoreName());
+            throw new RuntimeException();
         }
-        if (updateDTO.getAddress() != null) {
-            store.setAddress(updateDTO.getAddress());
+        if (creteDTO.getAddress() != null) {
+            store.setAddress(creteDTO.getAddress());
         }
 
         storeService.updateStore(store);

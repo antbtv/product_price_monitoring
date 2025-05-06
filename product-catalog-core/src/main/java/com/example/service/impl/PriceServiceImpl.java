@@ -1,5 +1,6 @@
 package com.example.service.impl;
 
+import com.example.MessageSources;
 import com.example.dao.PriceDao;
 import com.example.dao.PriceHistoryDao;
 import com.example.dto.PriceDTO;
@@ -10,6 +11,8 @@ import com.example.service.PriceService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +27,7 @@ public class PriceServiceImpl implements PriceService {
 
     private final PriceDao priceDao;
     private final PriceHistoryDao priceHistoryDao;
+    private static final Logger logger = LogManager.getLogger(PriceServiceImpl.class);
 
     public PriceServiceImpl(PriceDao priceDao, PriceHistoryDao priceHistoryDao) {
         this.priceDao = priceDao;
@@ -33,42 +37,64 @@ public class PriceServiceImpl implements PriceService {
     @Transactional
     @Override
     public Price createPrice(Price price) {
-        return priceDao.create(price);
+        try {
+            return priceDao.create(price);
+        } catch (Exception e) {
+            logger.error(MessageSources.FAILURE_CREATE);
+            return null;
+        }
     }
 
     @Transactional(readOnly = true)
     @Override
     public Price getPriceById(Long id) {
-        return priceDao.findById(id);
+        try {
+            return priceDao.findById(id);
+        } catch (Exception e) {
+            logger.error(MessageSources.FAILURE_READ_ONE);
+            return null;
+        }
     }
 
     @Transactional
     @Override
     public void updatePrice(Price price) {
-        Price currentPrice = priceDao.findById(price.getPriceId());
-        if (currentPrice != null) {
-            PriceHistory priceHistory = new PriceHistory();
-            priceHistory.setProduct(currentPrice.getProduct());
-            priceHistory.setStore(currentPrice.getStore());
-            priceHistory.setPrice(price.getPrice());
-            priceHistory.setRecordedAt(LocalDateTime.now());
+        try {
+            Price currentPrice = priceDao.findById(price.getPriceId());
+            if (currentPrice != null) {
+                PriceHistory priceHistory = new PriceHistory();
+                priceHistory.setProduct(currentPrice.getProduct());
+                priceHistory.setStore(currentPrice.getStore());
+                priceHistory.setPrice(price.getPrice());
+                priceHistory.setRecordedAt(LocalDateTime.now());
 
-            priceHistoryDao.create(priceHistory);
-
-            priceDao.update(price);
+                priceHistoryDao.create(priceHistory);
+                priceDao.update(price);
+            }
+        } catch (Exception e) {
+            logger.error(MessageSources.FAILURE_UPDATE);
         }
     }
 
     @Transactional
     @Override
     public void deletePrice(Long id) {
-        priceDao.delete(id);
+        try {
+            priceDao.delete(id);
+        } catch (Exception e) {
+            logger.error(MessageSources.FAILURE_DELETE);
+        }
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<Price> getAllPrices() {
-        return priceDao.findAll();
+        try {
+            return priceDao.findAll();
+        } catch (Exception e) {
+            logger.error(MessageSources.FAILURE_READ_MANY);
+            return null;
+        }
     }
 
     @Transactional(readOnly = true)
@@ -76,6 +102,15 @@ public class PriceServiceImpl implements PriceService {
     public List<PriceDTO> getPricesByProductId(Long productId) {
         List<Price> prices = priceDao.findByProductId(productId);
         return PriceMapper.INSTANCE.toDtoList(prices);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<PriceHistory> getPriceHistoryByProductIdAndDataRange(Long productId,
+                                                                     Long storeId,
+                                                                     LocalDate startDate,
+                                                                     LocalDate endDate) {
+        return priceHistoryDao.findPriceHistoryByProductAndDateRange(productId, storeId, startDate, endDate);
     }
 
     @Transactional(readOnly = true)
@@ -89,14 +124,5 @@ public class PriceServiceImpl implements PriceService {
                 .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
         objectMapper.writeValue(new File(filePath), priceDTOS);
-    }
-
-    @Transactional(readOnly = true)
-    @Override
-    public List<PriceHistory> getPriceHistoryByProductIdAndDataRange(Long productId,
-                                                                     Long storeId,
-                                                                     LocalDate startDate,
-                                                                     LocalDate endDate) {
-        return priceHistoryDao.findPriceHistoryByProductAndDateRange(productId, storeId, startDate, endDate);
     }
 }

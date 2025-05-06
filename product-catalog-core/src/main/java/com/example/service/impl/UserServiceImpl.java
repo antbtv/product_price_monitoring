@@ -1,11 +1,14 @@
 package com.example.service.impl;
 
+import com.example.MessageSources;
 import com.example.dao.security.UserDao;
 import com.example.entity.security.User;
 import com.example.service.security.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,7 +17,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,6 +29,8 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 
     private final String SECRET_KEY = "Senla";
     private final UserDao userDAO;
+    private static final Logger logger = LogManager.getLogger(UserServiceImpl.class);
+
     public UserServiceImpl(UserDao userDAO) {
         this.userDAO = userDAO;
     }
@@ -89,7 +93,12 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     @Override
     @Transactional(readOnly = true)
     public boolean userExists(String username) {
-        return userDAO.findByUsername(username) != null;
+        try {
+            return userDAO.findByUsername(username) != null;
+        } catch (Exception e) {
+            logger.error(MessageSources.FAILURE_READ_ONE);
+        }
+        return false;
     }
 
     @Override

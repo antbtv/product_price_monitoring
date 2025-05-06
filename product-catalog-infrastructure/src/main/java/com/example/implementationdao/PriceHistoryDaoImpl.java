@@ -31,32 +31,22 @@ public class PriceHistoryDaoImpl implements PriceHistoryDao {
     public PriceHistory create(PriceHistory priceHistory) {
         Session session = hibernateSessionFactory.getCurrentSession();
 
-        try {
-            session.persist(priceHistory);
-            logger.debug(MessageSources.SUCCESS_CREATE);
-            return priceHistory;
-        } catch (Exception e) {
-            logger.error(MessageSources.FAILURE_CREATE);
-            return null;
-        }
+        session.persist(priceHistory);
+        logger.info(MessageSources.SUCCESS_CREATE);
+        return priceHistory;
     }
 
     @Override
     public PriceHistory findById(Long id) {
         Session session = hibernateSessionFactory.getCurrentSession();
-        PriceHistory priceHistory = null;
+        PriceHistory priceHistory = session.get(PriceHistory.class, id);
 
-        try {
-            priceHistory = session.get(PriceHistory.class, id);
-
-            if (priceHistory == null) {
-                logger.error(MessageSources.FAILURE_READ_ONE);
-            } else {
-                logger.debug(MessageSources.SUCCESS_READ_ONE);
-            }
-        } catch (Exception e) {
+        if (priceHistory == null) {
             logger.error(MessageSources.FAILURE_READ_ONE);
+        } else {
+            logger.info(MessageSources.SUCCESS_READ_ONE);
         }
+
         return priceHistory;
     }
 
@@ -64,28 +54,20 @@ public class PriceHistoryDaoImpl implements PriceHistoryDao {
     public void update(PriceHistory priceHistory) {
         Session session = hibernateSessionFactory.getCurrentSession();
 
-        try {
-            session.merge(priceHistory);
-            logger.debug(MessageSources.SUCCESS_UPDATE);
-        } catch (Exception e) {
-            logger.error(MessageSources.FAILURE_UPDATE);
-        }
+        session.merge(priceHistory);
+        logger.info(MessageSources.SUCCESS_UPDATE);
     }
 
     @Override
     public void delete(Long id) {
         Session session = hibernateSessionFactory.getCurrentSession();
 
-        try {
-            PriceHistory priceHistory = session.get(PriceHistory.class, id);
+        PriceHistory priceHistory = session.get(PriceHistory.class, id);
 
-            if (priceHistory != null) {
-                session.remove(priceHistory);
-                logger.debug(MessageSources.SUCCESS_DELETE);
-            } else {
-                logger.error(MessageSources.FAILURE_DELETE);
-            }
-        } catch (Exception e) {
+        if (priceHistory != null) {
+            session.remove(priceHistory);
+            logger.info(MessageSources.SUCCESS_DELETE);
+        } else {
             logger.error(MessageSources.FAILURE_DELETE);
         }
     }
@@ -93,14 +75,9 @@ public class PriceHistoryDaoImpl implements PriceHistoryDao {
     @Override
     public List<PriceHistory> findAll() {
         Session session = hibernateSessionFactory.getCurrentSession();
-        List<PriceHistory> priceHistories = null;
+        List<PriceHistory> priceHistories = session.createQuery(SELECT_ALL, PriceHistory.class).list();
+        logger.info(MessageSources.SUCCESS_READ_MANY);
 
-        try {
-            priceHistories = session.createQuery(SELECT_ALL, PriceHistory.class).list();
-            logger.debug(MessageSources.SUCCESS_READ_MANY);
-        } catch (Exception e) {
-            logger.error(MessageSources.FAILURE_READ_MANY);
-        }
         return priceHistories;
     }
 
@@ -110,19 +87,14 @@ public class PriceHistoryDaoImpl implements PriceHistoryDao {
                                                                     LocalDate startDate,
                                                                     LocalDate endDate) {
         Session session = hibernateSessionFactory.getCurrentSession();
-        List<PriceHistory> priceHistories = null;
+        List<PriceHistory> priceHistories = session.createQuery(SELECT_PRICES_BY_PRODUCT_IN_DATA_RANGE, PriceHistory.class)
+                .setParameter("productId", productId)
+                .setParameter("storeId", storeId)
+                .setParameter("startDate", startDate.atStartOfDay())
+                .setParameter("endDate", endDate.atTime(23, 59, 59))
+                .list();
+        logger.info(MessageSources.SUCCESS_READ_MANY);
 
-        try {
-            priceHistories = session.createQuery(SELECT_PRICES_BY_PRODUCT_IN_DATA_RANGE, PriceHistory.class)
-                    .setParameter("productId", productId)
-                    .setParameter("storeId", storeId)
-                    .setParameter("startDate", startDate.atStartOfDay())
-                    .setParameter("endDate", endDate.atTime(23, 59, 59))
-                    .list();
-            logger.debug(MessageSources.SUCCESS_READ_MANY);
-        } catch (Exception e) {
-            logger.error(MessageSources.FAILURE_READ_MANY);
-        }
         return priceHistories;
     }
 }
