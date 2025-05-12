@@ -42,8 +42,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/auth/**").permitAll()
 
-                        .requestMatchers(new RegexRequestMatcher("/(categories|prices|stores|products)/export", null),
-                                         new RegexRequestMatcher("/(categories|prices|stores|products)/import", null))
+                        .requestMatchers(new RegexRequestMatcher("/(categories|prices|stores|products)/export", "GET"),
+                                         new RegexRequestMatcher("/(categories|prices|stores|products)/import", "POST"))
                         .hasRole("ADMIN")
 
                         .requestMatchers(HttpMethod.POST, "/categories/**", "/prices/**", "/products/**", "/stores/**").hasRole("ADMIN")

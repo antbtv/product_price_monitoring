@@ -1,7 +1,10 @@
 package com.example.service;
 
+import com.example.dto.CategoryDTO;
+import com.example.dto.StoreDTO;
 import com.example.entity.Category;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface CategoryService {
@@ -15,4 +18,8 @@ public interface CategoryService {
     void deleteCategory(Long id);
 
     List<Category> getAllCategories();
+
+    byte[] exportCategoriesToJson() throws IOException;
+
+    List<CategoryDTO> importCategoriesFromJson(byte[] data) throws IOException;
 }

@@ -6,6 +6,8 @@ import com.example.dto.StoreDTO;
 import com.example.entity.Store;
 import com.example.mapper.StoreMapper;
 import com.example.service.StoreService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -14,7 +16,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -83,7 +85,8 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Transactional(readOnly = true)
-    public void exportStoresToJson(String filePath) throws IOException {
+    @Override
+    public byte[] exportStoresToJson() throws IOException {
         List<Store> stores = storeDao.findAll();
         List<StoreDTO> storeDTOS = StoreMapper.INSTANCE.toDtoList(stores);
 
@@ -91,6 +94,26 @@ public class StoreServiceImpl implements StoreService {
                 .registerModule(new JavaTimeModule())
                 .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
-        objectMapper.writeValue(new File(filePath), storeDTOS);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        objectMapper.writeValue(outputStream, storeDTOS);
+        return outputStream.toByteArray();
+    }
+
+    @Transactional
+    @Override
+    public List<StoreDTO> importStoresFromJson(byte[] data) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        List<StoreDTO> storeDTOS = objectMapper.readValue(
+                data,
+                new TypeReference<>() {
+                }
+        );
+
+        List<Store> stores = StoreMapper.INSTANCE.toEntityList(storeDTOS);
+        stores.forEach(storeDao::create);
+        return storeDTOS;
     }
 }

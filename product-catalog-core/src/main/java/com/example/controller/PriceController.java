@@ -4,6 +4,7 @@ import com.example.dto.HistoryRequestDTO;
 import com.example.dto.PriceDTO;
 import com.example.dto.PriceHistoryDTO;
 import com.example.dto.PriceCreateDTO;
+import com.example.dto.ProductDTO;
 import com.example.entity.Price;
 import com.example.entity.PriceHistory;
 import com.example.mapper.PriceHistoryMapper;
@@ -11,12 +12,17 @@ import com.example.mapper.PriceMapper;
 import com.example.service.PriceService;
 import com.example.service.ProductService;
 import com.example.service.StoreService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,8 +34,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
@@ -42,6 +51,8 @@ public class PriceController {
     private final PriceService priceService;
     private final ProductService productService;
     private final StoreService storeService;
+
+    private static final Logger logger = LogManager.getLogger(PriceController.class);
 
     public PriceController(PriceService priceService,
                            ProductService productService, StoreService storeService) {
@@ -148,7 +159,7 @@ public class PriceController {
         }
     }
 
-    @GetMapping("/history/chart/{productId}")
+    @PutMapping("/history/chart/{productId}")
     public ResponseEntity<byte[]> getPriceHistoryChart(@PathVariable Long productId,
                                                        @RequestBody HistoryRequestDTO request) {
         List<PriceHistory> priceHistory = priceService.getPriceHistoryByProductIdAndDataRange(
@@ -194,8 +205,35 @@ public class PriceController {
                     .contentType(MediaType.IMAGE_PNG)
                     .body(chartBytes);
         } catch (IOException e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/export")
+    public ResponseEntity<Resource> exportPrices() throws IOException {
+        byte[] data = priceService.exportPricesToJson();
+        InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(data));
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"prices.json\"")
+                .contentType(MediaType.APPLICATION_JSON)
+                .contentLength(data.length)
+                .body(resource);
+    }
+
+    @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<PriceDTO>> importPrices(@RequestPart("file") MultipartFile file) {
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        try {
+            List<PriceDTO> priceDTOS = priceService.importPricesFromJson(file.getBytes());
+            return ResponseEntity.ok(priceDTOS);
+        } catch (IOException e) {
+            logger.error("Ошибка в импорте данных " + file.getOriginalFilename() + " "  + file.getSize());
+            return ResponseEntity.internalServerError().build();
         }
     }
 }

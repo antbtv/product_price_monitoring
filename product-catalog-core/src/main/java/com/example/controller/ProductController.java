@@ -2,10 +2,13 @@ package com.example.controller;
 
 import com.example.dto.ProductDTO;
 import com.example.dto.ProductCreateDTO;
+import com.example.dto.StoreDTO;
 import com.example.entity.Product;
 import com.example.mapper.ProductMapper;
 import com.example.service.CategoryService;
 import com.example.service.ProductService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -20,7 +23,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -32,6 +37,8 @@ public class ProductController {
 
     private final ProductService productService;
     private final CategoryService categoryService;
+
+    private static final Logger logger = LogManager.getLogger(ProductController.class);
 
     public ProductController(ProductService productService, CategoryService categoryService) {
         this.productService = productService;
@@ -119,5 +126,21 @@ public class ProductController {
                 .contentType(MediaType.APPLICATION_JSON)
                 .contentLength(data.length)
                 .body(resource);
+    }
+
+    @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<ProductDTO>> importProducts(@RequestPart("file") MultipartFile file) {
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        try {
+            List<ProductDTO> productDTOS = productService.importProductsFromJson(file.getBytes());
+            return ResponseEntity.ok(productDTOS);
+        } catch (IOException e) {
+            logger.error("Ошибка в импорте данных " + file.getOriginalFilename() + " "  + file.getSize());
+            return ResponseEntity.internalServerError().build();
+        }
     }
 }

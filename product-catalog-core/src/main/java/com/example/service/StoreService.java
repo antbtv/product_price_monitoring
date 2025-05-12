@@ -1,7 +1,9 @@
 package com.example.service;
 
+import com.example.dto.StoreDTO;
 import com.example.entity.Store;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface StoreService {
@@ -15,4 +17,8 @@ public interface StoreService {
     void deleteStore(Long id);
 
     List<Store> getAllStores();
+
+    byte[] exportStoresToJson() throws IOException;
+
+    List<StoreDTO> importStoresFromJson(byte[] data) throws IOException;
 }

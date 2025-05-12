@@ -3,9 +3,12 @@ package com.example.service.impl;
 import com.example.MessageSources;
 import com.example.dao.CategoryDao;
 import com.example.dto.CategoryDTO;
+import com.example.dto.StoreDTO;
 import com.example.entity.Category;
 import com.example.mapper.CategoryMapper;
 import com.example.service.CategoryService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -14,7 +17,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -83,7 +86,8 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Transactional(readOnly = true)
-    public void exportCategoriesToJson(String filePath) throws IOException {
+    @Override
+    public byte[] exportCategoriesToJson() throws IOException {
         List<Category> categories = categoryDao.findAll();
         List<CategoryDTO> categoryDTOS = CategoryMapper.INSTANCE.toDtoList(categories);
 
@@ -91,6 +95,27 @@ public class CategoryServiceImpl implements CategoryService {
                 .registerModule(new JavaTimeModule())
                 .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
-        objectMapper.writeValue(new File(filePath), categoryDTOS);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        objectMapper.writeValue(outputStream, categoryDTOS);
+        return outputStream.toByteArray();
+    }
+
+    @Transactional
+    @Override
+    public List<CategoryDTO> importCategoriesFromJson(byte[] data) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        List<CategoryDTO> categoryDTOS = objectMapper.readValue(
+                data,
+                new TypeReference<>() {
+                }
+        );
+
+        List<Category> categories = CategoryMapper.INSTANCE.toEntityList(categoryDTOS);
+        categories.forEach(categoryDao::create);
+
+        return categoryDTOS;
     }
 }

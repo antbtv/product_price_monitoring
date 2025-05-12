@@ -1,5 +1,7 @@
 package com.example.service;
 
+import com.example.dto.ProductDTO;
+import com.example.dto.StoreDTO;
 import com.example.entity.Product;
 
 import java.io.IOException;
@@ -20,4 +22,6 @@ public interface ProductService {
     List<Product> getProductsByCategoryId(Long categoryId);
 
     byte[] exportProductsToJson() throws IOException;
+
+    List<ProductDTO> importProductsFromJson(byte[] data) throws IOException;
 }

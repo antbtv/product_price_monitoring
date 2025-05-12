@@ -4,10 +4,13 @@ import com.example.MessageSources;
 import com.example.dao.PriceDao;
 import com.example.dao.PriceHistoryDao;
 import com.example.dto.PriceDTO;
+import com.example.dto.StoreDTO;
 import com.example.entity.Price;
 import com.example.entity.PriceHistory;
 import com.example.mapper.PriceMapper;
 import com.example.service.PriceService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -16,7 +19,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -115,7 +118,7 @@ public class PriceServiceImpl implements PriceService {
 
     @Transactional(readOnly = true)
     @Override
-    public void exportPricesToJson(String filePath) throws IOException {
+    public byte[] exportPricesToJson() throws IOException {
         List<Price> prices = priceDao.findAll();
         List<PriceDTO> priceDTOS = PriceMapper.INSTANCE.toDtoList(prices);
 
@@ -123,6 +126,27 @@ public class PriceServiceImpl implements PriceService {
                 .registerModule(new JavaTimeModule())
                 .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
-        objectMapper.writeValue(new File(filePath), priceDTOS);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        objectMapper.writeValue(outputStream, priceDTOS);
+        return outputStream.toByteArray();
+    }
+
+    @Transactional
+    @Override
+    public List<PriceDTO> importPricesFromJson(byte[] data) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        List<PriceDTO> priceDTOS = objectMapper.readValue(
+                data,
+                new TypeReference<>() {
+                }
+        );
+
+        List<Price> prices = PriceMapper.INSTANCE.toEntityList(priceDTOS);
+        prices.forEach(priceDao::create);
+
+        return priceDTOS;
     }
 }

@@ -1,6 +1,7 @@
 package com.example.service;
 
 import com.example.dto.PriceDTO;
+import com.example.dto.StoreDTO;
 import com.example.entity.Price;
 import com.example.entity.PriceHistory;
 
@@ -22,10 +23,12 @@ public interface PriceService {
 
     List<PriceDTO> getPricesByProductId(Long productId);
 
-    void exportPricesToJson(String filePath) throws IOException;
-
     List<PriceHistory> getPriceHistoryByProductIdAndDataRange(Long productId,
                                                               Long storeId,
                                                               LocalDate startDate,
                                                               LocalDate endDate);
+
+    byte[] exportPricesToJson() throws IOException;
+
+    List<PriceDTO> importPricesFromJson(byte[] data) throws IOException;
 }

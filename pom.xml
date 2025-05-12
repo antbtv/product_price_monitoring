@@ -42,6 +42,7 @@
         <mockito.version>5.16.1</mockito.version>
         <junit.version>5.12.2</junit.version>
         <hamcrest.version>3.0</hamcrest.version>
+        <xml.version>2.3.1</xml.version>
     </properties>
 
     <build>
@@ -263,6 +264,22 @@
             <artifactId>hamcrest</artifactId>
             <version>${hamcrest.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>${xml.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>${xml.version}</version>
+        </dependency>
+        <!-- Для работы с multipart-->
+        <dependency>
+            <groupId>commons-fileupload</groupId>
+            <artifactId>commons-fileupload</artifactId>
+            <version>1.5</version>
         </dependency>
     </dependencies>
 </project>

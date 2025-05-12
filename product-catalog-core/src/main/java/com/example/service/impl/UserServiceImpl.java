@@ -18,9 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -37,13 +35,11 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 
     @Override
     public String generateToken(UserDetails userDetails) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("roles", userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList()));
-
         return Jwts.builder()
-                .setClaims(claims)
+                .setSubject(userDetails.getUsername())
+                .claim("roles", userDetails.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .collect(Collectors.toList()))
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
@@ -74,8 +70,8 @@ public class UserServiceImpl implements UserDetailsService, UserService {
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
-    @Override
     @Transactional(readOnly = true)
+    @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userDAO.findByUsername(username);
 
@@ -90,8 +86,8 @@ public class UserServiceImpl implements UserDetailsService, UserService {
                 authorities);
     }
 
-    @Override
     @Transactional(readOnly = true)
+    @Override
     public boolean userExists(String username) {
         try {
             return userDAO.findByUsername(username) != null;
@@ -101,8 +97,8 @@ public class UserServiceImpl implements UserDetailsService, UserService {
         return false;
     }
 
-    @Override
     @Transactional
+    @Override
     public void addUser(User user) {
         if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
             throw new IllegalArgumentException("Имя пользователя не может быть пустым");
