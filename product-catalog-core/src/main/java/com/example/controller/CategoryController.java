@@ -2,7 +2,6 @@ package com.example.controller;
 
 import com.example.dto.CategoryDTO;
 import com.example.dto.CategoryCreateDTO;
-import com.example.dto.ProductDTO;
 import com.example.entity.Category;
 import com.example.mapper.CategoryMapper;
 import com.example.service.CategoryService;
