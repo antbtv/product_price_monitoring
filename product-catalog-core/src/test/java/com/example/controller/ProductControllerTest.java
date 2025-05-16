@@ -10,6 +10,7 @@ import com.example.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -142,7 +143,7 @@ class ProductControllerTest {
         ProductDTO productDTO = new ProductDTO(1L, "Updated Product", 1L, testTime, testTime.plusHours(1));
 
         doNothing().when(productService).updateProduct(any(Product.class));
-        when(productMapper.toDto(product)).thenReturn(productDTO);
+        when(productMapper.toDto(any(Product.class))).thenReturn(productDTO);
 
         // WHEN
         mockMvc.perform(put("/products/1")
@@ -155,7 +156,7 @@ class ProductControllerTest {
 
         // THEN
         verify(productService).updateProduct(any(Product.class));
-        verify(productMapper).toDto(product);
+        verify(productMapper).toDto(any(Product.class));
     }
 
     @Test

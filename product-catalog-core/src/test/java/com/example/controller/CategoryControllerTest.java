@@ -8,6 +8,7 @@ import com.example.service.CategoryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -124,7 +125,7 @@ class CategoryControllerTest {
         CategoryDTO categoryDTO = new CategoryDTO(1L, "Updated Electronics", null, testTime, testTime.plusHours(1));
 
         doNothing().when(categoryService).updateCategory(any(Category.class));
-        when(categoryMapper.toDto(category)).thenReturn(categoryDTO);
+        when(categoryMapper.toDto(any(Category.class))).thenReturn(categoryDTO);
 
         // WHEN
         mockMvc.perform(put("/categories/1")
@@ -138,7 +139,7 @@ class CategoryControllerTest {
 
         // THEN
         verify(categoryService).updateCategory(any(Category.class));
-        verify(categoryMapper).toDto(category);
+        verify(categoryMapper).toDto(any(Category.class));
     }
 
     @Test

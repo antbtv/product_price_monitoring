@@ -23,7 +23,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MultipartException.class)
     protected ResponseEntity<String> handleFileUploadingError(Exception e) {
-        logger.warn("Failed to upload attachment", e);
+        logger.warn("Ошибка в загрузке файла ", e);
         return ResponseEntity.ok(e.getMessage() + HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleRuntimeException(RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Произошла ошибка: " + e.getMessage());
+    }
+
 }

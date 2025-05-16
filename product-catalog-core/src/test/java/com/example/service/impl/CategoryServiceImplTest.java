@@ -112,18 +112,22 @@ class CategoryServiceImplTest {
     @Test
     void testImportCategoriesFromJson() throws IOException {
         // GIVEN
-        String jsonData = "[{\"name\":\"Test Category\"}]";
+        String jsonData = "[{\"categoryName\":\"Category\", \"parentId\": null}]";
         byte[] data = jsonData.getBytes();
-        CategoryDTO categoryDTO = new CategoryDTO((long) 1, "Test Category",
-                null, LocalDateTime.now(), LocalDateTime.now());
-        when(categoryDao.create(any(Category.class))).thenReturn(new Category("Test Category", null));
+
+        Category mockCategory = new Category();
+        mockCategory.setCategoryName("Category");
+        mockCategory.setParent(null);
+
+        when(categoryDao.create(any(Category.class))).thenReturn(mockCategory);
 
         // WHEN
         List<CategoryDTO> result = categoryService.importCategoriesFromJson(data);
 
         // THEN
         assertEquals(1, result.size());
-        assertEquals("Test Category", result.get(0).getCategoryName());
+        assertNull(result.get(0).getParentId());
+        assertEquals("Category", result.get(0).getCategoryName());
         verify(categoryDao).create(any(Category.class));
     }
 }

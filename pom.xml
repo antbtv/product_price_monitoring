@@ -39,10 +39,11 @@
         <jwt.version>0.9.1</jwt.version>
         <jackson.version>2.15.0</jackson.version>
         <log4j.version>2.24.3</log4j.version>
-        <mockito.version>5.16.1</mockito.version>
+        <mockito.version>5.12.0</mockito.version>
         <junit.version>5.12.2</junit.version>
         <hamcrest.version>3.0</hamcrest.version>
         <xml.version>2.3.1</xml.version>
+        <json.path.version>2.9.0</json.path.version>
     </properties>
 
     <build>
@@ -271,6 +272,11 @@
             <version>${xml.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>${xml.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-runtime</artifactId>
             <version>${xml.version}</version>
@@ -280,6 +286,12 @@
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>
             <version>1.5</version>
+        </dependency>
+        <dependency>
+            <groupId>com.jayway.jsonpath</groupId>
+            <artifactId>json-path</artifactId>
+            <version>${json.path.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

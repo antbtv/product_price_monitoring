@@ -51,14 +51,19 @@ public class PriceController {
     private final PriceService priceService;
     private final ProductService productService;
     private final StoreService storeService;
+    private final PriceMapper priceMapper;
+    private final PriceHistoryMapper priceHistoryMapper;
 
     private static final Logger logger = LogManager.getLogger(PriceController.class);
 
-    public PriceController(PriceService priceService,
-                           ProductService productService, StoreService storeService) {
+    public PriceController(PriceService priceService, ProductService productService, 
+                           StoreService storeService, PriceMapper priceMapper,
+                           PriceHistoryMapper priceHistoryMapper) {
         this.priceService = priceService;
         this.productService = productService;
         this.storeService = storeService;
+        this.priceMapper = priceMapper;
+        this.priceHistoryMapper = priceHistoryMapper;
     }
 
     @PostMapping
@@ -68,7 +73,7 @@ public class PriceController {
                 createDTO.getPrice());
         Price createdPrice = priceService.createPrice(price);
 
-        PriceDTO priceDTO = PriceMapper.INSTANCE.toDto(createdPrice);
+        PriceDTO priceDTO = priceMapper.toDto(createdPrice);
         return ResponseEntity.status(HttpStatus.CREATED).body(priceDTO);
     }
 
@@ -79,7 +84,7 @@ public class PriceController {
             return ResponseEntity.notFound().build();
         }
 
-        PriceDTO priceDTO = PriceMapper.INSTANCE.toDto(price);
+        PriceDTO priceDTO = priceMapper.toDto(price);
         return ResponseEntity.ok(priceDTO);
     }
 
@@ -88,7 +93,7 @@ public class PriceController {
         price.setPriceId(id);
         priceService.updatePrice(price);
 
-        PriceDTO priceDTO = PriceMapper.INSTANCE.toDto(price);
+        PriceDTO priceDTO = priceMapper.toDto(price);
         return ResponseEntity.ok(priceDTO);
     }
     @PatchMapping("/{id}")
@@ -110,7 +115,7 @@ public class PriceController {
         }
 
         priceService.updatePrice(price);
-        PriceDTO priceDTO = PriceMapper.INSTANCE.toDto(price);
+        PriceDTO priceDTO = priceMapper.toDto(price);
         return ResponseEntity.ok(priceDTO);
     }
 
@@ -125,7 +130,7 @@ public class PriceController {
     public ResponseEntity<List<PriceDTO>> getAllPrices() {
         List<Price> prices = priceService.getAllPrices();
 
-        List<PriceDTO> priceDTOS = PriceMapper.INSTANCE.toDtoList(prices);
+        List<PriceDTO> priceDTOS = priceMapper.toDtoList(prices);
         return ResponseEntity.ok(priceDTOS);
     }
 
@@ -149,7 +154,7 @@ public class PriceController {
                         request.getStartDate(),
                         request.getEndDate()
                 ).stream()
-                .map(PriceHistoryMapper.INSTANCE::toDto)
+                .map(priceHistoryMapper::toDto)
                 .collect(Collectors.toList());
 
         if (priceHistoryDTOS.isEmpty()) {

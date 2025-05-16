@@ -37,12 +37,15 @@ public class ProductController {
 
     private final ProductService productService;
     private final CategoryService categoryService;
+    private final ProductMapper productMapper;
 
     private static final Logger logger = LogManager.getLogger(ProductController.class);
 
-    public ProductController(ProductService productService, CategoryService categoryService) {
+    public ProductController(ProductService productService, CategoryService categoryService,
+                             ProductMapper productMapper) {
         this.productService = productService;
         this.categoryService = categoryService;
+        this.productMapper = productMapper;
     }
 
     @PostMapping
@@ -51,7 +54,7 @@ public class ProductController {
                 categoryService.getCategoryById(createDTO.getCategoryId()));
         Product createdProduct = productService.createProduct(product);
 
-        ProductDTO productDTO = ProductMapper.INSTANCE.toDto(createdProduct);
+        ProductDTO productDTO = productMapper.toDto(createdProduct);
         return ResponseEntity.status(HttpStatus.CREATED).body(productDTO);
     }
 
@@ -62,7 +65,7 @@ public class ProductController {
             return ResponseEntity.notFound().build();
         }
 
-        ProductDTO productDTO = ProductMapper.INSTANCE.toDto(product);
+        ProductDTO productDTO = productMapper.toDto(product);
         return ResponseEntity.ok(productDTO);
     }
 
@@ -71,7 +74,7 @@ public class ProductController {
         product.setProductId(id);
         productService.updateProduct(product);
 
-        ProductDTO productDTO = ProductMapper.INSTANCE.toDto(product);
+        ProductDTO productDTO = productMapper.toDto(product);
         return ResponseEntity.ok(productDTO);
     }
 
@@ -90,7 +93,7 @@ public class ProductController {
         }
 
         productService.updateProduct(product);
-        ProductDTO productDTO = ProductMapper.INSTANCE.toDto(product);
+        ProductDTO productDTO = productMapper.toDto(product);
         return ResponseEntity.ok(productDTO);
     }
 
@@ -104,7 +107,7 @@ public class ProductController {
     public ResponseEntity<List<ProductDTO>> getAllProducts() {
         List<Product> products = productService.getAllProducts();
 
-        List<ProductDTO> productDTOS = ProductMapper.INSTANCE.toDtoList(products);
+        List<ProductDTO> productDTOS = productMapper.toDtoList(products);
         return ResponseEntity.ok(productDTOS);
     }
 
@@ -112,7 +115,7 @@ public class ProductController {
     public ResponseEntity<List<ProductDTO>> getProductsByCategoryId(@PathVariable Long categoryId) {
         List<Product> products = productService.getProductsByCategoryId(categoryId);
 
-        List<ProductDTO> productDTOS = ProductMapper.INSTANCE.toDtoList(products);
+        List<ProductDTO> productDTOS = productMapper.toDtoList(products);
         return ResponseEntity.ok(productDTOS);
     }
 

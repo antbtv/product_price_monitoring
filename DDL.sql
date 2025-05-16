@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS products
 (
     product_id   SERIAL PRIMARY KEY,
     product_name VARCHAR(100) NOT NULL,
-    category_id  INT REFERENCES categories (category_id) ON DELETE CASCADE,
+    category_id  INT NOT NULL REFERENCES categories (category_id) ON DELETE CASCADE,
     created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -46,8 +46,8 @@ CREATE TABLE IF NOT EXISTS products
 CREATE TABLE IF NOT EXISTS prices
 (
     price_id    SERIAL PRIMARY KEY,
-    product_id  INT REFERENCES products (product_id) ON DELETE CASCADE,
-    store_id    INT REFERENCES stores (store_id) ON DELETE CASCADE,
+    product_id  INT NOT NULL REFERENCES products (product_id) ON DELETE CASCADE,
+    store_id    INT NOT NULL REFERENCES stores (store_id) ON DELETE CASCADE,
     price       INT NOT NULL,
     recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (product_id, store_id)
@@ -56,8 +56,8 @@ CREATE TABLE IF NOT EXISTS prices
 CREATE TABLE IF NOT EXISTS price_history
 (
     price_history_id SERIAL PRIMARY KEY,
-    product_id       INT REFERENCES products (product_id) ON DELETE CASCADE,
-    store_id         INT REFERENCES stores (store_id) ON DELETE CASCADE,
+    product_id       INT NOT NULL REFERENCES products (product_id) ON DELETE CASCADE,
+    store_id         INT NOT NULL REFERENCES stores (store_id) ON DELETE CASCADE,
     price            INT NOT NULL,
     recorded_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

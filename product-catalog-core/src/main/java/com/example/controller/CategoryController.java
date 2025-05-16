@@ -34,11 +34,13 @@ import java.util.List;
 public class CategoryController {
 
     private final CategoryService categoryService;
+    private final CategoryMapper categoryMapper;
 
     private static final Logger logger = LogManager.getLogger(CategoryController.class);
 
-    public CategoryController(CategoryService categoryService) {
+    public CategoryController(CategoryService categoryService, CategoryMapper categoryMapper) {
         this.categoryService = categoryService;
+        this.categoryMapper = categoryMapper;
     }
 
     @PostMapping
@@ -51,7 +53,7 @@ public class CategoryController {
         Category category = new Category(createDTO.getCategoryName(), parentCategory);
         Category createdCategory = categoryService.createCategory(category);
 
-        CategoryDTO categoryDTO = CategoryMapper.INSTANCE.toDto(createdCategory);
+        CategoryDTO categoryDTO = categoryMapper.toDto(createdCategory);
         return ResponseEntity.status(HttpStatus.CREATED).body(categoryDTO);
     }
 
@@ -61,7 +63,7 @@ public class CategoryController {
         if (category == null) {
             return ResponseEntity.notFound().build();
         }
-        CategoryDTO categoryDTO = CategoryMapper.INSTANCE.toDto(category);
+        CategoryDTO categoryDTO = categoryMapper.toDto(category);
         return ResponseEntity.ok(categoryDTO);
     }
 
@@ -70,7 +72,7 @@ public class CategoryController {
         category.setCategoryId(id);
         categoryService.updateCategory(category);
 
-        CategoryDTO categoryDTO = CategoryMapper.INSTANCE.toDto(category);
+        CategoryDTO categoryDTO = categoryMapper.toDto(category);
         return ResponseEntity.ok(categoryDTO);
     }
 
@@ -90,7 +92,7 @@ public class CategoryController {
         }
 
         categoryService.updateCategory(category);
-        CategoryDTO categoryDTO = CategoryMapper.INSTANCE.toDto(category);
+        CategoryDTO categoryDTO = categoryMapper.toDto(category);
         return ResponseEntity.ok(categoryDTO);
     }
 
@@ -104,7 +106,7 @@ public class CategoryController {
     public ResponseEntity<List<CategoryDTO>> getAllCategories() {
         List<Category> categories = categoryService.getAllCategories();
 
-        List<CategoryDTO> categoryDTOS = CategoryMapper.INSTANCE.toDtoList(categories);
+        List<CategoryDTO> categoryDTOS = categoryMapper.toDtoList(categories);
         return ResponseEntity.ok(categoryDTOS);
     }
 

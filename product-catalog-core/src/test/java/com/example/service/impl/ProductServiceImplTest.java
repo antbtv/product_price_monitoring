@@ -129,11 +129,12 @@ class ProductServiceImplTest {
     @Test
     void testImportProductsFromJson() throws IOException {
         // GIVEN
-        String jsonData = "[{\"productId\":1,\"name\":\"Test Product\"}]";
+        String jsonData = "[{\"productId\":1,\"productName\":\"Test Product\",\"categoryId\":1}]";
         byte[] data = jsonData.getBytes();
         ProductDTO productDTO = new ProductDTO();
         productDTO.setProductId(1L);
         productDTO.setProductName("Test Product");
+        productDTO.setCategoryId(1L);
         when(productDao.create(any(Product.class))).thenReturn(new Product());
 
         // WHEN

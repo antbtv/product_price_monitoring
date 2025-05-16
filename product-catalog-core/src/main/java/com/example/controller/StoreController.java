@@ -36,10 +36,13 @@ import java.util.List;
 public class StoreController {
 
     private final StoreService storeService;
+    private final StoreMapper storeMapper;
+    
     private static final Logger logger = LogManager.getLogger(StoreController.class);
 
-    public StoreController(StoreService storeService) {
+    public StoreController(StoreService storeService, StoreMapper storeMapper) {
         this.storeService = storeService;
+        this.storeMapper = storeMapper;
     }
 
     @PostMapping
@@ -47,7 +50,7 @@ public class StoreController {
         Store store = new Store(createDTO.getStoreName(), createDTO.getAddress());
         Store createdStore = storeService.createStore(store);
 
-        StoreDTO storeDTO = StoreMapper.INSTANCE.toDto(createdStore);
+        StoreDTO storeDTO = storeMapper.toDto(createdStore);
         return ResponseEntity.status(HttpStatus.CREATED).body(storeDTO);
     }
 
@@ -58,7 +61,7 @@ public class StoreController {
             return ResponseEntity.notFound().build();
         }
 
-        StoreDTO storeDTO = StoreMapper.INSTANCE.toDto(store);
+        StoreDTO storeDTO = storeMapper.toDto(store);
         return ResponseEntity.ok(storeDTO);
     }
 
@@ -67,11 +70,10 @@ public class StoreController {
         store.setStoreId(id);
         storeService.updateStore(store);
 
-        StoreDTO storeDTO = StoreMapper.INSTANCE.toDto(store);
+        StoreDTO storeDTO = storeMapper.toDto(store);
         return ResponseEntity.ok(storeDTO);
     }
 
-    @ExceptionHandler(Exception.class)
     @PatchMapping("/{id}")
     public ResponseEntity<StoreDTO> partialUpdateStore(@PathVariable Long id,
                                                              @RequestBody StoreCreateDTO creteDTO) {
@@ -82,14 +84,13 @@ public class StoreController {
 
         if (creteDTO.getStoreName() != null) {
             store.setStoreName(creteDTO.getStoreName());
-            throw new RuntimeException();
         }
         if (creteDTO.getAddress() != null) {
             store.setAddress(creteDTO.getAddress());
         }
 
         storeService.updateStore(store);
-        StoreDTO storeDTO = StoreMapper.INSTANCE.toDto(store);
+        StoreDTO storeDTO = storeMapper.toDto(store);
         return ResponseEntity.ok(storeDTO);
     }
 
@@ -103,7 +104,7 @@ public class StoreController {
     public ResponseEntity<List<StoreDTO>> getAllStores() {
         List<Store> stores = storeService.getAllStores();
 
-        List<StoreDTO> storeDTOS = StoreMapper.INSTANCE.toDtoList(stores);
+        List<StoreDTO> storeDTOS = storeMapper.toDtoList(stores);
         return ResponseEntity.ok(storeDTOS);
     }
 

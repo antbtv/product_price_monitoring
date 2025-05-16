@@ -4,10 +4,14 @@ import com.example.dto.ProductDTO;
 import com.example.dto.StoreDTO;
 import com.example.entity.Product;
 import com.example.entity.Store;
+import org.mapstruct.AfterMapping;
+import org.mapstruct.BeforeMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Mapper(componentModel = "spring")
@@ -24,4 +28,24 @@ public interface ProductMapper {
     List<Product> toEntityList(List<ProductDTO> productDTOS);
 
     List<ProductDTO> toDtoList(List<Product> products);
+
+    @AfterMapping
+    default void setTimestampsIfNull(@MappingTarget Product product) {
+        if (product.getCreatedAt() == null) {
+            product.setCreatedAt(LocalDateTime.now());
+        }
+        if (product.getUpdatedAt() == null) {
+            product.setUpdatedAt(LocalDateTime.now());
+        }
+    }
+
+    @BeforeMapping
+    default void validateCategory(ProductDTO dto) {
+        if (dto.getCategoryId() == null) {
+            throw new IllegalArgumentException("Категория не может быть null");
+        }
+        if (dto.getProductName() == null) {
+            throw new IllegalArgumentException("Имя продукта не может быть null");
+        }
+    }
 }

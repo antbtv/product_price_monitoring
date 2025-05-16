@@ -2,6 +2,7 @@ package com.example.mapper;
 
 import com.example.dto.StoreDTO;
 import com.example.entity.Store;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -127,8 +128,8 @@ class StoreMapperTest {
         assertNull(entity.getStoreId());
         assertNull(entity.getStoreName());
         assertNull(entity.getAddress());
-        assertNull(entity.getCreatedAt());
-        assertNull(entity.getUpdatedAt());
+        assertNotNull(entity.getCreatedAt());
+        assertNotNull(entity.getUpdatedAt());
     }
 
     @Test

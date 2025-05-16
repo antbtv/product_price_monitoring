@@ -160,11 +160,14 @@ class PriceServiceImplTest {
     @Test
     void testImportPricesFromJson() throws IOException {
         // GIVEN
-        String jsonData = "[{\"priceId\":1,\"price\":100.0}]";
+        String jsonData = "[{\"priceId\":1,\"price\":100,\"productId\":1,\"storeId\":1}]";
         byte[] data = jsonData.getBytes();
         PriceDTO priceDTO = new PriceDTO();
         priceDTO.setPriceId(1L);
         priceDTO.setPrice(100);
+        priceDTO.setProductId(1L);
+        priceDTO.setStoreId(1L);
+
         when(priceDao.create(any(Price.class))).thenReturn(new Price());
 
         // WHEN
