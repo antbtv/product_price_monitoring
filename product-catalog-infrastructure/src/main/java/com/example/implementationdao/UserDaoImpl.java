@@ -3,6 +3,7 @@ package com.example.implementationdao;
 import com.example.MessageSources;
 import com.example.dao.security.UserDao;
 import com.example.dbconnection.HibernateSessionFactory;
+import com.example.entity.Category;
 import com.example.entity.security.User;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

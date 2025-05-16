@@ -69,6 +69,5 @@ CREATE TABLE IF NOT EXISTS data_log
     operation_time  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     table_name      VARCHAR(100) NOT NULL,
     record_count    INT          NOT NULL,
-    user_id         INT          REFERENCES users (user_id) ON DELETE SET NULL,
-    additional_info TEXT
+    user_id         INT          REFERENCES users (user_id) ON DELETE SET NULL
 );

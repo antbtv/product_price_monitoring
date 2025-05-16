@@ -3,8 +3,6 @@ package com.example.service.security;
 import com.example.entity.security.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.List;
-
 /**
  * Интерфейс для управления пользователями
  */
@@ -65,4 +63,11 @@ public interface UserService {
      * @return данные пользователя
      */
     UserDetails loadUserByUsername(String username);
+
+    /**
+     * Получение текущего пользователя
+     *
+     * @return пользователь
+     */
+    User getCurrentUser();
 }

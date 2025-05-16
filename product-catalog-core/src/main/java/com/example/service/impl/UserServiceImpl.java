@@ -9,8 +9,10 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -35,8 +37,11 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 
     @Override
     public String generateToken(UserDetails userDetails) {
+        User user = userDAO.findByUsername(userDetails.getUsername());
+
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())
+                .claim("userId", user.getUserId())
                 .claim("roles", userDetails.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
                         .collect(Collectors.toList()))
@@ -53,6 +58,25 @@ public class UserServiceImpl implements UserDetailsService, UserService {
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
+    }
+
+    @Override
+    public User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication != null) {
+            String jwtToken = ((String) authentication.getCredentials()).substring(7);
+
+            Claims claims = Jwts.parser()
+                    .setSigningKey(SECRET_KEY)
+                    .parseClaimsJws(jwtToken)
+                    .getBody();
+
+            Long userId = claims.get("userId", Long.class);
+            return userDAO.findById(userId);
+        }
+
+        return null;
     }
 
     @Override

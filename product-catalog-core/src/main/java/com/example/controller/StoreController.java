@@ -4,7 +4,9 @@ import com.example.dto.StoreDTO;
 import com.example.dto.StoreCreateDTO;
 import com.example.entity.Store;
 import com.example.mapper.StoreMapper;
+import com.example.service.DataLogService;
 import com.example.service.StoreService;
+import com.example.service.security.UserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.io.InputStreamResource;
@@ -37,12 +39,17 @@ public class StoreController {
 
     private final StoreService storeService;
     private final StoreMapper storeMapper;
+    private final DataLogService dataLogService;
+    private final UserService userService;
     
     private static final Logger logger = LogManager.getLogger(StoreController.class);
 
-    public StoreController(StoreService storeService, StoreMapper storeMapper) {
+    public StoreController(StoreService storeService, StoreMapper storeMapper,
+                           DataLogService dataLogService, UserService userService) {
         this.storeService = storeService;
         this.storeMapper = storeMapper;
+        this.dataLogService = dataLogService;
+        this.userService = userService;
     }
 
     @PostMapping
@@ -113,6 +120,9 @@ public class StoreController {
         byte[] data = storeService.exportStoresToJson();
         InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(data));
 
+        dataLogService.logOperation("EXPORT", "stores",
+                (long) storeService.getAllStores().size(), userService.getCurrentUser());
+
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"stores.json\"")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -129,6 +139,10 @@ public class StoreController {
 
         try {
             List<StoreDTO> storeDTOS = storeService.importStoresFromJson(file.getBytes());
+
+            dataLogService.logOperation("IMPORT", "stores",
+                    (long) storeService.getAllStores().size(), userService.getCurrentUser());
+
             return ResponseEntity.ok(storeDTOS);
         } catch (IOException e) {
             logger.error("Ошибка в импорте данных " + file.getOriginalFilename() + " "  + file.getSize());

@@ -6,7 +6,9 @@ import com.example.dto.StoreDTO;
 import com.example.entity.Product;
 import com.example.mapper.ProductMapper;
 import com.example.service.CategoryService;
+import com.example.service.DataLogService;
 import com.example.service.ProductService;
+import com.example.service.security.UserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.io.InputStreamResource;
@@ -38,14 +40,19 @@ public class ProductController {
     private final ProductService productService;
     private final CategoryService categoryService;
     private final ProductMapper productMapper;
+    private final DataLogService dataLogService;
+    private final UserService userService;
 
     private static final Logger logger = LogManager.getLogger(ProductController.class);
 
     public ProductController(ProductService productService, CategoryService categoryService,
-                             ProductMapper productMapper) {
+                             ProductMapper productMapper, DataLogService dataLogService,
+                             UserService userService) {
         this.productService = productService;
         this.categoryService = categoryService;
         this.productMapper = productMapper;
+        this.dataLogService = dataLogService;
+        this.userService = userService;
     }
 
     @PostMapping
@@ -124,6 +131,9 @@ public class ProductController {
         byte[] data = productService.exportProductsToJson();
         InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(data));
 
+        dataLogService.logOperation("EXPORT", "products",
+                (long) productService.getAllProducts().size(), userService.getCurrentUser());
+
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"products.json\"")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -140,6 +150,10 @@ public class ProductController {
 
         try {
             List<ProductDTO> productDTOS = productService.importProductsFromJson(file.getBytes());
+
+            dataLogService.logOperation("IMPORT", "products",
+                    (long) productService.getAllProducts().size(), userService.getCurrentUser());
+
             return ResponseEntity.ok(productDTOS);
         } catch (IOException e) {
             logger.error("Ошибка в импорте данных " + file.getOriginalFilename() + " "  + file.getSize());

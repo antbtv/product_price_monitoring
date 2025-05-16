@@ -9,9 +9,11 @@ import com.example.entity.Price;
 import com.example.entity.PriceHistory;
 import com.example.mapper.PriceHistoryMapper;
 import com.example.mapper.PriceMapper;
+import com.example.service.DataLogService;
 import com.example.service.PriceService;
 import com.example.service.ProductService;
 import com.example.service.StoreService;
+import com.example.service.security.UserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jfree.chart.ChartFactory;
@@ -53,17 +55,22 @@ public class PriceController {
     private final StoreService storeService;
     private final PriceMapper priceMapper;
     private final PriceHistoryMapper priceHistoryMapper;
+    private final UserService userService;
+    private final DataLogService dataLogService;
 
     private static final Logger logger = LogManager.getLogger(PriceController.class);
 
     public PriceController(PriceService priceService, ProductService productService, 
                            StoreService storeService, PriceMapper priceMapper,
-                           PriceHistoryMapper priceHistoryMapper) {
+                           PriceHistoryMapper priceHistoryMapper, UserService userService,
+                           DataLogService dataLogService) {
         this.priceService = priceService;
         this.productService = productService;
         this.storeService = storeService;
         this.priceMapper = priceMapper;
         this.priceHistoryMapper = priceHistoryMapper;
+        this.userService = userService;
+        this.dataLogService = dataLogService;
     }
 
     @PostMapping
@@ -219,6 +226,9 @@ public class PriceController {
         byte[] data = priceService.exportPricesToJson();
         InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(data));
 
+        dataLogService.logOperation("EXPORT", "prices",
+                (long) priceService.getAllPrices().size(), userService.getCurrentUser());
+
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"prices.json\"")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -235,6 +245,10 @@ public class PriceController {
 
         try {
             List<PriceDTO> priceDTOS = priceService.importPricesFromJson(file.getBytes());
+
+            dataLogService.logOperation("IMPORT", "prices",
+                    (long) priceService.getAllPrices().size(), userService.getCurrentUser());
+
             return ResponseEntity.ok(priceDTOS);
         } catch (IOException e) {
             logger.error("Ошибка в импорте данных " + file.getOriginalFilename() + " "  + file.getSize());

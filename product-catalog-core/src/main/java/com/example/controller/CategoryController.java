@@ -5,6 +5,8 @@ import com.example.dto.CategoryCreateDTO;
 import com.example.entity.Category;
 import com.example.mapper.CategoryMapper;
 import com.example.service.CategoryService;
+import com.example.service.DataLogService;
+import com.example.service.security.UserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.io.InputStreamResource;
@@ -35,12 +37,17 @@ public class CategoryController {
 
     private final CategoryService categoryService;
     private final CategoryMapper categoryMapper;
+    private final DataLogService dataLogService;
+    private final UserService userService;
 
     private static final Logger logger = LogManager.getLogger(CategoryController.class);
 
-    public CategoryController(CategoryService categoryService, CategoryMapper categoryMapper) {
+    public CategoryController(CategoryService categoryService, CategoryMapper categoryMapper,
+                              DataLogService dataLogService, UserService userService) {
         this.categoryService = categoryService;
         this.categoryMapper = categoryMapper;
+        this.dataLogService = dataLogService;
+        this.userService = userService;
     }
 
     @PostMapping
@@ -115,6 +122,9 @@ public class CategoryController {
         byte[] data = categoryService.exportCategoriesToJson();
         InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(data));
 
+        dataLogService.logOperation("EXPORT", "categories",
+                (long) categoryService.getAllCategories().size(), userService.getCurrentUser());
+
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"categories.json\"")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -131,6 +141,9 @@ public class CategoryController {
 
         try {
             List<CategoryDTO> categoryDTOS = categoryService.importCategoriesFromJson(file.getBytes());
+            dataLogService.logOperation("IMPORT", "categories",
+                    (long) categoryService.getAllCategories().size(), userService.getCurrentUser());
+
             return ResponseEntity.ok(categoryDTOS);
         } catch (IOException e) {
             logger.error("Ошибка в импорте данных " + file.getOriginalFilename() + " "  + file.getSize());
