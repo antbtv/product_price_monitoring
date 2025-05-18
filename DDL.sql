@@ -1,12 +1,12 @@
-CREATE TYPE user_role AS ENUM ('ROLE_ADMIN', 'ROLE_USER');
-
 CREATE TABLE IF NOT EXISTS users
 (
     user_id       SERIAL PRIMARY KEY,
     username      VARCHAR(50) UNIQUE  NOT NULL,
     password      VARCHAR(255)        NOT NULL,
     email         VARCHAR(100) UNIQUE NOT NULL,
-    role          user_role           NOT NULL,
+    role          VARCHAR(20) NOT NULL
+        CONSTRAINT users_role_check
+            CHECK (role IN ('ROLE_ADMIN', 'ROLE_USER')),
     first_name    VARCHAR(50)         NOT NULL,
     last_name     VARCHAR(50)         NOT NULL,
     date_of_birth DATE,
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS categories
 (
     category_id   SERIAL PRIMARY KEY,
     category_name VARCHAR(100) UNIQUE NOT NULL,
-    parent_id     INT                 REFERENCES categories (category_id) ON DELETE SET NULL,
+    parent_id     INT REFERENCES categories (category_id) ON DELETE SET NULL,
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

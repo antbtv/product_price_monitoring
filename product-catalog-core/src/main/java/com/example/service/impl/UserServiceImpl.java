@@ -2,6 +2,7 @@ package com.example.service.impl;
 
 import com.example.MessageSources;
 import com.example.dao.security.UserDao;
+import com.example.entity.Store;
 import com.example.entity.security.User;
 import com.example.service.security.UserService;
 import io.jsonwebtoken.Claims;
@@ -35,6 +36,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
         this.userDAO = userDAO;
     }
 
+    @Transactional(readOnly = true)
     @Override
     public String generateToken(UserDetails userDetails) {
         User user = userDAO.findByUsername(userDetails.getUsername());
@@ -51,6 +53,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
                 .compact();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public String extractUsername(String token) {
         return Jwts.parser()
@@ -60,25 +63,49 @@ public class UserServiceImpl implements UserDetailsService, UserService {
                 .getSubject();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication != null) {
-            String jwtToken = ((String) authentication.getCredentials()).substring(7);
-
-            Claims claims = Jwts.parser()
-                    .setSigningKey(SECRET_KEY)
-                    .parseClaimsJws(jwtToken)
-                    .getBody();
-
-            Long userId = claims.get("userId", Long.class);
-            return userDAO.findById(userId);
+        if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+            String username = ((UserDetails) authentication.getPrincipal()).getUsername();
+            return userDAO.findByUsername(username);
         }
-
         return null;
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public User getUserById(Long id) {
+        try {
+            return userDAO.findById(id);
+        } catch (Exception e) {
+            logger.error(MessageSources.FAILURE_READ_ONE);
+            return null;
+        }
+    }
+
+    @Transactional
+    @Override
+    public void deleteUser(Long id) {
+        try {
+            userDAO.delete(id);
+        } catch (Exception e) {
+            logger.error(MessageSources.FAILURE_DELETE);
+        }
+    }
+
+    @Transactional
+    @Override
+    public void updateUser(User user) {
+        try {
+            userDAO.update(user);
+        } catch (Exception e) {
+            logger.error(MessageSources.FAILURE_UPDATE);
+        }
+    }
+
+    @Transactional(readOnly = true)
     @Override
     public boolean isTokenExpired(String token) {
         Claims claims = Jwts.parser()
@@ -88,6 +115,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
         return claims.getExpiration().before(new Date());
     }
 
+    @Transactional(readOnly = true)
     @Override
     public boolean validateToken(String token, UserDetails userDetails) {
         final String username = extractUsername(token);

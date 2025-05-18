@@ -47,7 +47,7 @@ public class AuthController {
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Неверный логин или пароль");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Ошибка при входе");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Ошибка при входе " + e);
         }
     }
 

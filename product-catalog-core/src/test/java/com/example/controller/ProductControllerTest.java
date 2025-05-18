@@ -6,7 +6,9 @@ import com.example.entity.Category;
 import com.example.entity.Product;
 import com.example.mapper.ProductMapper;
 import com.example.service.CategoryService;
+import com.example.service.DataLogService;
 import com.example.service.ProductService;
+import com.example.service.security.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +41,12 @@ class ProductControllerTest {
 
     @Mock
     private CategoryService categoryService;
+
+    @Mock
+    private UserService userService;
+
+    @Mock
+    private DataLogService dataLogService;
 
     @Mock
     private ProductMapper productMapper;

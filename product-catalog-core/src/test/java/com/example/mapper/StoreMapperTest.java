@@ -191,7 +191,7 @@ class StoreMapperTest {
         // GIVEN
         StoreDTO dto = new StoreDTO(
                 4L,
-                "Магазин «Рассвет»",
+                "Магазин Рассвет",
                 "ул. Победы, д.5/2",
                 LocalDateTime.now(),
                 LocalDateTime.now()

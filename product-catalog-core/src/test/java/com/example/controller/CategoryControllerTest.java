@@ -5,6 +5,8 @@ import com.example.dto.CategoryDTO;
 import com.example.entity.Category;
 import com.example.mapper.CategoryMapper;
 import com.example.service.CategoryService;
+import com.example.service.DataLogService;
+import com.example.service.security.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,6 +37,12 @@ class CategoryControllerTest {
 
     @Mock
     private CategoryService categoryService;
+
+    @Mock
+    private UserService userService;
+
+    @Mock
+    private DataLogService dataLogService;
 
     @Mock
     private CategoryMapper categoryMapper;

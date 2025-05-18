@@ -70,4 +70,10 @@ public interface UserService {
      * @return пользователь
      */
     User getCurrentUser();
+
+    User getUserById(Long id);
+
+    void deleteUser(Long id);
+
+    void updateUser(User user);
 }

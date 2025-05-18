@@ -41,6 +41,9 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/users/{id}").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, "/users/{id}").authenticated()
+                        .requestMatchers("/users/**").hasRole("ADMIN")
 
                         .requestMatchers(new RegexRequestMatcher("/(categories|prices|stores|products)/export", "GET"),
                                          new RegexRequestMatcher("/(categories|prices|stores|products)/import", "POST"))

@@ -163,6 +163,8 @@
             <version>${mapstruct.version}</version>
             <scope>provided</scope>
         </dependency>
+
+        <!--Для работы с графиком-->
         <dependency>
             <groupId>org.jfree</groupId>
             <artifactId>jfreechart</artifactId>
@@ -217,6 +219,7 @@
             <version>${jackson.version}</version>
         </dependency>
 
+
         <!--LOG-->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -228,6 +231,12 @@
             <artifactId>log4j-core</artifactId>
             <version>${log4j.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j2-impl</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+
 
         <!--TEST-->
         <dependency>
@@ -281,6 +290,8 @@
             <artifactId>jaxb-runtime</artifactId>
             <version>${xml.version}</version>
         </dependency>
+
+
         <!-- Для работы с multipart-->
         <dependency>
             <groupId>commons-fileupload</groupId>

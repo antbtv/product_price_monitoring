@@ -30,6 +30,13 @@ class UserServiceImplTest {
     @Test
     void testGenerateToken() {
         // GIVEN
+        User mockUser = new User();
+        mockUser.setUserId(1L);
+        mockUser.setUsername("testUser");
+        mockUser.setPassword("password");
+        mockUser.setRole(UserRole.ROLE_USER);
+        when(userDAO.findByUsername("testUser")).thenReturn(mockUser);
+
         UserDetails userDetails = new org.springframework.security.core.userdetails.User("testUser", "password",
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
 
@@ -45,6 +52,14 @@ class UserServiceImplTest {
     void testExtractUsername() {
         // GIVEN
         String username = "testUser";
+
+        User mockUser = new User();
+        mockUser.setUserId(1L);
+        mockUser.setUsername(username);
+        mockUser.setPassword("password");
+        mockUser.setRole(UserRole.ROLE_USER);
+        when(userDAO.findByUsername(username)).thenReturn(mockUser);
+
         String token = userService.generateToken(new org.springframework.security.core.userdetails.User(username, "password",
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))));
 
@@ -58,6 +73,15 @@ class UserServiceImplTest {
     @Test
     void testIsTokenExpired() {
         // GIVEN
+        String username = "testUser";
+
+        User mockUser = new User();
+        mockUser.setUserId(1L);
+        mockUser.setUsername(username);
+        mockUser.setPassword("password");
+        mockUser.setRole(UserRole.ROLE_USER);
+        when(userDAO.findByUsername(username)).thenReturn(mockUser);
+
         String token = userService.generateToken(new org.springframework.security.core.userdetails.User("testUser", "password",
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))));
 
@@ -71,6 +95,15 @@ class UserServiceImplTest {
     @Test
     void testValidateToken() {
         // GIVEN
+        String username = "testUser";
+
+        User mockUser = new User();
+        mockUser.setUserId(1L);
+        mockUser.setUsername(username);
+        mockUser.setPassword("password");
+        mockUser.setRole(UserRole.ROLE_USER);
+        when(userDAO.findByUsername(username)).thenReturn(mockUser);
+
         UserDetails userDetails = new org.springframework.security.core.userdetails.User("testUser", "password",
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
         String token = userService.generateToken(userDetails);

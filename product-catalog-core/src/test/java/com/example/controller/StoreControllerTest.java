@@ -5,7 +5,9 @@ import com.example.dto.StoreCreateDTO;
 import com.example.dto.StoreDTO;
 import com.example.entity.Store;
 import com.example.mapper.StoreMapper;
+import com.example.service.DataLogService;
 import com.example.service.StoreService;
+import com.example.service.security.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,6 +37,12 @@ class StoreControllerTest {
 
     @Mock
     private StoreService storeService;
+
+    @Mock
+    private UserService userService;
+
+    @Mock
+    private DataLogService dataLogService;
 
     @Mock
     private StoreMapper storeMapper;

@@ -10,13 +10,14 @@ import com.example.entity.Product;
 import com.example.entity.Store;
 import com.example.mapper.PriceHistoryMapper;
 import com.example.mapper.PriceMapper;
+import com.example.service.DataLogService;
 import com.example.service.PriceService;
 import com.example.service.ProductService;
 import com.example.service.StoreService;
+import com.example.service.security.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -53,6 +54,12 @@ class PriceControllerTest {
 
     @Mock
     private PriceMapper priceMapper;
+
+    @Mock
+    private UserService userService;
+
+    @Mock
+    private DataLogService dataLogService;
 
     @Mock
     private PriceHistoryMapper priceHistoryMapper;
