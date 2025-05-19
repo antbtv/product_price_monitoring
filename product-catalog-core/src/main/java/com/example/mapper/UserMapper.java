@@ -11,9 +11,7 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
-
-    UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
-
+    
     User toEntity(UserDTO userDTO);
 
     UserDTO toDto(User user);

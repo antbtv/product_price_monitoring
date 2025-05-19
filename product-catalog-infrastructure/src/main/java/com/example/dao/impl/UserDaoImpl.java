@@ -1,12 +1,8 @@
-package com.example.implementationdao;
+package com.example.dao.impl;
 
-import com.example.MessageSources;
 import com.example.dao.security.UserDao;
-import com.example.dbconnection.HibernateSessionFactory;
-import com.example.entity.Category;
+import com.example.db.connection.HibernateSessionFactory;
 import com.example.entity.security.User;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.springframework.stereotype.Repository;
 
@@ -19,7 +15,6 @@ public class UserDaoImpl implements UserDao {
     private static final String SELECT_BY_USERNAME = "FROM User WHERE username = :username";
 
     private final HibernateSessionFactory hibernateSessionFactory;
-    private static final Logger logger = LogManager.getLogger(UserDaoImpl.class);
 
     public UserDaoImpl(HibernateSessionFactory hibernateSessionFactory) {
         this.hibernateSessionFactory = hibernateSessionFactory;
@@ -29,30 +24,19 @@ public class UserDaoImpl implements UserDao {
     public User create(User user) {
         Session session = hibernateSessionFactory.getCurrentSession();
         session.persist(user);
-        logger.info(MessageSources.SUCCESS_CREATE);
         return user;
     }
 
     @Override
     public User findById(Long id) {
         Session session = hibernateSessionFactory.getCurrentSession();
-        User user = session.get(User.class, id);
-
-        if (user == null) {
-            logger.error(MessageSources.FAILURE_READ_ONE);
-        } else {
-            logger.info(MessageSources.SUCCESS_READ_ONE);
-        }
-
-        return user;
+        return session.get(User.class, id);
     }
 
     @Override
     public void update(User user) {
         Session session = hibernateSessionFactory.getCurrentSession();
-
         session.merge(user);
-        logger.info(MessageSources.SUCCESS_UPDATE);
     }
 
     @Override
@@ -62,35 +46,21 @@ public class UserDaoImpl implements UserDao {
         User user = session.get(User.class, id);
         if (user != null) {
             session.remove(user);
-            logger.info(MessageSources.SUCCESS_DELETE);
-        } else {
-            logger.error(MessageSources.FAILURE_DELETE);
         }
     }
 
     @Override
     public List<User> findAll() {
         Session session = hibernateSessionFactory.getCurrentSession();
-        List<User> users = session.createQuery(SELECT_ALL, User.class).list();
-        logger.info(MessageSources.SUCCESS_READ_MANY);
-
-        return users;
+        return session.createQuery(SELECT_ALL, User.class).list();
     }
 
     @Override
     public User findByUsername(String username) {
         Session session = hibernateSessionFactory.getCurrentSession();
-        User user = session.createQuery(SELECT_BY_USERNAME, User.class)
+        return session.createQuery(SELECT_BY_USERNAME, User.class)
                 .setParameter("username", username)
                 .uniqueResult();
-
-        if (user == null) {
-            logger.error(MessageSources.FAILURE_READ_ONE);
-        } else {
-            logger.info(MessageSources.SUCCESS_READ_ONE);
-        }
-
-        return user;
     }
 }
 

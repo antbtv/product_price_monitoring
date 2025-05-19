@@ -1,46 +1,50 @@
 package com.example.service.impl;
 
-import com.example.MessageSources;
 import com.example.dao.ProductDao;
 import com.example.dto.ProductDTO;
-import com.example.dto.StoreDTO;
 import com.example.entity.Product;
 import com.example.mapper.ProductMapper;
 import com.example.service.ProductService;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 
 @Service
+@Slf4j
 public class ProductServiceImpl implements ProductService {
 
     private final ProductDao productDao;
-    private static final Logger logger = LogManager.getLogger(ProductServiceImpl.class);
+    private final ProductMapper productMapper;
+    private final ObjectMapper objectMapper;
 
-    public ProductServiceImpl(ProductDao productDao) {
+    public ProductServiceImpl(ProductDao productDao, ProductMapper productMapper,
+                              ObjectMapper objectMapper) {
         this.productDao = productDao;
+        this.productMapper = productMapper;
+        this.objectMapper = objectMapper;
     }
 
     @Transactional
     @Override
     public Product createProduct(Product product) {
         try {
-            return productDao.create(product);
+            Product createdProduct = productDao.create(product);
+            log.info("Создан новый продукт: ID={}, название='{}', категория ID={}",
+                    createdProduct.getProductId(),
+                    createdProduct.getProductName(),
+                    createdProduct.getCategory().getCategoryId());
+            return createdProduct;
         } catch (Exception e) {
-            logger.error(MessageSources.FAILURE_CREATE);
-            return null;
+            log.error("Ошибка создания продукта. Название: '{}'. Ошибка: {}",
+                    product.getProductName(),
+                    e.getMessage());
+            throw new RuntimeException("Ошибка при создании продукта", e);
         }
     }
 
@@ -48,10 +52,20 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Product getProductById(Long id) {
         try {
-            return productDao.findById(id);
+            Product product = productDao.findById(id);
+            if (product == null) {
+                log.info("Продукт с ID={} не найден", id);
+                throw new RuntimeException("Продукт не найден");
+            }
+            log.info("Получен продукт: ID={}, название='{}'",
+                    id,
+                    product.getProductName());
+            return product;
         } catch (Exception e) {
-            logger.error(MessageSources.FAILURE_READ_ONE);
-            return null;
+            log.error("Ошибка получения продукта ID={}. Ошибка: {}",
+                    id,
+                    e.getMessage());
+            throw new RuntimeException("Ошибка при получении продукта", e);
         }
     }
 
@@ -61,8 +75,14 @@ public class ProductServiceImpl implements ProductService {
         try {
             product.setUpdatedAt(LocalDateTime.now());
             productDao.update(product);
+            log.info("Обновлен продукт: ID={}, новое название='{}'",
+                    product.getProductId(),
+                    product.getProductName());
         } catch (Exception e) {
-            logger.error(MessageSources.FAILURE_UPDATE);
+            log.error("Ошибка обновления продукта ID={}. Ошибка: {}",
+                    product.getProductId(),
+                    e.getMessage());
+            throw new RuntimeException("Ошибка при обновлении продукта", e);
         }
     }
 
@@ -71,8 +91,12 @@ public class ProductServiceImpl implements ProductService {
     public void deleteProduct(Long id) {
         try {
             productDao.delete(id);
+            log.info("Удален продукт ID={}", id);
         } catch (Exception e) {
-            logger.error(MessageSources.FAILURE_DELETE);
+            log.error("Ошибка удаления продукта ID={}. Ошибка: {}",
+                    id,
+                    e.getMessage());
+            throw new RuntimeException("Ошибка при удалении продукта", e);
         }
     }
 
@@ -80,10 +104,14 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<Product> getAllProducts() {
         try {
-            return productDao.findAll();
+            List<Product> products = productDao.findAll();
+            log.info("Получен список продуктов. Найдено {} элементов",
+                    products.size());
+            return products;
         } catch (Exception e) {
-            logger.error(MessageSources.FAILURE_READ_MANY);
-            return Collections.emptyList();
+            log.error("Ошибка получения списка продуктов. Ошибка: {}",
+                    e.getMessage());
+            throw new RuntimeException("Ошибка при получении списка продуктов", e);
         }
     }
 
@@ -91,44 +119,54 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<Product> getProductsByCategoryId(Long categoryId) {
         try {
-            return productDao.findByCategoryId(categoryId);
+            List<Product> products = productDao.findByCategoryId(categoryId);
+            log.info("Получены продукты категории ID={}. Найдено {} элементов",
+                    categoryId,
+                    products.size());
+            return products;
         } catch (Exception e) {
-            logger.error(MessageSources.FAILURE_READ_MANY);
-            return Collections.emptyList();
+            log.error("Ошибка получения продуктов категории ID={}. Ошибка: {}",
+                    categoryId,
+                    e.getMessage());
+            throw new RuntimeException("Ошибка при получении продуктов по категории", e);
         }
     }
 
     @Transactional(readOnly = true)
     @Override
-    public byte[] exportProductsToJson() throws IOException {
-        List<Product> products = productDao.findAll();
-        List<ProductDTO> productDTOs = ProductMapper.INSTANCE.toDtoList(products);
+    public byte[] exportProductsToJson() {
+        try {
+            List<Product> products = productDao.findAll();
+            List<ProductDTO> productDTOs = productMapper.toDtoList(products);
 
-        ObjectMapper objectMapper = new ObjectMapper()
-                .registerModule(new JavaTimeModule())
-                .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            objectMapper.writeValue(outputStream, productDTOs);
 
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, productDTOs);
-        return outputStream.toByteArray();
+            log.info("Экспортировано {} продуктов в JSON", products.size());
+            return outputStream.toByteArray();
+        } catch (Exception e) {
+            log.error("Ошибка экспорта продуктов. Ошибка: {}", e.getMessage());
+            throw new RuntimeException("Ошибка при экспорте продуктов", e);
+        }
     }
 
     @Transactional
     @Override
-    public List<ProductDTO> importProductsFromJson(byte[] data) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper()
-                .registerModule(new JavaTimeModule())
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    public List<ProductDTO> importProductsFromJson(byte[] data) {
+        try {
+            List<ProductDTO> productDTOS = objectMapper.readValue(
+                    data,
+                    new TypeReference<>() {}
+            );
 
-        List<ProductDTO> productDTOS = objectMapper.readValue(
-                data,
-                new TypeReference<>() {
-                }
-        );
+            List<Product> products = productMapper.toEntityList(productDTOS);
+            products.forEach(productDao::create);
 
-        List<Product> products = ProductMapper.INSTANCE.toEntityList(productDTOS);
-        products.forEach(productDao::create);
-
-        return productDTOS;
+            log.info("Импортировано {} продуктов из JSON", products.size());
+            return productDTOS;
+        } catch (Exception e) {
+            log.error("Ошибка импорта продуктов. Ошибка: {}", e.getMessage());
+            throw new RuntimeException("Ошибка при импорте продуктов", e);
+        }
     }
 }

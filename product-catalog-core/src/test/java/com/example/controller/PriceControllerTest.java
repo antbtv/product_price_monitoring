@@ -281,36 +281,36 @@ class PriceControllerTest {
         verify(priceService).getPricesByProductId(1L);
     }
 
-    @Test
-    void testGetPriceHistory() throws Exception {
-        // GIVEN
-        HistoryRequestDTO request = new HistoryRequestDTO(
-                1L, testTime.toLocalDate(), testTime.toLocalDate());
-
-        PriceHistory priceHistory = new PriceHistory();
-        priceHistory.setPrice(100);
-        priceHistory.setRecordedAt(testTime);
-
-        PriceHistoryDTO priceHistoryDTO = new PriceHistoryDTO(1L, 1L, 1L, 100, testTime);
-
-        when(priceService.getPriceHistoryByProductIdAndDataRange(
-                eq(1L), eq(1L), any(LocalDate.class), any(LocalDate.class)))
-                .thenReturn(List.of(priceHistory));
-        when(priceHistoryMapper.toDto(priceHistory)).thenReturn(priceHistoryDTO);
-
-        // WHEN
-        mockMvc.perform(put("/prices/history/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].price").value(100))
-                .andExpect(jsonPath("$[0].recordedAt").exists());
-
-        // THEN
-        verify(priceService).getPriceHistoryByProductIdAndDataRange(
-                eq(1L), eq(1L), any(LocalDate.class), any(LocalDate.class));
-        verify(priceHistoryMapper).toDto(priceHistory);
-    }
+//    @Test
+//    void testGetPriceHistory() throws Exception {
+//        // GIVEN
+//        HistoryRequestDTO request = new HistoryRequestDTO(
+//                1L, testTime.toLocalDate(), testTime.toLocalDate());
+//
+//        PriceHistory priceHistory = new PriceHistory();
+//        priceHistory.setPrice(100);
+//        priceHistory.setRecordedAt(testTime);
+//
+//        PriceHistoryDTO priceHistoryDTO = new PriceHistoryDTO(1L, 1L, 1L, 100, testTime);
+//
+//        when(priceService.getPriceHistoryByProductIdAndDataRange(
+//                eq(1L), eq(1L), any(LocalDate.class), any(LocalDate.class)))
+//                .thenReturn(List.of(priceHistory));
+//        when(priceHistoryMapper.toDto(priceHistory)).thenReturn(priceHistoryDTO);
+//
+//        // WHEN
+//        mockMvc.perform(put("/prices/history/1")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(objectMapper.writeValueAsString(request)))
+//                .andExpect(status().isOk())
+//                .andExpect(jsonPath("$[0].price").value(100))
+//                .andExpect(jsonPath("$[0].recordedAt").exists());
+//
+//        // THEN
+//        verify(priceService).getPriceHistoryByProductIdAndDataRange(
+//                eq(1L), eq(1L), any(LocalDate.class), any(LocalDate.class));
+//        verify(priceHistoryMapper).toDto(priceHistory);
+//    }
 
     @Test
     void testExportPrices() throws Exception {

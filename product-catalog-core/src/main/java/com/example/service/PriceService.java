@@ -28,6 +28,9 @@ public interface PriceService {
                                                               LocalDate startDate,
                                                               LocalDate endDate);
 
+    byte[] generatePriceHistoryChart(Long productId, Long storeId,
+                                     LocalDate startDate, LocalDate endDate) throws IOException;
+
     byte[] exportPricesToJson() throws IOException;
 
     List<PriceDTO> importPricesFromJson(byte[] data) throws IOException;

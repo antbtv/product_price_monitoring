@@ -17,8 +17,6 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface ProductMapper {
 
-    ProductMapper INSTANCE = Mappers.getMapper(ProductMapper.class);
-
     @Mapping(source = "categoryId", target = "category.categoryId")
     Product toEntity(ProductDTO productDTO);
 

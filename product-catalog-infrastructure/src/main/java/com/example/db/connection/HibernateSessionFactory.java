@@ -1,4 +1,4 @@
-package com.example.dbconnection;
+package com.example.db.connection;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;

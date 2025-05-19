@@ -7,6 +7,7 @@ import com.example.entity.Store;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
@@ -17,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(MockitoExtension.class)
 class PriceHistoryMapperTest {
 
-    private final PriceHistoryMapper priceHistoryMapper = PriceHistoryMapper.INSTANCE;
+    private final PriceHistoryMapper priceHistoryMapper = Mappers.getMapper(PriceHistoryMapper.class);
 
     @Test
     void testToEntity() {

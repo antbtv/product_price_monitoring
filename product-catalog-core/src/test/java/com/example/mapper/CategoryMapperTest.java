@@ -5,6 +5,7 @@ import com.example.entity.Category;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -19,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class CategoryMapperTest {
 
     @InjectMocks
-    private CategoryMapper categoryMapper = CategoryMapper.INSTANCE;
+    private CategoryMapper categoryMapper = Mappers.getMapper(CategoryMapper.class);
 
     @Test
     void testToEntity() {

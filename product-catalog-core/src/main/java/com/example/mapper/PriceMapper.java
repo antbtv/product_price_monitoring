@@ -17,8 +17,6 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface PriceMapper {
 
-    PriceMapper INSTANCE = Mappers.getMapper(PriceMapper.class);
-
     @Mapping(source = "storeId", target = "store.storeId")
     @Mapping(source = "productId", target = "product.productId")
     Price toEntity(PriceDTO priceDTO);

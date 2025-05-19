@@ -13,8 +13,6 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface PriceHistoryMapper {
 
-    PriceHistoryMapper INSTANCE = Mappers.getMapper(PriceHistoryMapper.class);
-
     @Mapping(source = "storeId", target = "store.storeId")
     @Mapping(source = "productId", target = "product.productId")
     PriceHistory toEntity(PriceHistoryDTO priceHistoryDTO);

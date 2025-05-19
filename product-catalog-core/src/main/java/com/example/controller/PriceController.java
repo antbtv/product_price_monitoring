@@ -4,7 +4,6 @@ import com.example.dto.HistoryRequestDTO;
 import com.example.dto.PriceDTO;
 import com.example.dto.PriceHistoryDTO;
 import com.example.dto.PriceCreateDTO;
-import com.example.dto.ProductDTO;
 import com.example.entity.Price;
 import com.example.entity.PriceHistory;
 import com.example.mapper.PriceHistoryMapper;
@@ -28,8 +27,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -152,9 +149,7 @@ public class PriceController {
         return ResponseEntity.ok(prices);
     }
 
-    /*Здесь, из-за того, что я использую requestbody, мне нельзя использовать get запрос,
-    потому что он не будет видеть мой json*/
-    @PutMapping("/history/{productId}")
+    @PostMapping("/history/{productId}")
     public ResponseEntity<List<PriceHistoryDTO>> getPriceHistory(@PathVariable Long productId,
                                                                  @RequestBody HistoryRequestDTO request) {
         List<PriceHistoryDTO> priceHistoryDTOS = priceService.getPriceHistoryByProductIdAndDataRange(
@@ -173,54 +168,20 @@ public class PriceController {
         }
     }
 
-    @PutMapping("/history/chart/{productId}")
+    @PostMapping("/history/chart/{productId}")
     public ResponseEntity<byte[]> getPriceHistoryChart(@PathVariable Long productId,
-                                                       @RequestBody HistoryRequestDTO request) {
-        List<PriceHistory> priceHistory = priceService.getPriceHistoryByProductIdAndDataRange(
-                productId,
-                request.getStoreId(),
-                request.getStartDate(),
-                request.getEndDate()
-        );
-
-        if (priceHistory.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        TimeSeries series = new TimeSeries("Price");
-        for (PriceHistory price : priceHistory) {
-            series.add(new Second(price.getRecordedAt().getSecond(),
-                    price.getRecordedAt().getMinute(),
-                    price.getRecordedAt().getHour(),
-                    price.getRecordedAt().getDayOfMonth(),
-                    price.getRecordedAt().getMonthValue(),
-                    price.getRecordedAt().getYear()), price.getPrice());
-        }
-
-        TimeSeriesCollection dataset = new TimeSeriesCollection(series);
-
-        JFreeChart chart = ChartFactory.createTimeSeriesChart(
-                "Price History",
-                "Time",
-                "Price",
-                dataset,
-                false,
-                true,
-                false
-        );
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
-            ChartUtils.writeChartAsPNG(baos, chart, 800, 600);
-            byte[] chartBytes = baos.toByteArray();
+                                                       @RequestBody HistoryRequestDTO request) throws IOException{
+            byte[] chartBytes = priceService.generatePriceHistoryChart(
+                    productId,
+                    request.getStoreId(),
+                    request.getStartDate(),
+                    request.getEndDate()
+            );
 
             return ResponseEntity.ok()
                     .header("Content-Disposition", "attachment; filename=price_chart.png")
                     .contentType(MediaType.IMAGE_PNG)
                     .body(chartBytes);
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
     }
 
     @GetMapping("/export")

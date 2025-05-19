@@ -15,8 +15,6 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface StoreMapper {
 
-    StoreMapper INSTANCE = Mappers.getMapper(StoreMapper.class);
-
     Store toEntity(StoreDTO storeDTO);
 
     StoreDTO toDto(Store store);
