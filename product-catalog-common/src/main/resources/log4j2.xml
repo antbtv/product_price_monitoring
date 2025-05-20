@@ -6,19 +6,19 @@
         </Console>
     </Appenders>
     <Loggers>
-        <Root level="ERROR">
+        <Root level="INFO">
             <AppenderRef ref="Console"/>
         </Root>
-        <Logger name="com.example.implementationdao" level="DEBUG" additivity="false">
+        <Logger name="com.example.dao.impl" level="DEBUG" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
         <Logger name="com.example.controller" level="INFO" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
-        <Logger name="com.example.service" level="ERROR" additivity="false">
+        <Logger name="com.example.service" level="INFO" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
-        <Logger name="com.example" level="DEBUG" additivity="false">
+        <Logger name="com.example" level="INFO" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
     </Loggers>

@@ -6,15 +6,20 @@ import com.example.dao.PriceHistoryDao;
 import com.example.dto.PriceDTO;
 import com.example.entity.Price;
 import com.example.entity.PriceHistory;
+import com.example.exceptions.DataExportException;
+import com.example.exceptions.DataImportException;
+import com.example.exceptions.PriceHistoryNotFoundException;
+import com.example.exceptions.PriceNotFoundException;
 import com.example.mapper.PriceMapper;
 import com.example.service.PriceService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -42,110 +47,71 @@ public class PriceServiceImpl implements PriceService {
     @Transactional
     @Override
     public Price createPrice(Price price) {
-        try {
-            Price createdPrice = priceDao.create(price);
-            log.info("Создана новая цена: ID={}, продукт ID={}, магазин ID={}, значение={}",
-                    createdPrice.getPriceId(),
-                    createdPrice.getProduct().getProductId(),
-                    createdPrice.getStore().getStoreId(),
-                    createdPrice.getPrice());
-            return createdPrice;
-        } catch (Exception e) {
-            log.error("Ошибка создания цены для продукта ID={}. Ошибка: {}",
-                    price.getProduct().getProductId(),
-                    e.getMessage());
-            throw new RuntimeException("Ошибка при создании цены", e);
-        }
+        Price createdPrice = priceDao.create(price);
+        log.info("Создана цена: ID={}, продукт ID={}, магазин ID={}, значение={}",
+                createdPrice.getPriceId(),
+                createdPrice.getProduct().getProductId(),
+                createdPrice.getStore().getStoreId(),
+                createdPrice.getPrice());
+        return createdPrice;
     }
 
     @Transactional(readOnly = true)
     @Override
     public Price getPriceById(Long id) {
-        try {
-            Price price = priceDao.findById(id);
-            if (price == null) {
-                log.info("Цена с ID={} не найдена", id);
-                throw new RuntimeException("Цена не найдена");
-            }
-            log.info("Получена цена: ID={}, продукт={}, магазин={}, значение={}",
-                    price.getPriceId(),
-                    price.getProduct().getProductName(),
-                    price.getStore().getStoreName(),
-                    price.getPrice());
-            return price;
-        } catch (Exception e) {
-            log.error("Ошибка получения цены ID={}. Ошибка: {}", id, e.getMessage());
-            throw new RuntimeException("Ошибка при получении цены", e);
+        Price price = priceDao.findById(id);
+        if (price == null) {
+            throw new PriceNotFoundException(id);
         }
+        log.debug("Получена цена ID={}", id);
+        return price;
     }
 
     @Transactional
     @Override
     public void updatePrice(Price price) {
-        try {
-            Price currentPrice = priceDao.findById(price.getPriceId());
-            if (currentPrice != null) {
-
-                PriceHistory priceHistory = new PriceHistory();
-                priceHistory.setProduct(currentPrice.getProduct());
-                priceHistory.setStore(currentPrice.getStore());
-                priceHistory.setPrice(currentPrice.getPrice());
-                priceHistory.setRecordedAt(LocalDateTime.now());
-                priceHistoryDao.create(priceHistory);
-
-                priceDao.update(price);
-
-                log.info("Обновлена цена: ID={}, старое значение={}, новое значение={}",
-                        price.getPriceId(),
-                        currentPrice.getPrice(),
-                        price.getPrice());
-            }
-        } catch (Exception e) {
-            log.error("Ошибка обновления цены ID={}. Ошибка: {}",
-                    price.getPriceId(),
-                    e.getMessage());
-            throw new RuntimeException("Ошибка при обновлении цены", e);
+        Price currentPrice = priceDao.findById(price.getPriceId());
+        if (currentPrice == null) {
+            throw new PriceNotFoundException(price.getPriceId());
         }
+
+        PriceHistory priceHistory = new PriceHistory();
+        priceHistory.setProduct(currentPrice.getProduct());
+        priceHistory.setStore(currentPrice.getStore());
+        priceHistory.setPrice(currentPrice.getPrice());
+        priceHistory.setRecordedAt(LocalDateTime.now());
+        priceHistoryDao.create(priceHistory);
+
+        priceDao.update(price);
+        log.info("Обновлена цена ID={}", price.getPriceId());
     }
 
     @Transactional
     @Override
     public void deletePrice(Long id) {
-        try {
-            priceDao.delete(id);
-            log.info("Удалена цена ID={}", id);
-        } catch (Exception e) {
-            log.error("Ошибка удаления цены ID={}. Ошибка: {}", id, e.getMessage());
-            throw new RuntimeException("Ошибка при удалении цены", e);
+        if (priceDao.findById(id) == null) {
+            throw new PriceNotFoundException(id);
         }
+        priceDao.delete(id);
+        log.info("Удалена цена ID={}", id);
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<Price> getAllPrices() {
-        try {
-            List<Price> prices = priceDao.findAll();
-            log.info("Получен список цен. Найдено {} записей", prices.size());
-            return prices;
-        } catch (Exception e) {
-            log.error("Ошибка получения списка цен. Ошибка: {}", e.getMessage());
-            throw new RuntimeException("Ошибка при получении списка цен", e);
-        }
+        List<Price> prices = priceDao.findAll();
+        log.debug("Получено {} цен", prices.size());
+        return prices;
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<PriceDTO> getPricesByProductId(Long productId) {
-        try {
-            List<Price> prices = priceDao.findByProductId(productId);
-            log.info("Получены цены для продукта ID={}. Найдено {} записей",
-                    productId, prices.size());
-            return priceMapper.toDtoList(prices);
-        } catch (Exception e) {
-            log.error("Ошибка получения цен для продукта ID={}. Ошибка: {}",
-                    productId, e.getMessage());
-            throw new RuntimeException("Ошибка при получении цен по продукту", e);
+        List<Price> prices = priceDao.findByProductId(productId);
+        if (prices.isEmpty()) {
+            log.debug("Цены для продукта ID={} не найдены", productId);
         }
+        return priceMapper.toDtoList(prices);
     }
 
     @Transactional(readOnly = true)
@@ -154,53 +120,37 @@ public class PriceServiceImpl implements PriceService {
                                                                      Long storeId,
                                                                      LocalDate startDate,
                                                                      LocalDate endDate) {
-        try {
-            List<PriceHistory> history = priceHistoryDao.findPriceHistoryByProductAndDateRange(
-                    productId, storeId, startDate, endDate);
-            log.info("Получена история цен. Продукт ID={}, магазин ID={}, период {}-{}. Найдено {} записей",
-                    productId, storeId, startDate, endDate, history.size());
-            return history;
-        } catch (Exception e) {
-            log.error("Ошибка получения истории цен. Продукт ID={}, магазин ID={}. Ошибка: {}",
-                    productId, storeId, e.getMessage());
-            throw new RuntimeException("Ошибка при получении истории цен", e);
-        }
+        List<PriceHistory> history = priceHistoryDao.findPriceHistoryByProductAndDateRange(
+                productId, storeId, startDate, endDate);
+        log.info("История цен: продукт ID={}, магазин ID={}, найдено {} записей",
+                productId, storeId, history.size());
+        return history;
     }
 
     @Transactional(readOnly = true)
     @Override
     public byte[] generatePriceHistoryChart(Long productId, Long storeId,
-                                            LocalDate startDate, LocalDate endDate) {
-        try {
-            List<PriceHistory> priceHistory = getPriceHistoryByProductIdAndDataRange(
-                    productId, storeId, startDate, endDate);
+                                            LocalDate startDate, LocalDate endDate) throws IOException {
+        List<PriceHistory> priceHistory = getPriceHistoryByProductIdAndDataRange(
+                productId, storeId, startDate, endDate);
 
-            byte[] chart = chartGenerator.generatePriceHistoryChart(priceHistory);
-            log.info("Сгенерирован график цен. Продукт ID={}, магазин ID={}, период {}-{}",
-                    productId, storeId, startDate, endDate);
-            return chart;
-        } catch (Exception e) {
-            log.error("Ошибка генерации графика цен. Продукт ID={}, магазин ID={}. Ошибка: {}",
-                    productId, storeId, e.getMessage());
-            throw new RuntimeException("Ошибка при генерации графика цен", e);
+        if (priceHistory.isEmpty()) {
+            throw new PriceHistoryNotFoundException(productId, storeId);
         }
+
+        return chartGenerator.generatePriceHistoryChart(priceHistory);
     }
 
     @Transactional(readOnly = true)
     @Override
     public byte[] exportPricesToJson() {
         try {
-            List<Price> prices = priceDao.findAll();
-            List<PriceDTO> priceDTOS = priceMapper.toDtoList(prices);
-
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            objectMapper.writeValue(outputStream, priceDTOS);
-
-            log.info("Экспортированы цены. Всего {} записей", prices.size());
-            return outputStream.toByteArray();
-        } catch (Exception e) {
-            log.error("Ошибка экспорта цен. Ошибка: {}", e.getMessage());
-            throw new RuntimeException("Ошибка при экспорте цен", e);
+            List<PriceDTO> priceDTOs = priceMapper.toDtoList(priceDao.findAll());
+            log.info("Экспортировано {} цен", priceDTOs.size());
+            return objectMapper.writeValueAsBytes(priceDTOs);
+        } catch (JsonProcessingException e) {
+            log.error("Ошибка сериализации категорий", e);
+            throw new DataExportException("Ошибка экспорта категорий");
         }
     }
 
@@ -208,15 +158,14 @@ public class PriceServiceImpl implements PriceService {
     @Override
     public List<PriceDTO> importPricesFromJson(byte[] data) {
         try {
-            List<PriceDTO> priceDTOS = objectMapper.readValue(data, new TypeReference<>() {});
-            List<Price> prices = priceMapper.toEntityList(priceDTOS);
+            List<PriceDTO> priceDTOs = objectMapper.readValue(data, new TypeReference<>() {});
+            List<Price> prices = priceMapper.toEntityList(priceDTOs);
             prices.forEach(priceDao::create);
-
-            log.info("Импортированы цены. Всего {} записей", prices.size());
-            return priceDTOS;
-        } catch (Exception e) {
-            log.error("Ошибка импорта цен. Ошибка: {}", e.getMessage());
-            throw new RuntimeException("Ошибка при импорте цен", e);
+            log.info("Импортировано {} цен", prices.size());
+            return priceDTOs;
+        } catch (IOException e) {
+            log.error("Ошибка десериализации категорий", e);
+            throw new DataImportException("Ошибка импорта категорий");
         }
     }
 }

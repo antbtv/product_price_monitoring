@@ -73,6 +73,8 @@ class CategoryServiceImplTest {
     void testUpdateCategory() {
         // GIVEN
         Category category = new Category("Test Category", null);
+        category.setCategoryId(1L);
+        when(categoryDao.findById(1L)).thenReturn(category);
 
         // WHEN
         categoryService.updateCategory(category);
@@ -84,13 +86,15 @@ class CategoryServiceImplTest {
     @Test
     void testDeleteCategory() {
         // GIVEN
-        Long id = 1L;
+        Category category = new Category("Test Category", null);
+        category.setCategoryId(1L);
+        when(categoryDao.findById(1L)).thenReturn(category);
 
         // WHEN
-        categoryService.deleteCategory(id);
+        categoryService.deleteCategory(1L);
 
         // THEN
-        verify(categoryDao).delete(id);
+        verify(categoryDao).delete(1L);
     }
 
     @Test

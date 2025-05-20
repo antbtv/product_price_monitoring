@@ -3,15 +3,19 @@ package com.example.service.impl;
 import com.example.dao.CategoryDao;
 import com.example.dto.CategoryDTO;
 import com.example.entity.Category;
+import com.example.exceptions.CategoryNotFoundException;
+import com.example.exceptions.DataExportException;
+import com.example.exceptions.DataImportException;
 import com.example.mapper.CategoryMapper;
 import com.example.service.CategoryService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -33,103 +37,63 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     @Override
     public Category createCategory(Category category) {
-        try {
-            Category createdCategory = categoryDao.create(category);
-            log.info("Успешное создание категории. ID: {}, название: {}",
-                    createdCategory.getCategoryId(),
-                    createdCategory.getCategoryName());
-            return createdCategory;
-        } catch (Exception e) {
-            log.error("Ошибка создания категории. Название: {}. Ошибка: {}",
-                    category.getCategoryName(),
-                    e.getMessage());
-            throw new RuntimeException("Ошибка при создании категории", e);
-        }
+        Category createdCategory = categoryDao.create(category);
+        log.info("Создана категория ID: {}, название: {}",
+                createdCategory.getCategoryId(),
+                createdCategory.getCategoryName());
+        return createdCategory;
     }
 
     @Transactional(readOnly = true)
     @Override
     public Category getCategoryById(Long id) {
-        try {
-            Category category = categoryDao.findById(id);
-            if (category == null) {
-                log.info("Категория с ID {} не найдена", id);
-                throw new RuntimeException("Категория не найдена");
-            }
-            log.info("Успешное получение категории. ID: {}, название: {}",
-                    id,
-                    category.getCategoryName());
-            return category;
-        } catch (Exception e) {
-            log.error("Ошибка получения категории. ID: {}. Ошибка: {}",
-                    id,
-                    e.getMessage());
-            throw new RuntimeException("Ошибка при получении категории", e);
+        Category category = categoryDao.findById(id);
+        if (category == null) {
+            log.info("Категория с ID {} не найдена", id);
+            throw new CategoryNotFoundException(id);
         }
+        log.info("Найдена категория ID: {}", id);
+        return category;
     }
 
     @Transactional
     @Override
     public void updateCategory(Category category) {
-        try {
-            categoryDao.update(category);
-            log.info("Успешное обновление категории. ID: {}, новое название: {}",
-                    category.getCategoryId(),
-                    category.getCategoryName());
-        } catch (Exception e) {
-            log.error("Ошибка обновления категории. ID: {}. Ошибка: {}",
-                    category.getCategoryId(),
-                    e.getMessage());
-            throw new RuntimeException("Ошибка при обновлении категории", e);
+        if (categoryDao.findById(category.getCategoryId()) == null) {
+            throw new CategoryNotFoundException(category.getCategoryId());
         }
+        categoryDao.update(category);
+        log.info("Обновлена категория ID: {}", category.getCategoryId());
     }
 
     @Transactional
     @Override
     public void deleteCategory(Long id) {
-        try {
-            categoryDao.delete(id);
-            log.info("Успешное удаление категории. ID: {}", id);
-        } catch (Exception e) {
-            log.error("Ошибка удаления категории. ID: {}. Ошибка: {}",
-                    id,
-                    e.getMessage());
-            throw new RuntimeException("Ошибка при удалении категории", e);
+        if (categoryDao.findById(id) == null) {
+            throw new CategoryNotFoundException(id);
         }
+        categoryDao.delete(id);
+        log.info("Удалена категория ID: {}", id);
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<Category> getAllCategories() {
-        try {
-            List<Category> categories = categoryDao.findAll();
-            log.info("Успешное получение списка категорий. Найдено {} категорий",
-                    categories.size());
-            return categories;
-        } catch (Exception e) {
-            log.error("Ошибка получения списка категорий. Ошибка: {}",
-                    e.getMessage());
-            throw new RuntimeException("Ошибка при получении списка категорий", e);
-        }
+        List<Category> categories = categoryDao.findAll();
+        log.info("Найдено категорий: {}", categories.size());
+        return categories;
     }
 
     @Transactional(readOnly = true)
     @Override
     public byte[] exportCategoriesToJson() {
         try {
-            List<Category> categories = categoryDao.findAll();
-            List<CategoryDTO> categoryDTOS = categoryMapper.toDtoList(categories);
-
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            objectMapper.writeValue(outputStream, categoryDTOS);
-
-            log.info("Успешный экспорт категорий. Экспортировано {} категорий",
-                    categories.size());
-            return outputStream.toByteArray();
-        } catch (Exception e) {
-            log.error("Ошибка экспорта категорий. Ошибка: {}",
-                    e.getMessage());
-            throw new RuntimeException("Ошибка при экспорте категорий", e);
+            List<CategoryDTO> dtos = categoryMapper.toDtoList(categoryDao.findAll());
+            log.info("Экспортировано категорий: {}", dtos.size());
+            return objectMapper.writeValueAsBytes(dtos);
+        } catch (JsonProcessingException e) {
+            log.error("Ошибка сериализации категорий", e);
+            throw new DataExportException("Ошибка экспорта категорий");
         }
     }
 
@@ -137,21 +101,14 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public List<CategoryDTO> importCategoriesFromJson(byte[] data) {
         try {
-            List<CategoryDTO> categoryDTOS = objectMapper.readValue(
-                    data,
-                    new TypeReference<>() {}
-            );
-
-            List<Category> categories = categoryMapper.toEntityList(categoryDTOS);
+            List<CategoryDTO> dtos = objectMapper.readValue(data, new TypeReference<>() {});
+            List<Category> categories = categoryMapper.toEntityList(dtos);
             categories.forEach(categoryDao::create);
-
-            log.info("Успешный импорт категорий. Импортировано {} категорий",
-                    categories.size());
-            return categoryDTOS;
-        } catch (Exception e) {
-            log.error("Ошибка импорта категорий. Ошибка: {}",
-                    e.getMessage());
-            throw new RuntimeException("Ошибка при импорте категорий", e);
+            log.info("Импортировано категорий: {}", categories.size());
+            return dtos;
+        } catch (IOException e) {
+            log.error("Ошибка десериализации категорий", e);
+            throw new DataImportException("Ошибка импорта категорий");
         }
     }
 }

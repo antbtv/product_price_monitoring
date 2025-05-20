@@ -3,8 +3,6 @@ package com.example.service.impl;
 import com.example.enums.UserRole;
 import com.example.dao.security.UserDao;
 import com.example.entity.security.User;
-import com.example.mapper.UserMapper;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,16 +26,11 @@ class UserServiceImplTest {
     @Mock
     private UserDao userDAO;
 
-    @Mock
-    private UserMapper userMapper;
-
     @InjectMocks
     private UserServiceImpl userService;
 
     @BeforeEach
     void setUp() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        userService = new UserServiceImpl(userDAO);
         ReflectionTestUtils.setField(userService, "SECRET_KEY", "test-secret-key");
     }
 

@@ -74,6 +74,7 @@ class StoreServiceImplTest {
         Store store = new Store();
         store.setStoreId(1L);
         store.setStoreName("Test Store");
+        when(storeDao.findById(store.getStoreId())).thenReturn(store);
 
         // WHEN
         storeService.updateStore(store);
@@ -85,13 +86,16 @@ class StoreServiceImplTest {
     @Test
     void testDeleteStore() {
         // GIVEN
-        Long id = 1L;
+        Store store = new Store();
+        store.setStoreId(1L);
+        store.setStoreName("Test Store");
+        when(storeDao.findById(store.getStoreId())).thenReturn(store);
 
         // WHEN
-        storeService.deleteStore(id);
+        storeService.deleteStore(1L);
 
         // THEN
-        verify(storeDao).delete(id);
+        verify(storeDao).delete(1L);
     }
 
     @Test

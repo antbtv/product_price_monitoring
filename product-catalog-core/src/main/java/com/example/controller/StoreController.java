@@ -15,10 +15,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,7 +23,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -134,21 +130,17 @@ public class StoreController {
 
     @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<StoreDTO>> importStores(@RequestPart("file") MultipartFile file) {
+    public ResponseEntity<List<StoreDTO>> importStores(
+            @RequestPart("file") MultipartFile file) throws IOException {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
 
-        try {
             List<StoreDTO> storeDTOS = storeService.importStoresFromJson(file.getBytes());
 
             dataLogService.logOperation("IMPORT", "stores",
                     (long) storeDTOS.size(), userService.getCurrentUser());
 
             return ResponseEntity.ok(storeDTOS);
-        } catch (IOException e) {
-            logger.error("Ошибка в импорте данных " + file.getOriginalFilename() + " "  + file.getSize());
-            return ResponseEntity.internalServerError().build();
-        }
     }
 }

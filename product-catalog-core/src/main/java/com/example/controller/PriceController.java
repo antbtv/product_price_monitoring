@@ -5,7 +5,6 @@ import com.example.dto.PriceDTO;
 import com.example.dto.PriceHistoryDTO;
 import com.example.dto.PriceCreateDTO;
 import com.example.entity.Price;
-import com.example.entity.PriceHistory;
 import com.example.mapper.PriceHistoryMapper;
 import com.example.mapper.PriceMapper;
 import com.example.service.DataLogService;
@@ -15,12 +14,6 @@ import com.example.service.StoreService;
 import com.example.service.security.UserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartUtils;
-import org.jfree.chart.JFreeChart;
-import org.jfree.data.time.Second;
-import org.jfree.data.time.TimeSeries;
-import org.jfree.data.time.TimeSeriesCollection;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -40,7 +33,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -201,21 +193,17 @@ public class PriceController {
 
     @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<PriceDTO>> importPrices(@RequestPart("file") MultipartFile file) {
+    public ResponseEntity<List<PriceDTO>> importPrices(
+            @RequestPart("file") MultipartFile file) throws IOException {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
 
-        try {
             List<PriceDTO> priceDTOS = priceService.importPricesFromJson(file.getBytes());
 
             dataLogService.logOperation("IMPORT", "prices",
                     (long) priceDTOS.size(), userService.getCurrentUser());
 
             return ResponseEntity.ok(priceDTOS);
-        } catch (IOException e) {
-            logger.error("Ошибка в импорте данных " + file.getOriginalFilename() + " "  + file.getSize());
-            return ResponseEntity.internalServerError().build();
-        }
     }
 }

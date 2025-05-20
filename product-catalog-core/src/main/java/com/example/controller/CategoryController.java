@@ -15,8 +15,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -77,7 +75,8 @@ public class CategoryController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CategoryDTO> updateCategory(@PathVariable Long id, @RequestBody Category category) {
+    public ResponseEntity<CategoryDTO> updateCategory(@PathVariable Long id,
+                                                      @RequestBody Category category) {
         category.setCategoryId(id);
         categoryService.updateCategory(category);
 
@@ -128,7 +127,8 @@ public class CategoryController {
                 (long) categoryService.getAllCategories().size(), userService.getCurrentUser());
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"categories.json\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"categories.json\"")
                 .contentType(MediaType.APPLICATION_JSON)
                 .contentLength(data.length)
                 .body(resource);
@@ -136,21 +136,17 @@ public class CategoryController {
 
     @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<CategoryDTO>> importCategories(@RequestPart("file") MultipartFile file) {
+    public ResponseEntity<List<CategoryDTO>> importCategories(
+            @RequestPart("file") MultipartFile file) throws IOException {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
 
-        try {
-            List<CategoryDTO> categoryDTOS = categoryService.importCategoriesFromJson(file.getBytes());
+        List<CategoryDTO> categoryDTOS = categoryService.importCategoriesFromJson(file.getBytes());
 
-            dataLogService.logOperation("IMPORT", "categories",
-                    (long) categoryDTOS.size(), userService.getCurrentUser());
+        dataLogService.logOperation("IMPORT", "categories",
+                (long) categoryDTOS.size(), userService.getCurrentUser());
 
-            return ResponseEntity.ok(categoryDTOS);
-        } catch (IOException e) {
-            logger.error("Ошибка в импорте данных " + file.getOriginalFilename() + " "  + file.getSize());
-            return ResponseEntity.internalServerError().build();
-        }
+        return ResponseEntity.ok(categoryDTOS);
     }
 }

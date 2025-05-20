@@ -71,9 +71,25 @@ public interface UserService {
      */
     User getCurrentUser();
 
+    /**
+     * Получение пользователя по id
+     *
+     * @param id id пользователя
+     * @return сущность пользователя
+     */
     User getUserById(Long id);
 
+    /**
+     * Удаление пользователя
+     *
+     * @param id id пользователя
+     */
     void deleteUser(Long id);
 
+    /**
+     * Обновление пользователя
+     *
+     * @param user сущность пользователя
+     */
     void updateUser(User user);
 }

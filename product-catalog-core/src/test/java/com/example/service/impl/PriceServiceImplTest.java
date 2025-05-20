@@ -126,13 +126,15 @@ class PriceServiceImplTest {
     @Test
     void testDeletePrice() {
         // GIVEN
-        Long id = 1L;
+        Price currentPrice = new Price();
+        currentPrice.setPriceId(1L);
+        when(priceDao.findById(currentPrice.getPriceId())).thenReturn(currentPrice);
 
         // WHEN
-        priceService.deletePrice(id);
+        priceService.deletePrice(1L);
 
         // THEN
-        verify(priceDao).delete(id);
+        verify(priceDao).delete(1L);
     }
 
     @Test

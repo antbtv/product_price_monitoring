@@ -80,6 +80,7 @@ class ProductServiceImplTest {
         Product product = new Product();
         product.setProductId(1L);
         product.setProductName("Test Product");
+        when(productDao.findById(1L)).thenReturn(product);
 
         // WHEN
         productService.updateProduct(product);
@@ -92,13 +93,16 @@ class ProductServiceImplTest {
     @Test
     void testDeleteProduct() {
         // GIVEN
-        Long id = 1L;
+        Product product = new Product();
+        product.setProductId(1L);
+        product.setProductName("Test Product");
+        when(productDao.findById(1L)).thenReturn(product);
 
         // WHEN
-        productService.deleteProduct(id);
+        productService.deleteProduct(1L);
 
         // THEN
-        verify(productDao).delete(id);
+        verify(productDao).delete(1L);
     }
 
     @Test

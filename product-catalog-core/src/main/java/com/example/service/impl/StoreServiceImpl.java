@@ -3,8 +3,12 @@ package com.example.service.impl;
 import com.example.dao.StoreDao;
 import com.example.dto.StoreDTO;
 import com.example.entity.Store;
+import com.example.exceptions.DataExportException;
+import com.example.exceptions.DataImportException;
+import com.example.exceptions.StoreNotFoundException;
 import com.example.mapper.StoreMapper;
 import com.example.service.StoreService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -32,94 +37,64 @@ public class StoreServiceImpl implements StoreService {
     @Transactional
     @Override
     public Store createStore(Store store) {
-        try {
-            Store createdStore = storeDao.create(store);
-            log.info("Магазин создан: ID={}, название='{}', адрес='{}'",
-                    createdStore.getStoreId(),
-                    createdStore.getStoreName(),
-                    createdStore.getAddress());
-            return createdStore;
-        } catch (Exception e) {
-            log.error("Ошибка создания магазина. Название: '{}'. Ошибка: {}",
-                    store.getStoreName(),
-                    e.getMessage());
-            throw new RuntimeException("Ошибка при создании магазина", e);
-        }
+        Store createdStore = storeDao.create(store);
+        log.info("Магазин создан: ID={}, название='{}', адрес='{}'",
+                createdStore.getStoreId(),
+                createdStore.getStoreName(),
+                createdStore.getAddress());
+        return createdStore;
     }
 
     @Transactional(readOnly = true)
     @Override
     public Store getStoreById(Long id) {
-        try {
-            Store store = storeDao.findById(id);
-            if (store == null) {
-                log.info("Магазин с ID={} не найден", id);
-                throw new RuntimeException("Магазин не найден");
-            }
-            log.debug("Получен магазин: ID={}, название='{}'", id, store.getStoreName());
-            return store;
-        } catch (Exception e) {
-            log.error("Ошибка получения магазина ID={}. Ошибка: {}", id, e.getMessage());
-            throw new RuntimeException("Ошибка при получении магазина", e);
+        Store store = storeDao.findById(id);
+        if (store == null) {
+            log.warn("Магазин с ID={} не найден", id);
+            throw new StoreNotFoundException(id);
         }
+        log.debug("Получен магазин ID={}", id);
+        return store;
     }
 
     @Transactional
     @Override
     public void updateStore(Store store) {
-        try {
-            storeDao.update(store);
-            log.info("Магазин обновлен: ID={}, новое название='{}'",
-                    store.getStoreId(),
-                    store.getStoreName());
-        } catch (Exception e) {
-            log.error("Ошибка обновления магазина ID={}. Ошибка: {}",
-                    store.getStoreId(),
-                    e.getMessage());
-            throw new RuntimeException("Ошибка при обновлении магазина", e);
+        if (storeDao.findById(store.getStoreId()) == null) {
+            throw new StoreNotFoundException(store.getStoreId());
         }
+        storeDao.update(store);
+        log.info("Магазин обновлен ID={}", store.getStoreId());
     }
 
     @Transactional
     @Override
     public void deleteStore(Long id) {
-        try {
-            storeDao.delete(id);
-            log.info("Магазин удален: ID={}", id);
-        } catch (Exception e) {
-            log.error("Ошибка удаления магазина ID={}. Ошибка: {}", id, e.getMessage());
-            throw new RuntimeException("Ошибка при удалении магазина", e);
+        if (storeDao.findById(id) == null) {
+            throw new StoreNotFoundException(id);
         }
+        storeDao.delete(id);
+        log.info("Магазин удален ID={}", id);
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<Store> getAllStores() {
-        try {
-            List<Store> stores = storeDao.findAll();
-            log.debug("Получен список магазинов. Найдено {} элементов", stores.size());
-            return stores;
-        } catch (Exception e) {
-            log.error("Ошибка получения списка магазинов. Ошибка: {}", e.getMessage());
-            throw new RuntimeException("Ошибка при получении списка магазинов", e);
-        }
+        List<Store> stores = storeDao.findAll();
+        log.debug("Получено {} магазинов", stores.size());
+        return stores;
     }
 
     @Transactional(readOnly = true)
     @Override
     public byte[] exportStoresToJson() {
         try {
-            List<Store> stores = storeDao.findAll();
-            List<StoreDTO> storeDTOS = storeMapper.toDtoList(stores);
-
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            objectMapper.writeValue(outputStream, storeDTOS);
-
-            log.info("Экспортировано {} магазинов в JSON", stores.size());
-            return outputStream.toByteArray();
-        } catch (Exception e) {
-            log.error("Ошибка экспорта магазинов. Ошибка: {}", e.getMessage());
-            throw new RuntimeException("Ошибка при экспорте магазинов", e);
+            List<StoreDTO> storeDTOS = storeMapper.toDtoList(storeDao.findAll());
+            log.info("Экспортировано {} магазинов в JSON", storeDTOS.size());
+            return objectMapper.writeValueAsBytes(storeDTOS);
+        } catch (JsonProcessingException e) {
+            log.error("Ошибка сериализации категорий", e);
+            throw new DataExportException("Ошибка экспорта категорий");
         }
     }
 
@@ -127,19 +102,16 @@ public class StoreServiceImpl implements StoreService {
     @Override
     public List<StoreDTO> importStoresFromJson(byte[] data) {
         try {
-            List<StoreDTO> storeDTOS = objectMapper.readValue(
-                    data,
-                    new TypeReference<>() {}
-            );
+            List<StoreDTO> storeDTOS = objectMapper.readValue(data, new TypeReference<>() {});
 
             List<Store> stores = storeMapper.toEntityList(storeDTOS);
             stores.forEach(storeDao::create);
 
             log.info("Импортировано {} магазинов из JSON", stores.size());
             return storeDTOS;
-        } catch (Exception e) {
-            log.error("Ошибка импорта магазинов. Ошибка: {}", e.getMessage());
-            throw new RuntimeException("Ошибка при импорте магазинов", e);
+        } catch (IOException e) {
+            log.error("Ошибка десериализации категорий", e);
+            throw new DataImportException("Ошибка импорта категорий");
         }
     }
 }

@@ -2,7 +2,6 @@ package com.example.controller;
 
 import com.example.dto.ProductDTO;
 import com.example.dto.ProductCreateDTO;
-import com.example.dto.StoreDTO;
 import com.example.entity.Product;
 import com.example.mapper.ProductMapper;
 import com.example.service.CategoryService;
@@ -17,8 +16,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -79,7 +76,8 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long id, @RequestBody Product product) {
+    public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long id,
+                                                    @RequestBody Product product) {
         product.setProductId(id);
         productService.updateProduct(product);
 
@@ -88,7 +86,8 @@ public class ProductController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ProductDTO> partialUpdateProduct(@PathVariable Long id, @RequestBody ProductCreateDTO updateDTO) {
+    public ResponseEntity<ProductDTO> partialUpdateProduct(@PathVariable Long id,
+                                                           @RequestBody ProductCreateDTO updateDTO) {
         Product product = productService.getProductById(id);
         if (product == null) {
             return ResponseEntity.notFound().build();
@@ -137,7 +136,8 @@ public class ProductController {
                 (long) productService.getAllProducts().size(), userService.getCurrentUser());
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"products.json\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"products.json\"")
                 .contentType(MediaType.APPLICATION_JSON)
                 .contentLength(data.length)
                 .body(resource);
@@ -145,21 +145,17 @@ public class ProductController {
 
     @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<ProductDTO>> importProducts(@RequestPart("file") MultipartFile file) {
+    public ResponseEntity<List<ProductDTO>> importProducts(
+            @RequestPart("file") MultipartFile file) throws IOException {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
 
-        try {
-            List<ProductDTO> productDTOS = productService.importProductsFromJson(file.getBytes());
+        List<ProductDTO> productDTOS = productService.importProductsFromJson(file.getBytes());
 
-            dataLogService.logOperation("IMPORT", "products",
-                    (long) productDTOS.size(), userService.getCurrentUser());
+        dataLogService.logOperation("IMPORT", "products",
+                (long) productDTOS.size(), userService.getCurrentUser());
 
-            return ResponseEntity.ok(productDTOS);
-        } catch (IOException e) {
-            logger.error("Ошибка в импорте данных " + file.getOriginalFilename() + " "  + file.getSize());
-            return ResponseEntity.internalServerError().build();
-        }
+        return ResponseEntity.ok(productDTOS);
     }
 }
