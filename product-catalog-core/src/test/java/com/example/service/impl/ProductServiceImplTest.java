@@ -2,7 +2,11 @@ package com.example.service.impl;
 
 import com.example.dao.ProductDao;
 import com.example.dto.ProductDTO;
+import com.example.entity.Category;
 import com.example.entity.Product;
+import com.example.mapper.ProductMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,6 +18,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -23,13 +28,27 @@ class ProductServiceImplTest {
     @Mock
     private ProductDao productDao;
 
+    @Mock
+    private ProductMapper productMapper;
+
     @InjectMocks
     private ProductServiceImpl productService;
+
+    @BeforeEach
+    void setUp() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        productService = new ProductServiceImpl(productDao, productMapper, objectMapper);
+    }
 
     @Test
     void testCreateProduct() {
         // GIVEN
         Product product = new Product();
+        Category category = new Category();
+        category.setCategoryName("Test");
+        category.setCategoryId(1L);
+        product.setProductName("Test");
+        product.setCategory(category);
         when(productDao.create(product)).thenReturn(product);
 
         // WHEN
@@ -131,10 +150,14 @@ class ProductServiceImplTest {
         // GIVEN
         String jsonData = "[{\"productId\":1,\"productName\":\"Test Product\",\"categoryId\":1}]";
         byte[] data = jsonData.getBytes();
-        ProductDTO productDTO = new ProductDTO();
-        productDTO.setProductId(1L);
-        productDTO.setProductName("Test Product");
-        productDTO.setCategoryId(1L);
+        Product product = new Product();
+
+        Category category = new Category("Test", null);
+        product.setProductId(1L);
+        product.setProductName("Test Product");
+        product.setCategory(category);
+
+        when(productMapper.toEntityList(anyList())).thenReturn(List.of(product));
         when(productDao.create(any(Product.class))).thenReturn(new Product());
 
         // WHEN
@@ -142,7 +165,7 @@ class ProductServiceImplTest {
 
         // THEN
         assertEquals(1, result.size());
-        assertEquals(productDTO.getProductId(), result.get(0).getProductId());
+        assertEquals(product.getProductId(), result.get(0).getProductId());
         verify(productDao).create(any(Product.class));
     }
 }

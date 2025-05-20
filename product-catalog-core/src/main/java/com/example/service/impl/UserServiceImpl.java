@@ -219,14 +219,13 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     @Transactional
     @Override
     public void addUser(User user) {
+        if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
+            throw new IllegalArgumentException("Имя пользователя не может быть пустым");
+        }
+        if (user.getPassword() == null || user.getPassword().length() < 4) {
+            throw new IllegalArgumentException("Пароль должен содержать не менее 4 символов");
+        }
         try {
-            if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
-                throw new IllegalArgumentException("Имя пользователя не может быть пустым");
-            }
-            if (user.getPassword() == null || user.getPassword().length() < 4) {
-                throw new IllegalArgumentException("Пароль должен содержать не менее 4 символов");
-            }
-
             userDAO.create(user);
             log.info("Добавлен новый пользователь: {}", user.getUsername());
         } catch (Exception e) {

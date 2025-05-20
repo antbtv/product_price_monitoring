@@ -3,6 +3,9 @@ package com.example.service.impl;
 import com.example.dao.CategoryDao;
 import com.example.dto.CategoryDTO;
 import com.example.entity.Category;
+import com.example.mapper.CategoryMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,6 +18,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -24,8 +28,17 @@ class CategoryServiceImplTest {
     @Mock
     private CategoryDao categoryDao;
 
+    @Mock
+    private CategoryMapper categoryMapper;
+
     @InjectMocks
     private CategoryServiceImpl categoryService;
+
+    @BeforeEach
+    void setUp() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        categoryService = new CategoryServiceImpl(categoryDao, categoryMapper, objectMapper);
+    }
 
     @Test
     void testCreateCategory() {
@@ -115,11 +128,12 @@ class CategoryServiceImplTest {
         String jsonData = "[{\"categoryName\":\"Category\", \"parentId\": null}]";
         byte[] data = jsonData.getBytes();
 
-        Category mockCategory = new Category();
-        mockCategory.setCategoryName("Category");
-        mockCategory.setParent(null);
+        Category category = new Category();
+        category.setCategoryName("Category");
+        category.setParent(null);
 
-        when(categoryDao.create(any(Category.class))).thenReturn(mockCategory);
+        when(categoryDao.create(any(Category.class))).thenReturn(category);
+        when(categoryMapper.toEntityList(anyList())).thenReturn(List.of(category));
 
         // WHEN
         List<CategoryDTO> result = categoryService.importCategoriesFromJson(data);

@@ -1,12 +1,19 @@
 package com.example.service.impl;
 
+import com.example.chart.ChartGenerator;
 import com.example.dao.PriceDao;
 import com.example.dao.PriceHistoryDao;
 import com.example.dto.PriceDTO;
 import com.example.entity.Price;
 import com.example.entity.PriceHistory;
+import com.example.entity.Product;
+import com.example.entity.Store;
+import com.example.mapper.PriceMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -17,6 +24,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -29,13 +37,35 @@ class PriceServiceImplTest {
     @Mock
     private PriceHistoryDao priceHistoryDao;
 
+    @Mock
+    private PriceMapper priceMapper;
+
     @InjectMocks
     private PriceServiceImpl priceService;
+
+    @BeforeEach
+    void setUp() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ChartGenerator chartGenerator = new ChartGenerator();
+        priceService = new PriceServiceImpl(priceDao, priceHistoryDao, priceMapper,
+                objectMapper, chartGenerator);
+    }
 
     @Test
     void testCreatePrice() {
         // GIVEN
         Price price = new Price();
+
+        Product product = new Product();
+        product.setProductName("Test");
+        product.setProductId(1L);
+
+        Store store = new Store();
+        store.setStoreId(1L);
+
+        price.setPriceId(1L);
+        price.setProduct(product);
+        price.setStore(store);
         when(priceDao.create(price)).thenReturn(price);
 
         // WHEN
@@ -49,16 +79,27 @@ class PriceServiceImplTest {
     @Test
     void testGetPriceById() {
         // GIVEN
-        Long id = 1L;
         Price price = new Price();
-        when(priceDao.findById(id)).thenReturn(price);
+
+        Product product = new Product();
+        product.setProductName("Test");
+        product.setProductId(1L);
+
+        Store store = new Store();
+        store.setStoreId(1L);
+
+        price.setPriceId(1L);
+        price.setProduct(product);
+        price.setStore(store);
+
+        when(priceDao.findById(1L)).thenReturn(price);
 
         // WHEN
-        Price result = priceService.getPriceById(id);
+        Price result = priceService.getPriceById(1L);
 
         // THEN
         assertEquals(price, result);
-        verify(priceDao).findById(id);
+        verify(priceDao).findById(1L);
     }
 
     @Test
@@ -114,15 +155,33 @@ class PriceServiceImplTest {
         // GIVEN
         Long productId = 1L;
         Price price = new Price();
+        Product product = new Product();
+        product.setProductName("Test");
+        product.setProductId(1L);
+
+        Store store = new Store();
+        store.setStoreId(1L);
+
+        price.setPriceId(1L);
+        price.setProduct(product);
+        price.setStore(store);
+
+        PriceDTO priceDTO = new PriceDTO();
+        priceDTO.setPriceId(1L);
+        priceDTO.setPrice(price.getPrice());
         when(priceDao.findByProductId(productId)).thenReturn(List.of(price));
+        when(priceMapper.toDtoList(List.of(price))).thenReturn(List.of(priceDTO));
 
         // WHEN
         List<PriceDTO> result = priceService.getPricesByProductId(productId);
 
         // THEN
         assertEquals(1, result.size());
+        assertEquals(price.getPriceId(), result.get(0).getPriceId());
+        assertEquals(price.getPrice(), result.get(0).getPrice());
         verify(priceDao).findByProductId(productId);
     }
+
 
     @Test
     void testGetPriceHistoryByProductIdAndDataRange() {
@@ -162,12 +221,19 @@ class PriceServiceImplTest {
         // GIVEN
         String jsonData = "[{\"priceId\":1,\"price\":100,\"productId\":1,\"storeId\":1}]";
         byte[] data = jsonData.getBytes();
-        PriceDTO priceDTO = new PriceDTO();
-        priceDTO.setPriceId(1L);
-        priceDTO.setPrice(100);
-        priceDTO.setProductId(1L);
-        priceDTO.setStoreId(1L);
+        Price price = new Price();
+        Product product = new Product();
+        product.setProductName("Test");
+        product.setProductId(1L);
 
+        Store store = new Store();
+        store.setStoreId(1L);
+
+        price.setPriceId(1L);
+        price.setProduct(product);
+        price.setStore(store);
+
+        when(priceMapper.toEntityList(anyList())).thenReturn(List.of(price));
         when(priceDao.create(any(Price.class))).thenReturn(new Price());
 
         // WHEN
@@ -175,7 +241,7 @@ class PriceServiceImplTest {
 
         // THEN
         assertEquals(1, result.size());
-        assertEquals(priceDTO.getPriceId(), result.get(0).getPriceId());
+        assertEquals(price.getPriceId(), result.get(0).getPriceId());
         verify(priceDao).create(any(Price.class));
     }
 }

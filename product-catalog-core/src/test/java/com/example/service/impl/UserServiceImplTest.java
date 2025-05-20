@@ -3,6 +3,9 @@ package com.example.service.impl;
 import com.example.enums.UserRole;
 import com.example.dao.security.UserDao;
 import com.example.entity.security.User;
+import com.example.mapper.UserMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -11,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Collections;
 
@@ -24,8 +28,18 @@ class UserServiceImplTest {
     @Mock
     private UserDao userDAO;
 
+    @Mock
+    private UserMapper userMapper;
+
     @InjectMocks
     private UserServiceImpl userService;
+
+    @BeforeEach
+    void setUp() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        userService = new UserServiceImpl(userDAO);
+        ReflectionTestUtils.setField(userService, "SECRET_KEY", "test-secret-key");
+    }
 
     @Test
     void testGenerateToken() {

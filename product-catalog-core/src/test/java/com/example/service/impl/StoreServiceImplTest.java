@@ -3,6 +3,9 @@ package com.example.service.impl;
 import com.example.dao.StoreDao;
 import com.example.dto.StoreDTO;
 import com.example.entity.Store;
+import com.example.mapper.StoreMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,6 +17,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -23,8 +27,17 @@ class StoreServiceImplTest {
     @Mock
     private StoreDao storeDao;
 
+    @Mock
+    private StoreMapper storeMapper;
+
     @InjectMocks
     private StoreServiceImpl storeService;
+
+    @BeforeEach
+    void setUp() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        storeService = new StoreServiceImpl(storeDao, storeMapper, objectMapper);
+    }
 
     @Test
     void testCreateStore() {
@@ -97,7 +110,7 @@ class StoreServiceImplTest {
     }
 
     @Test
-    void testExportStoresToJson() throws IOException {
+    void testExportStoresToJson() {
         // GIVEN
         Store store = new Store();
         when(storeDao.findAll()).thenReturn(List.of(store));
@@ -111,13 +124,15 @@ class StoreServiceImplTest {
     }
 
     @Test
-    void testImportStoresFromJson() throws IOException {
+    void testImportStoresFromJson() {
         // GIVEN
-        String jsonData = "[{\"storeId\":1,\"name\":\"Test Store\"}]";
+        String jsonData = "[{\"storeId\":1,\"storeName\":\"Test Store\"}]";
         byte[] data = jsonData.getBytes();
-        StoreDTO storeDTO = new StoreDTO();
-        storeDTO.setStoreId(1L);
-        storeDTO.setStoreName("Test Store");
+        Store store = new Store();
+        store.setStoreId(1L);
+        store.setStoreName("Test Store");
+
+        when(storeMapper.toEntityList(anyList())).thenReturn(List.of(store));
         when(storeDao.create(any(Store.class))).thenReturn(new Store());
 
         // WHEN
@@ -125,7 +140,7 @@ class StoreServiceImplTest {
 
         // THEN
         assertEquals(1, result.size());
-        assertEquals(storeDTO.getStoreId(), result.get(0).getStoreId());
+        assertEquals(store.getStoreId(), result.get(0).getStoreId());
         verify(storeDao).create(any(Store.class));
     }
 }
