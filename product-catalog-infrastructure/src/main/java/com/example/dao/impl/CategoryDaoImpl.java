@@ -12,6 +12,8 @@ import java.util.List;
 public class CategoryDaoImpl implements CategoryDao {
 
     private static final String SELECT_ALL = "SELECT c FROM Category c LEFT JOIN FETCH c.subCategories";
+    private static final String SELECT_BY_PARENT_ID =
+            "SELECT c FROM Category c LEFT JOIN FETCH c.subCategories WHERE c.parent.categoryId = :parentId";
 
     private final HibernateSessionFactory hibernateSessionFactory;
 
@@ -55,5 +57,14 @@ public class CategoryDaoImpl implements CategoryDao {
         Session session = hibernateSessionFactory.getCurrentSession();
         return session.createQuery(SELECT_ALL, Category.class).list();
     }
-}
 
+    @Override
+    public List<Category> findAllByParentId(Long parentId) {
+        Session session = hibernateSessionFactory.getCurrentSession();
+        return session.createQuery(
+                        SELECT_BY_PARENT_ID,
+                        Category.class)
+                .setParameter("parentId", parentId)
+                .list();
+    }
+}

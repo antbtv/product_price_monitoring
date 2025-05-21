@@ -12,8 +12,6 @@ import com.example.service.PriceService;
 import com.example.service.ProductService;
 import com.example.service.StoreService;
 import com.example.service.security.UserService;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -48,8 +46,6 @@ public class PriceController {
     private final PriceHistoryMapper priceHistoryMapper;
     private final UserService userService;
     private final DataLogService dataLogService;
-
-    private static final Logger logger = LogManager.getLogger(PriceController.class);
 
     public PriceController(PriceService priceService, ProductService productService, 
                            StoreService storeService, PriceMapper priceMapper,
@@ -87,13 +83,14 @@ public class PriceController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PriceDTO> updatePrice(@PathVariable Long id, @RequestBody Price price) {
-        price.setPriceId(id);
+    public ResponseEntity<PriceDTO> updatePrice(@PathVariable Long id, @RequestBody PriceDTO priceDTO) {
+        priceDTO.setPriceId(id);
+        Price price = priceMapper.toEntity(priceDTO);
         priceService.updatePrice(price);
 
-        PriceDTO priceDTO = priceMapper.toDto(price);
         return ResponseEntity.ok(priceDTO);
     }
+
     @PatchMapping("/{id}")
     public ResponseEntity<PriceDTO> partialUpdateCategory(@PathVariable Long id,
                                                              @RequestBody PriceCreateDTO updateDTO) {

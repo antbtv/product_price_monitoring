@@ -10,7 +10,6 @@ import com.example.service.security.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -125,30 +124,40 @@ class CategoryControllerTest {
     @Test
     void testUpdateCategory() throws Exception {
         // GIVEN
-        Category category = new Category("Updated Electronics", null);
-        category.setCategoryId(1L);
-        category.setCreatedAt(testTime);
-        category.setUpdatedAt(testTime.plusHours(1));
+        Long categoryId = 1L;
+        CategoryDTO requestDTO = new CategoryDTO();
+        requestDTO.setCategoryId(categoryId);
+        requestDTO.setCategoryName("Updated Category");
+        requestDTO.setCreatedAt(testTime);
+        requestDTO.setUpdatedAt(testTime.plusHours(1));
 
-        CategoryDTO categoryDTO = new CategoryDTO(1L, "Updated Electronics", null, testTime, testTime.plusHours(1));
+        Category categoryEntity = new Category();
+        categoryEntity.setCategoryId(categoryId);
+        categoryEntity.setCategoryName("Updated Category");
+        categoryEntity.setCreatedAt(testTime);
+        categoryEntity.setUpdatedAt(testTime.plusHours(1));
 
+        when(categoryMapper.toEntity(any(CategoryDTO.class))).thenReturn(categoryEntity);
         doNothing().when(categoryService).updateCategory(any(Category.class));
-        when(categoryMapper.toDto(any(Category.class))).thenReturn(categoryDTO);
 
         // WHEN
-        mockMvc.perform(put("/categories/1")
+        mockMvc.perform(put("/categories/{id}", categoryId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(category)))
+                        .content(objectMapper.writeValueAsString(requestDTO)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.categoryId").value(1L))
-                .andExpect(jsonPath("$.categoryName").value("Updated Electronics"))
+                .andExpect(jsonPath("$.categoryId").value(categoryId))
+                .andExpect(jsonPath("$.categoryName").value("Updated Category"))
                 .andExpect(jsonPath("$.createdAt").exists())
                 .andExpect(jsonPath("$.updatedAt").exists());
 
         // THEN
+        verify(categoryMapper).toEntity(argThat(dto ->
+                dto.getCategoryId().equals(categoryId) &&
+                        dto.getCategoryName().equals("Updated Category")
+        ));
         verify(categoryService).updateCategory(any(Category.class));
-        verify(categoryMapper).toDto(any(Category.class));
     }
+
 
     @Test
     void testGetAllCategories() throws Exception {

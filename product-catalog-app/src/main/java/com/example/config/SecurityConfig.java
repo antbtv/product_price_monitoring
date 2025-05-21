@@ -46,9 +46,10 @@ public class SecurityConfig {
                         .requestMatchers("/users/**").hasRole("ADMIN")
 
                         .requestMatchers(new RegexRequestMatcher("/(categories|prices|stores|products)/export", "GET"),
-                                         new RegexRequestMatcher("/(categories|prices|stores|products)/import", "POST"))
+                                new RegexRequestMatcher("/(categories|prices|stores|products)/import", "POST"))
                         .hasRole("ADMIN")
 
+                        .requestMatchers(HttpMethod.POST, "/prices/history/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/categories/**", "/prices/**", "/products/**", "/stores/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/categories/**", "/prices/**", "/products/**", "/stores/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/categories/**", "/prices/**", "/products/**", "/stores/**").hasRole("ADMIN")

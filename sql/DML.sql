@@ -1,7 +1,9 @@
 INSERT INTO users (username, password, email, role, first_name, last_name, date_of_birth, phone_number, is_verified)
 VALUES
     -- Пароль: admin
-    ('admin1', '$2a$10$Vhe5Kn1nUwyrHN.bwoaMz.KT1PAFM/VQbej9FPTJq.ohYPfHe2MTu', 'admin1@example.com', 'ROLE_ADMIN', 'Сергей', 'Иванов', NULL, '11234567890', TRUE);
+    ('admin1', '$2a$10$Vhe5Kn1nUwyrHN.bwoaMz.KT1PAFM/VQbej9FPTJq.ohYPfHe2MTu', 'admin1@example.com', 'ROLE_ADMIN', 'Сергей', 'Иванов', NULL, '11234567890', TRUE),
+    -- Пароль: user
+    ('user1', '$2a$10$UEtG91m2E3zTTlJMhoJlwuXrkyXoq/KR5YS.KjBuAdEsvfOQBvREK', 'user1@example.com', 'ROLE_USER', 'Иван', 'Сергеев', '1990-01-01', '+1234567890', FALSE);
 
 INSERT INTO categories (category_name, parent_id)
 VALUES

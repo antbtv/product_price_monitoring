@@ -1,15 +1,20 @@
 package com.example.service.impl;
 
+import com.example.entity.security.CustomUserDetails;
 import com.example.enums.UserRole;
 import com.example.dao.security.UserDao;
 import com.example.entity.security.User;
+import com.example.exceptions.UserNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -17,8 +22,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {
@@ -215,5 +219,128 @@ class UserServiceImplTest {
 
         // WHEN & THEN
         assertThrows(IllegalArgumentException.class, () -> userService.addUser(user));
+    }
+
+    @Test
+    void testGetCurrentUser_Authenticated() {
+        // GIVEN
+        User mockUser = new User();
+        mockUser.setUsername("testUser");
+        mockUser.setPassword("password");
+
+        UserDetails userDetails = new CustomUserDetails(
+                1L,
+                "testUser",
+                "password",
+                Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+
+        Authentication auth = new UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                userDetails.getAuthorities()
+        );
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        when(userDAO.findByUsername("testUser")).thenReturn(mockUser);
+
+        // WHEN
+        User result = userService.getCurrentUser();
+
+        // THEN
+        assertNotNull(result);
+        assertEquals("testUser", result.getUsername());
+    }
+
+    @Test
+    void testGetCurrentUser_NotAuthenticated() {
+        // GIVEN
+        SecurityContextHolder.clearContext();
+
+        // WHEN
+        User result = userService.getCurrentUser();
+
+        // THEN
+        assertNull(result);
+    }
+
+    @Test
+    void testGetUserById_Exists() {
+        // GIVEN
+        Long userId = 1L;
+        User expectedUser = new User();
+        expectedUser.setUserId(userId);
+        when(userDAO.findById(userId)).thenReturn(expectedUser);
+
+        // WHEN
+        User result = userService.getUserById(userId);
+
+        // THEN
+        assertNotNull(result);
+        assertEquals(userId, result.getUserId());
+        verify(userDAO).findById(userId);
+    }
+
+    @Test
+    void testGetUserById_NotExists() {
+        // GIVEN
+        Long userId = 999L;
+        when(userDAO.findById(userId)).thenReturn(null);
+
+        // WHEN & THEN
+        assertThrows(UserNotFoundException.class, () -> userService.getUserById(userId));
+    }
+
+    @Test
+    void testDeleteUser_Success() {
+        // GIVEN
+        Long userId = 1L;
+        User mockUser = new User();
+        mockUser.setUserId(userId);
+        when(userDAO.findById(userId)).thenReturn(mockUser);
+
+        // WHEN
+        userService.deleteUser(userId);
+
+        // THEN
+        verify(userDAO).delete(userId);
+    }
+
+    @Test
+    void testDeleteUser_UserNotFound() {
+        // GIVEN
+        Long userId = 999L;
+        when(userDAO.findById(userId)).thenReturn(null);
+
+        // WHEN & THEN
+        assertThrows(UserNotFoundException.class, () -> userService.deleteUser(userId));
+        verify(userDAO, never()).delete(any());
+    }
+
+    @Test
+    void testUpdateUser_Success() {
+        // GIVEN
+        User user = new User();
+        user.setUserId(1L);
+        user.setUsername("updatedUser");
+        when(userDAO.findById(1L)).thenReturn(user);
+
+        // WHEN
+        userService.updateUser(user);
+
+        // THEN
+        verify(userDAO).update(user);
+    }
+
+    @Test
+    void testUpdateUser_UserNotFound() {
+        // GIVEN
+        User user = new User();
+        user.setUserId(999L);
+        when(userDAO.findById(999L)).thenReturn(null);
+
+        // WHEN & THEN
+        assertThrows(UserNotFoundException.class, () -> userService.updateUser(user));
+        verify(userDAO, never()).update(any());
     }
 }

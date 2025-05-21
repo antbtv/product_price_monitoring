@@ -1,7 +1,6 @@
 package com.example.service;
 
 import com.example.dto.CategoryDTO;
-import com.example.dto.StoreDTO;
 import com.example.entity.Category;
 
 import java.io.IOException;
@@ -59,9 +58,18 @@ public interface CategoryService {
 
     /**
      * Импортирует категории из JSON-данных
+     *
      * @param data массив байтов с JSON-данными
      * @return список импортированных категорий
      * @throws IOException при ошибках парсинга или ввода-вывода
      */
     List<CategoryDTO> importCategoriesFromJson(byte[] data) throws IOException;
+
+    /**
+     * Получение всех дочерних категорий по родительскому id
+     *
+     * @param parentId родительский id
+     * @return список дочерних категорий
+     */
+    List<Category> getAllCategoriesByParentId(Long parentId);
 }

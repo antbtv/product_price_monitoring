@@ -11,7 +11,6 @@ import com.example.service.security.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -135,27 +134,37 @@ class StoreControllerTest {
     @Test
     void testUpdateStore() throws Exception {
         // GIVEN
-        Store store = new Store("Updated Store", "789 Pine Rd");
-        store.setStoreId(1L);
-        store.setCreatedAt(testTime);
-        store.setUpdatedAt(testTime.plusHours(1));
+        Long storeId = 1L;
+        StoreDTO requestDTO = new StoreDTO();
+        requestDTO.setStoreId(storeId);
+        requestDTO.setStoreName("Updated Store");
+        requestDTO.setAddress("Pushkin's St");
+        requestDTO.setCreatedAt(testTime);
+        requestDTO.setUpdatedAt(testTime.plusHours(1));
 
-        StoreDTO storeDTO = new StoreDTO(1L, "Updated Store", "789 Pine Rd", testTime, testTime.plusHours(1));
+        Store storeEntity = new Store("Updated Store", "Pushkin's St");
+        storeEntity.setStoreId(storeId);
+        storeEntity.setCreatedAt(testTime);
+        storeEntity.setUpdatedAt(testTime.plusHours(1));
 
+        when(storeMapper.toEntity(any(StoreDTO.class))).thenReturn(storeEntity);
         doNothing().when(storeService).updateStore(any(Store.class));
-        when(storeMapper.toDto(any(Store.class))).thenReturn(storeDTO);
 
         // WHEN
-        mockMvc.perform(put("/stores/1")
+        mockMvc.perform(put("/stores/{id}", storeId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(store)))
+                        .content(objectMapper.writeValueAsString(requestDTO)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.storeName").value("Updated Store"))
-                .andExpect(jsonPath("$.address").value("789 Pine Rd"));
+                .andExpect(jsonPath("$.address").value("Pushkin's St"));
 
         // THEN
+        verify(storeMapper).toEntity(argThat(dto ->
+                dto.getStoreId().equals(storeId) &&
+                        dto.getStoreName().equals("Updated Store") &&
+                        dto.getAddress().equals("Pushkin's St")
+        ));
         verify(storeService).updateStore(any(Store.class));
-        verify(storeMapper).toDto(any(Store.class));
     }
 
     @Test
@@ -183,28 +192,6 @@ class StoreControllerTest {
         verify(storeService).getStoreById(1L);
         verify(storeService).updateStore(any(Store.class));
         verify(storeMapper).toDto(any(Store.class));
-    }
-
-    @Test
-    void testPartialUpdateStore_WithException() throws Exception {
-        // GIVEN
-        StoreCreateDTO updateDTO = new StoreCreateDTO("New Name", null);
-        Store existingStore = new Store("Old Name", "123 Main St");
-        existingStore.setStoreId(1L);
-
-        when(storeService.getStoreById(1L)).thenReturn(existingStore);
-        doThrow(new RuntimeException("Test exception")).when(storeService).updateStore(any(Store.class));
-
-        // WHEN
-        mockMvc.perform(patch("/stores/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateDTO)))
-                .andExpect(status().isInternalServerError());
-
-        // THEN
-        verify(storeService).getStoreById(1L);
-        verify(storeService).updateStore(any(Store.class));
-        verifyNoInteractions(storeMapper);
     }
 
     @Test

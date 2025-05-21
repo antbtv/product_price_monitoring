@@ -158,28 +158,39 @@ class PriceControllerTest {
     @Test
     void testUpdatePrice() throws Exception {
         // GIVEN
-        Price price = new Price(new Product(), new Store(), 150);
-        price.setPriceId(1L);
-        price.setRecordedAt(testTime);
+        Long priceId = 1L;
+        PriceDTO requestDTO = new PriceDTO();
+        requestDTO.setPriceId(priceId);
+        requestDTO.setProductId(1L);
+        requestDTO.setStoreId(1L);
+        requestDTO.setPrice(150);
+        requestDTO.setRecordedAt(testTime);
 
-        PriceDTO priceDTO = new PriceDTO(1L, 1L, 1L, 150, testTime);
+        Price priceEntity = new Price();
+        priceEntity.setPriceId(priceId);
+        priceEntity.setPrice(150);
+        priceEntity.setRecordedAt(testTime);
 
+        when(priceMapper.toEntity(any(PriceDTO.class))).thenReturn(priceEntity);
         doNothing().when(priceService).updatePrice(any(Price.class));
-        when(priceMapper.toDto(any(Price.class))).thenReturn(priceDTO);
 
         // WHEN
-        mockMvc.perform(put("/prices/1")
+        mockMvc.perform(put("/prices/{id}", priceId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(price)))
+                        .content(objectMapper.writeValueAsString(requestDTO)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.priceId").value(1L))
+                .andExpect(jsonPath("$.priceId").value(priceId))
                 .andExpect(jsonPath("$.price").value(150))
                 .andExpect(jsonPath("$.recordedAt").exists());
 
         // THEN
+        verify(priceMapper).toEntity(argThat(dto ->
+                dto.getPriceId().equals(priceId) &&
+                        dto.getPrice() == 150
+        ));
         verify(priceService).updatePrice(any(Price.class));
-        verify(priceMapper).toDto(any(Price.class));
     }
+
 
     @Test
     void testPartialUpdatePrice() throws Exception {
@@ -281,36 +292,78 @@ class PriceControllerTest {
         verify(priceService).getPricesByProductId(1L);
     }
 
-//    @Test
-//    void testGetPriceHistory() throws Exception {
-//        // GIVEN
-//        HistoryRequestDTO request = new HistoryRequestDTO(
-//                1L, testTime.toLocalDate(), testTime.toLocalDate());
-//
-//        PriceHistory priceHistory = new PriceHistory();
-//        priceHistory.setPrice(100);
-//        priceHistory.setRecordedAt(testTime);
-//
-//        PriceHistoryDTO priceHistoryDTO = new PriceHistoryDTO(1L, 1L, 1L, 100, testTime);
-//
-//        when(priceService.getPriceHistoryByProductIdAndDataRange(
-//                eq(1L), eq(1L), any(LocalDate.class), any(LocalDate.class)))
-//                .thenReturn(List.of(priceHistory));
-//        when(priceHistoryMapper.toDto(priceHistory)).thenReturn(priceHistoryDTO);
-//
-//        // WHEN
-//        mockMvc.perform(put("/prices/history/1")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(request)))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$[0].price").value(100))
-//                .andExpect(jsonPath("$[0].recordedAt").exists());
-//
-//        // THEN
-//        verify(priceService).getPriceHistoryByProductIdAndDataRange(
-//                eq(1L), eq(1L), any(LocalDate.class), any(LocalDate.class));
-//        verify(priceHistoryMapper).toDto(priceHistory);
-//    }
+    @Test
+    void testGetPriceHistory_Success() throws Exception {
+        // GIVEN
+        Long productId = 1L;
+        HistoryRequestDTO request = new HistoryRequestDTO(
+                2L,
+                LocalDate.of(2024, 1, 1),
+                LocalDate.now()
+        );
+
+        PriceHistory history = new PriceHistory();
+        history.setPrice(100);
+        history.setRecordedAt(LocalDateTime.now());
+
+        PriceHistoryDTO historyDTO = new PriceHistoryDTO(1L, 1L, 1L,
+                100, LocalDateTime.now());
+
+        when(priceService.getPriceHistoryByProductIdAndDataRange(
+                eq(productId),
+                eq(request.getStoreId()),
+                eq(request.getStartDate()),
+                eq(request.getEndDate())
+        )).thenReturn(List.of(history));
+
+        when(priceHistoryMapper.toDto(history)).thenReturn(historyDTO);
+
+        // WHEN
+        mockMvc.perform(post("/prices/history/{productId}", productId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].price").value(100))
+                .andExpect(jsonPath("$[0].recordedAt").exists());
+
+        // THEN
+        verify(priceService).getPriceHistoryByProductIdAndDataRange(
+                productId,
+                request.getStoreId(),
+                request.getStartDate(),
+                request.getEndDate()
+        );
+    }
+
+
+    @Test
+    void testGetPriceHistoryChart_Success() throws Exception {
+        // GIVEN
+        Long productId = 1L;
+        HistoryRequestDTO request = new HistoryRequestDTO(
+                3L,
+                LocalDate.of(2024, 1, 1),
+                LocalDate.now()
+        );
+
+        byte[] mockChart = new byte[]{0x00, 0x01, 0x02}; // Пример данных изображения
+
+        when(priceService.generatePriceHistoryChart(
+                eq(productId),
+                eq(request.getStoreId()),
+                eq(request.getStartDate()),
+                eq(request.getEndDate())
+        )).thenReturn(mockChart);
+
+        // WHEN & THEN
+        mockMvc.perform(post("/prices/history/chart/{productId}", productId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Disposition", "attachment; filename=price_chart.png"))
+                .andExpect(content().contentType(MediaType.IMAGE_PNG))
+                .andExpect(content().bytes(mockChart));
+    }
 
     @Test
     void testExportPrices() throws Exception {
@@ -355,36 +408,4 @@ class PriceControllerTest {
         verify(priceService).importPricesFromJson(jsonData);
     }
 
-//    @Test
-//    void testGetPriceHistoryChart() throws Exception {
-//        // GIVEN
-//        HistoryRequestDTO request = new HistoryRequestDTO(
-//                1L, testTime.toLocalDate(), testTime.toLocalDate());
-//
-//        PriceHistory priceHistory = new PriceHistory();
-//        priceHistory.setPrice(100);
-//        priceHistory.setRecordedAt(testTime);
-//
-//        byte[] chartBytes = new byte[]{1, 2, 3};
-//
-//        when(priceService.getPriceHistoryByProductIdAndDataRange(
-//                eq(1L), eq(1L), any(LocalDate.class), any(LocalDate.class)))
-//                .thenReturn(List.of(priceHistory));
-//        when(priceService.getPriceHistoryByProductIdAndDataRange(anyList())).thenReturn(chartBytes);
-//
-//        // WHEN
-//        mockMvc.perform(put("/prices/history/chart/1")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(request)))
-//                .andExpect(status().isOk())
-//                .andExpect(header().string("Content-Disposition",
-//                        "attachment; filename=price_chart.png"))
-//                .andExpect(content().contentType(MediaType.IMAGE_PNG))
-//                .andExpect(content().bytes(chartBytes));
-//
-//        // THEN
-//        verify(priceService).getPriceHistoryByProductIdAndDataRange(
-//                eq(1L), eq(1L), any(LocalDate.class), any(LocalDate.class));
-//        verify(priceService).getPriceHistoryByProductIdAndDataRange(anyList());
-//    }
 }

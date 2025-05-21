@@ -86,6 +86,19 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Transactional(readOnly = true)
     @Override
+    public List<Category> getAllCategoriesByParentId(Long parentId) {
+        if (parentId != null && categoryDao.findById(parentId) == null) {
+            log.warn("Попытка получить дочерние категории для несуществующего родителя ID: {}", parentId);
+            throw new CategoryNotFoundException(parentId);
+        }
+
+        List<Category> categories = categoryDao.findAllByParentId(parentId);
+        log.info("Найдено дочерних категорий для родителя ID {}: {}", parentId, categories.size());
+        return categories;
+    }
+
+    @Transactional(readOnly = true)
+    @Override
     public byte[] exportCategoriesToJson() {
         try {
             List<CategoryDTO> dtos = categoryMapper.toDtoList(categoryDao.findAll());

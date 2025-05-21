@@ -8,8 +8,6 @@ import com.example.service.CategoryService;
 import com.example.service.DataLogService;
 import com.example.service.ProductService;
 import com.example.service.security.UserService;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -41,8 +39,6 @@ public class ProductController {
     private final ProductMapper productMapper;
     private final DataLogService dataLogService;
     private final UserService userService;
-
-    private static final Logger logger = LogManager.getLogger(ProductController.class);
 
     public ProductController(ProductService productService, CategoryService categoryService,
                              ProductMapper productMapper, DataLogService dataLogService,
@@ -77,11 +73,11 @@ public class ProductController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long id,
-                                                    @RequestBody Product product) {
-        product.setProductId(id);
+                                                    @RequestBody ProductDTO productDTO) {
+        productDTO.setProductId(id);
+        Product product = productMapper.toEntity(productDTO);
         productService.updateProduct(product);
 
-        ProductDTO productDTO = productMapper.toDto(product);
         return ResponseEntity.ok(productDTO);
     }
 

@@ -53,6 +53,14 @@ public class PriceServiceImpl implements PriceService {
                 createdPrice.getProduct().getProductId(),
                 createdPrice.getStore().getStoreId(),
                 createdPrice.getPrice());
+
+        PriceHistory priceHistory = new PriceHistory();
+        priceHistory.setProduct(createdPrice.getProduct());
+        priceHistory.setStore(createdPrice.getStore());
+        priceHistory.setPrice(createdPrice.getPrice());
+        priceHistory.setRecordedAt(LocalDateTime.now());
+        priceHistoryDao.create(priceHistory);
+
         return createdPrice;
     }
 

@@ -4,7 +4,6 @@ import com.example.dto.PriceHistoryDTO;
 import com.example.entity.PriceHistory;
 import com.example.entity.Product;
 import com.example.entity.Store;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;

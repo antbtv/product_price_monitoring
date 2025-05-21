@@ -1,12 +1,9 @@
 package com.example.mapper;
 
-import com.example.dto.PriceDTO;
 import com.example.dto.PriceHistoryDTO;
-import com.example.entity.Price;
 import com.example.entity.PriceHistory;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 

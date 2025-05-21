@@ -12,7 +12,6 @@ import com.example.service.security.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -69,16 +68,16 @@ class ProductControllerTest {
     @Test
     void testCreateProduct() throws Exception {
         // GIVEN
-        ProductCreateDTO createDTO = new ProductCreateDTO("Smartphone", 1L);
-        Category category = new Category("Electronics", null);
+        ProductCreateDTO createDTO = new ProductCreateDTO("Milk", 1L);
+        Category category = new Category("Bread", null);
         category.setCategoryId(1L);
 
-        Product product = new Product("Smartphone", category);
+        Product product = new Product("Milk", category);
         product.setProductId(1L);
         product.setCreatedAt(testTime);
         product.setUpdatedAt(testTime);
 
-        ProductDTO productDTO = new ProductDTO(1L, "Smartphone", 1L, testTime, testTime);
+        ProductDTO productDTO = new ProductDTO(1L, "Milk", 1L, testTime, testTime);
 
         when(categoryService.getCategoryById(1L)).thenReturn(category);
         when(productService.createProduct(any(Product.class))).thenReturn(product);
@@ -90,7 +89,7 @@ class ProductControllerTest {
                         .content(objectMapper.writeValueAsString(createDTO)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.productId").value(1L))
-                .andExpect(jsonPath("$.productName").value("Smartphone"))
+                .andExpect(jsonPath("$.productName").value("Milk"))
                 .andExpect(jsonPath("$.categoryId").value(1L))
                 .andExpect(jsonPath("$.createdAt").exists())
                 .andExpect(jsonPath("$.updatedAt").exists());
@@ -104,12 +103,12 @@ class ProductControllerTest {
     @Test
     void testGetProductById() throws Exception {
         // GIVEN
-        Product product = new Product("Laptop", new Category());
+        Product product = new Product("Water", new Category());
         product.setProductId(1L);
         product.setCreatedAt(testTime);
         product.setUpdatedAt(testTime);
 
-        ProductDTO productDTO = new ProductDTO(1L, "Laptop", 1L, testTime, testTime);
+        ProductDTO productDTO = new ProductDTO(1L, "Water", 1L, testTime, testTime);
 
         when(productService.getProductById(1L)).thenReturn(product);
         when(productMapper.toDto(product)).thenReturn(productDTO);
@@ -118,7 +117,7 @@ class ProductControllerTest {
         mockMvc.perform(get("/products/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.productId").value(1L))
-                .andExpect(jsonPath("$.productName").value("Laptop"))
+                .andExpect(jsonPath("$.productName").value("Water"))
                 .andExpect(jsonPath("$.createdAt").exists());
 
         // THEN
@@ -143,28 +142,31 @@ class ProductControllerTest {
     @Test
     void testUpdateProduct() throws Exception {
         // GIVEN
-        Product product = new Product("Updated Product", new Category());
-        product.setProductId(1L);
-        product.setCreatedAt(testTime);
-        product.setUpdatedAt(testTime.plusHours(1));
+        Long productId = 1L;
+        ProductDTO requestDTO = new ProductDTO();
+        requestDTO.setProductName("Updated Product");
+        requestDTO.setCategoryId(2L);
 
-        ProductDTO productDTO = new ProductDTO(1L, "Updated Product", 1L, testTime, testTime.plusHours(1));
+        Product updatedProduct = new Product("Updated Product", new Category());
+        updatedProduct.setProductId(productId);
 
+        when(productMapper.toEntity(any(ProductDTO.class))).thenReturn(updatedProduct);
         doNothing().when(productService).updateProduct(any(Product.class));
-        when(productMapper.toDto(any(Product.class))).thenReturn(productDTO);
 
         // WHEN
-        mockMvc.perform(put("/products/1")
+        mockMvc.perform(put("/products/{id}", productId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(product)))
+                        .content(objectMapper.writeValueAsString(requestDTO)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.productId").value(1L))
                 .andExpect(jsonPath("$.productName").value("Updated Product"))
-                .andExpect(jsonPath("$.updatedAt").exists());
+                .andExpect(jsonPath("$.categoryId").value(2L));
 
         // THEN
+        verify(productMapper).toEntity(argThat(dto ->
+                dto.getProductName().equals("Updated Product") &&
+                        dto.getCategoryId() == 2L
+        ));
         verify(productService).updateProduct(any(Product.class));
-        verify(productMapper).toDto(any(Product.class));
     }
 
     @Test

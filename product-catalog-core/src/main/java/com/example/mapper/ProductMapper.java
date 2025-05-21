@@ -1,15 +1,12 @@
 package com.example.mapper;
 
 import com.example.dto.ProductDTO;
-import com.example.dto.StoreDTO;
 import com.example.entity.Product;
-import com.example.entity.Store;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.BeforeMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
-import org.mapstruct.factory.Mappers;
 
 import java.time.LocalDateTime;
 import java.util.List;

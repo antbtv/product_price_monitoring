@@ -1,11 +1,8 @@
 package com.example.mapper;
 
-import com.example.dto.StoreDTO;
 import com.example.dto.UserDTO;
-import com.example.entity.Store;
 import com.example.entity.security.User;
 import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 

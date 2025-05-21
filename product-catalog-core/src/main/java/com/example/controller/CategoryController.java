@@ -7,8 +7,6 @@ import com.example.mapper.CategoryMapper;
 import com.example.service.CategoryService;
 import com.example.service.DataLogService;
 import com.example.service.security.UserService;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -39,8 +37,6 @@ public class CategoryController {
     private final CategoryMapper categoryMapper;
     private final DataLogService dataLogService;
     private final UserService userService;
-
-    private static final Logger logger = LogManager.getLogger(CategoryController.class);
 
     public CategoryController(CategoryService categoryService, CategoryMapper categoryMapper,
                               DataLogService dataLogService, UserService userService) {
@@ -74,13 +70,21 @@ public class CategoryController {
         return ResponseEntity.ok(categoryDTO);
     }
 
+    @GetMapping("/parent/{id}")
+    public ResponseEntity<List<CategoryDTO>> getChildCategories(@PathVariable Long id) {
+        List<Category> categories = categoryService.getAllCategoriesByParentId(id);
+        List<CategoryDTO> dtos = categoryMapper.toDtoList(categories);
+
+        return ResponseEntity.ok(dtos);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<CategoryDTO> updateCategory(@PathVariable Long id,
-                                                      @RequestBody Category category) {
-        category.setCategoryId(id);
+                                                      @RequestBody CategoryDTO categoryDTO) {
+        categoryDTO.setCategoryId(id);
+        Category category = categoryMapper.toEntity(categoryDTO);
         categoryService.updateCategory(category);
 
-        CategoryDTO categoryDTO = categoryMapper.toDto(category);
         return ResponseEntity.ok(categoryDTO);
     }
 

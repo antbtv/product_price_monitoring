@@ -1,6 +1,7 @@
 package com.example.service.impl;
 
 import com.example.dao.security.UserDao;
+import com.example.entity.security.CustomUserDetails;
 import com.example.entity.security.User;
 import com.example.exceptions.InvalidTokenException;
 import com.example.exceptions.UserAlreadyExistsException;
@@ -102,7 +103,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     @Transactional
     @Override
     public void deleteUser(Long id) {
-        if (userDAO.findById(id) != null) {
+        if (userDAO.findById(id) == null) {
             throw new UserNotFoundException(id);
         }
         userDAO.delete(id);
@@ -112,7 +113,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     @Transactional
     @Override
     public void updateUser(User user) {
-        if (userDAO.findById(user.getUserId()) != null) {
+        if (userDAO.findById(user.getUserId()) == null) {
             throw new UserNotFoundException(user.getUserId());
         }
         userDAO.update(user);
@@ -153,7 +154,8 @@ public class UserServiceImpl implements UserDetailsService, UserService {
             throw new UsernameNotFoundException("Пользователь не найден: " + username);
         }
 
-        return new org.springframework.security.core.userdetails.User(
+        return new CustomUserDetails(
+                user.getUserId(),
                 user.getUsername(),
                 user.getPassword(),
                 Collections.singleton(new SimpleGrantedAuthority(user.getRole().toString()))

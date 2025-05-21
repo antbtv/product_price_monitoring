@@ -7,8 +7,6 @@ import com.example.mapper.StoreMapper;
 import com.example.service.DataLogService;
 import com.example.service.StoreService;
 import com.example.service.security.UserService;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -39,8 +37,6 @@ public class StoreController {
     private final StoreMapper storeMapper;
     private final DataLogService dataLogService;
     private final UserService userService;
-    
-    private static final Logger logger = LogManager.getLogger(StoreController.class);
 
     public StoreController(StoreService storeService, StoreMapper storeMapper,
                            DataLogService dataLogService, UserService userService) {
@@ -71,11 +67,11 @@ public class StoreController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<StoreDTO> updateStore(@PathVariable Long id, @RequestBody Store store) {
-        store.setStoreId(id);
+    public ResponseEntity<StoreDTO> updateStore(@PathVariable Long id, @RequestBody StoreDTO storeDTO) {
+        storeDTO.setStoreId(id);
+        Store store = storeMapper.toEntity(storeDTO);
         storeService.updateStore(store);
 
-        StoreDTO storeDTO = storeMapper.toDto(store);
         return ResponseEntity.ok(storeDTO);
     }
 

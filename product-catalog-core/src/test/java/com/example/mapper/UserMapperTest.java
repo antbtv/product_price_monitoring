@@ -3,7 +3,6 @@ package com.example.mapper;
 import com.example.dto.UserDTO;
 import com.example.entity.security.User;
 import com.example.enums.UserRole;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
