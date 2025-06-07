@@ -15,6 +15,7 @@ import com.example.service.PriceService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,7 @@ import java.util.List;
 
 @Service
 @Slf4j
+@AllArgsConstructor
 public class PriceServiceImpl implements PriceService {
 
     private final PriceDao priceDao;
@@ -33,16 +35,6 @@ public class PriceServiceImpl implements PriceService {
     private final ChartGenerator chartGenerator;
     private final PriceMapper priceMapper;
     private final ObjectMapper objectMapper;
-
-    public PriceServiceImpl(PriceDao priceDao, PriceHistoryDao priceHistoryDao,
-                            PriceMapper priceMapper, ObjectMapper objectMapper,
-                            ChartGenerator chartGenerator) {
-        this.priceDao = priceDao;
-        this.priceHistoryDao = priceHistoryDao;
-        this.priceMapper = priceMapper;
-        this.objectMapper = objectMapper;
-        this.chartGenerator = chartGenerator;
-    }
 
     @Transactional
     @Override

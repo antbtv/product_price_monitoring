@@ -11,6 +11,7 @@ import com.example.service.CategoryService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,19 +21,12 @@ import java.util.List;
 
 @Service
 @Slf4j
+@AllArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryDao categoryDao;
     private final CategoryMapper categoryMapper;
     private final ObjectMapper objectMapper;
-
-    public CategoryServiceImpl(CategoryDao categoryDao,
-                               CategoryMapper categoryMapper,
-                               ObjectMapper objectMapper) {
-        this.categoryDao = categoryDao;
-        this.categoryMapper = categoryMapper;
-        this.objectMapper = objectMapper;
-    }
 
     @Transactional
     @Override

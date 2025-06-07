@@ -46,8 +46,8 @@ class PriceServiceImplTest {
     void setUp() {
         ObjectMapper objectMapper = new ObjectMapper();
         ChartGenerator chartGenerator = new ChartGenerator();
-        priceService = new PriceServiceImpl(priceDao, priceHistoryDao, priceMapper,
-                objectMapper, chartGenerator);
+        priceService = new PriceServiceImpl(priceDao, priceHistoryDao, chartGenerator,
+                priceMapper, objectMapper);
     }
 
     @Test

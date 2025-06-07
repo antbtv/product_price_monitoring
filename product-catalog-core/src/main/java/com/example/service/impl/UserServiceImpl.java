@@ -8,9 +8,11 @@ import com.example.exceptions.UserAlreadyExistsException;
 import com.example.exceptions.UserNotFoundException;
 import com.example.service.security.UserService;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -23,6 +25,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Date;
 import java.util.stream.Collectors;
@@ -33,11 +37,22 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 
     @Value("${jwt.secret.key}")
     private String SECRET_KEY;
+    private SecretKey secretKey;
+    private static final long JWT_EXPIRATION_MS = 10 * 60 * 60 * 1000;
 
     private final UserDao userDAO;
 
     public UserServiceImpl(UserDao userDAO) {
         this.userDAO = userDAO;
+    }
+
+    @PostConstruct
+    public void init() {
+        this.secretKey = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private SecretKey getSigningKey() {
+        return secretKey;
     }
 
     @Transactional(readOnly = true)
@@ -48,30 +63,33 @@ public class UserServiceImpl implements UserDetailsService, UserService {
             throw new UserNotFoundException(userDetails.getUsername());
         }
 
-        String token = Jwts.builder()
-                .setSubject(userDetails.getUsername())
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + JWT_EXPIRATION_MS);
+
+        return Jwts.builder()
+                .subject(userDetails.getUsername())
                 .claim("userId", user.getUserId())
                 .claim("roles", userDetails.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
                         .collect(Collectors.toList()))
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+                .issuedAt(now)
+                .expiration(expiryDate)
+                .signWith(getSigningKey())
                 .compact();
-
-        log.info("Сгенерирован токен для пользователя: {}", userDetails.getUsername());
-        return token;
     }
 
     @Transactional(readOnly = true)
     @Override
     public String extractUsername(String token) {
         try {
-            return Jwts.parser()
-                    .setSigningKey(SECRET_KEY)
-                    .parseClaimsJws(token)
-                    .getBody()
-                    .getSubject();
+            SecretKey key = getSigningKey();
+
+            Jwt<?, Claims> jwt = Jwts.parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(token);
+
+            return jwt.getPayload().getSubject();
         } catch (JwtException e) {
             throw new InvalidTokenException("Невалидный токен", e);
         }
@@ -124,11 +142,15 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     @Override
     public boolean isTokenExpired(String token) {
         try {
-            Claims claims = Jwts.parser()
-                    .setSigningKey(SECRET_KEY)
-                    .parseClaimsJws(token)
-                    .getBody();
-            return claims.getExpiration().before(new Date());
+            SecretKey key = getSigningKey();
+
+            Jwt<?, Claims> jwt = Jwts.parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(token);
+
+            Date expiration = jwt.getPayload().getExpiration();
+            return expiration.before(new Date());
         } catch (JwtException e) {
             throw new InvalidTokenException("Ошибка проверки токена", e);
         }

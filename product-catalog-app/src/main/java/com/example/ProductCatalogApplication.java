@@ -13,8 +13,11 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
         HibernateJpaAutoConfiguration.class,
         DataSourceTransactionManagerAutoConfiguration.class,
         JpaRepositoriesAutoConfiguration.class,
-        SecurityAutoConfiguration.class
-})public class ProductCatalogApplication {
+        SecurityAutoConfiguration.class,
+},
+        scanBasePackages = "com.example"
+)
+public class ProductCatalogApplication {
     public static void main(String[] args) {
         SpringApplication.run(ProductCatalogApplication.class, args);
     }

@@ -11,6 +11,7 @@ import com.example.service.ProductService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,18 +22,12 @@ import java.util.List;
 
 @Service
 @Slf4j
+@AllArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
     private final ProductDao productDao;
     private final ProductMapper productMapper;
     private final ObjectMapper objectMapper;
-
-    public ProductServiceImpl(ProductDao productDao, ProductMapper productMapper,
-                              ObjectMapper objectMapper) {
-        this.productDao = productDao;
-        this.productMapper = productMapper;
-        this.objectMapper = objectMapper;
-    }
 
     @Transactional
     @Override
