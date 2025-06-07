@@ -1,12 +1,12 @@
 package com.example.service.impl;
 
-import com.example.dao.ProductDao;
 import com.example.dto.ProductDTO;
 import com.example.entity.Product;
 import com.example.exceptions.DataExportException;
 import com.example.exceptions.DataImportException;
 import com.example.exceptions.ProductNotFoundException;
 import com.example.mapper.ProductMapper;
+import com.example.repository.ProductRepository;
 import com.example.service.ProductService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -25,14 +25,14 @@ import java.util.List;
 @AllArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
-    private final ProductDao productDao;
+    private final ProductRepository productRepository;
     private final ProductMapper productMapper;
     private final ObjectMapper objectMapper;
 
     @Transactional
     @Override
     public Product createProduct(Product product) {
-        Product createdProduct = productDao.create(product);
+        Product createdProduct = productRepository.save(product);
         log.info("Создан новый продукт: ID={}, название='{}', категория ID={}",
                 createdProduct.getProductId(),
                 createdProduct.getProductName(),
@@ -43,24 +43,17 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(readOnly = true)
     @Override
     public Product getProductById(Long id) {
-        Product product = productDao.findById(id);
-        if (product == null) {
-            throw new ProductNotFoundException(id);
-        }
-        log.info("Получен продукт: ID={}, название='{}'",
-                id,
-                product.getProductName());
-        return product;
+        return productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException(id));
     }
 
     @Transactional
     @Override
     public void updateProduct(Product product) {
         product.setUpdatedAt(LocalDateTime.now());
-        if(productDao.findById(product.getProductId()) == null) {
-            throw new ProductNotFoundException(product.getProductId());
-        }
-        productDao.update(product);
+        productRepository.findById(product.getProductId())
+                .orElseThrow(() -> new ProductNotFoundException(product.getProductId()));
+        productRepository.save(product);
         log.info("Обновлен продукт: ID={}, новое название='{}'",
                 product.getProductId(),
                 product.getProductName());
@@ -69,26 +62,25 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     @Override
     public void deleteProduct(Long id) {
-        if (productDao.findById(id) == null) {
+        if (!productRepository.existsById(id)) {
             throw new ProductNotFoundException(id);
         }
-        productDao.delete(id);
+        productRepository.deleteById(id);
         log.info("Удален продукт ID={}", id);
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<Product> getAllProducts() {
-        List<Product> products = productDao.findAll();
-        log.info("Получено {} продуктов",
-                products.size());
+        List<Product> products = productRepository.findAllWithCategory();
+        log.info("Получено {} продуктов", products.size());
         return products;
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<Product> getProductsByCategoryId(Long categoryId) {
-        List<Product> products = productDao.findByCategoryId(categoryId);
+        List<Product> products = productRepository.findByCategory_CategoryId(categoryId);
         if (products.isEmpty()) {
             log.debug("Не найдены продукты для категории ID={}", categoryId);
         }
@@ -99,7 +91,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public byte[] exportProductsToJson() {
         try {
-            List<ProductDTO> productDTOs = productMapper.toDtoList(productDao.findAll());
+            List<ProductDTO> productDTOs = productMapper.toDtoList(productRepository.findAll());
             log.info("Экспортировано {} продуктов в JSON", productDTOs.size());
             return objectMapper.writeValueAsBytes(productDTOs);
         } catch (JsonProcessingException e) {
@@ -115,7 +107,7 @@ public class ProductServiceImpl implements ProductService {
             List<ProductDTO> productDTOS = objectMapper.readValue(data, new TypeReference<>() {
             });
             List<Product> products = productMapper.toEntityList(productDTOS);
-            products.forEach(productDao::create);
+            productRepository.saveAll(products);
             log.info("Импортировано {} продуктов из JSON", products.size());
             return productDTOS;
         } catch (IOException e) {

@@ -1,6 +1,6 @@
 package com.example.service.impl;
 
-import com.example.dao.security.UserDao;
+import com.example.repository.security.UserRepository;
 import com.example.entity.security.CustomUserDetails;
 import com.example.entity.security.User;
 import com.example.exceptions.InvalidTokenException;
@@ -40,10 +40,10 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     private SecretKey secretKey;
     private static final long JWT_EXPIRATION_MS = 10 * 60 * 60 * 1000;
 
-    private final UserDao userDAO;
+    private final UserRepository userRepository;
 
-    public UserServiceImpl(UserDao userDAO) {
-        this.userDAO = userDAO;
+    public UserServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     @PostConstruct
@@ -58,10 +58,8 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     @Transactional(readOnly = true)
     @Override
     public String generateToken(UserDetails userDetails) {
-        User user = userDAO.findByUsername(userDetails.getUsername());
-        if (user == null) {
-            throw new UserNotFoundException(userDetails.getUsername());
-        }
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new UserNotFoundException(userDetails.getUsername()));
 
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + JWT_EXPIRATION_MS);
@@ -105,36 +103,33 @@ public class UserServiceImpl implements UserDetailsService, UserService {
         }
 
         String username = ((UserDetails) authentication.getPrincipal()).getUsername();
-        return userDAO.findByUsername(username);
+        return userRepository.findByUsername(username).orElse(null);
     }
 
     @Transactional(readOnly = true)
     @Override
     public User getUserById(Long id) {
-        User user = userDAO.findById(id);
-        if (user == null) {
-            throw new UserNotFoundException(id);
-        }
-        return user;
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
     }
 
     @Transactional
     @Override
     public void deleteUser(Long id) {
-        if (userDAO.findById(id) == null) {
+        if (userRepository.existsById(id)) {
             throw new UserNotFoundException(id);
         }
-        userDAO.delete(id);
+        userRepository.deleteById(id);
         log.info("Удален пользователь ID={}", id);
     }
 
     @Transactional
     @Override
     public void updateUser(User user) {
-        if (userDAO.findById(user.getUserId()) == null) {
-            throw new UserNotFoundException(user.getUserId());
-        }
-        userDAO.update(user);
+        userRepository.findById(user.getUserId())
+                .orElseThrow(() -> new UserNotFoundException(user.getUserId()));
+
+        userRepository.save(user);
         log.info("Обновлен пользователь ID={}", user.getUserId());
     }
 
@@ -171,10 +166,8 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     @Transactional(readOnly = true)
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userDAO.findByUsername(username);
-        if (user == null) {
-            throw new UsernameNotFoundException("Пользователь не найден: " + username);
-        }
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден: " + username));
 
         return new CustomUserDetails(
                 user.getUserId(),
@@ -187,7 +180,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     @Transactional(readOnly = true)
     @Override
     public boolean userExists(String username) {
-        return userDAO.findByUsername(username) != null;
+        return userRepository.findByUsername(username).isPresent();
     }
 
     @Transactional
@@ -197,7 +190,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
         if (userExists(user.getUsername())) {
             throw new UserAlreadyExistsException(user.getUsername());
         }
-        userDAO.create(user);
+        userRepository.save(user);
         log.info("Добавлен новый пользователь: {}", user.getUsername());
     }
 
