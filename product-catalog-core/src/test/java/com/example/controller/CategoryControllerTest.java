@@ -74,25 +74,25 @@ class CategoryControllerTest {
 
         CategoryDTO categoryDTO = new CategoryDTO(2L, "Electronics", 1L, testTime, testTime);
 
-        Mockito.when(categoryService.getCategoryById(1L)).thenReturn(parent);
-        Mockito.when(categoryService.createCategory(ArgumentMatchers.any(Category.class))).thenReturn(category);
-        Mockito.when(categoryMapper.toDto(category)).thenReturn(categoryDTO);
+        when(categoryService.getCategoryById(1L)).thenReturn(parent);
+        when(categoryService.createCategory(any(Category.class))).thenReturn(category);
+        when(categoryMapper.toDto(category)).thenReturn(categoryDTO);
 
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.post("/categories")
+        mockMvc.perform(post("/categories")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createDTO)))
-                .andExpect(MockMvcResultMatchers.status().isCreated())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.categoryId").value(2L))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.categoryName").value("Electronics"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.parentId").value(1L))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.createdAt").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.updatedAt").exists());
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.categoryId").value(2L))
+                .andExpect(jsonPath("$.categoryName").value("Electronics"))
+                .andExpect(jsonPath("$.parentId").value(1L))
+                .andExpect(jsonPath("$.createdAt").exists())
+                .andExpect(jsonPath("$.updatedAt").exists());
 
         // THEN
-        Mockito.verify(categoryService).getCategoryById(1L);
-        Mockito.verify(categoryService).createCategory(ArgumentMatchers.any(Category.class));
-        Mockito.verify(categoryMapper).toDto(category);
+        verify(categoryService).getCategoryById(1L);
+        verify(categoryService).createCategory(any(Category.class));
+        verify(categoryMapper).toDto(category);
     }
 
     @Test
@@ -105,20 +105,20 @@ class CategoryControllerTest {
 
         CategoryDTO categoryDTO = new CategoryDTO(1L, "Electronics", null, testTime, testTime);
 
-        Mockito.when(categoryService.getCategoryById(1L)).thenReturn(category);
-        Mockito.when(categoryMapper.toDto(category)).thenReturn(categoryDTO);
+        when(categoryService.getCategoryById(1L)).thenReturn(category);
+        when(categoryMapper.toDto(category)).thenReturn(categoryDTO);
 
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.get("/categories/1"))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.categoryId").value(1L))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.categoryName").value("Electronics"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.createdAt").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.updatedAt").exists());
+        mockMvc.perform(get("/categories/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.categoryId").value(1L))
+                .andExpect(jsonPath("$.categoryName").value("Electronics"))
+                .andExpect(jsonPath("$.createdAt").exists())
+                .andExpect(jsonPath("$.updatedAt").exists());
 
         // THEN
-        Mockito.verify(categoryService).getCategoryById(1L);
-        Mockito.verify(categoryMapper).toDto(category);
+        verify(categoryService).getCategoryById(1L);
+        verify(categoryMapper).toDto(category);
     }
 
     @Test
@@ -137,25 +137,25 @@ class CategoryControllerTest {
         categoryEntity.setCreatedAt(testTime);
         categoryEntity.setUpdatedAt(testTime.plusHours(1));
 
-        Mockito.when(categoryMapper.toEntity(ArgumentMatchers.any(CategoryDTO.class))).thenReturn(categoryEntity);
-        Mockito.doNothing().when(categoryService).updateCategory(ArgumentMatchers.any(Category.class));
+        when(categoryMapper.toEntity(any(CategoryDTO.class))).thenReturn(categoryEntity);
+        doNothing().when(categoryService).updateCategory(any(Category.class));
 
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.put("/categories/{id}", categoryId)
+        mockMvc.perform(put("/categories/{id}", categoryId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDTO)))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.categoryId").value(categoryId))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.categoryName").value("Updated Category"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.createdAt").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.updatedAt").exists());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.categoryId").value(categoryId))
+                .andExpect(jsonPath("$.categoryName").value("Updated Category"))
+                .andExpect(jsonPath("$.createdAt").exists())
+                .andExpect(jsonPath("$.updatedAt").exists());
 
         // THEN
-        Mockito.verify(categoryMapper).toEntity(ArgumentMatchers.argThat(dto ->
+        verify(categoryMapper).toEntity(argThat(dto ->
                 dto.getCategoryId().equals(categoryId) &&
                         dto.getCategoryName().equals("Updated Category")
         ));
-        Mockito.verify(categoryService).updateCategory(ArgumentMatchers.any(Category.class));
+        verify(categoryService).updateCategory(any(Category.class));
     }
 
 
@@ -178,21 +178,21 @@ class CategoryControllerTest {
                 new CategoryDTO(2L, "Books", null, testTime, testTime)
         );
 
-        Mockito.when(categoryService.getAllCategories()).thenReturn(categories);
-        Mockito.when(categoryMapper.toDtoList(categories)).thenReturn(categoryDTOs);
+        when(categoryService.getAllCategories()).thenReturn(categories);
+        when(categoryMapper.toDtoList(categories)).thenReturn(categoryDTOs);
 
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.get("/categories"))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(2)))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].categoryName").value("Electronics"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].createdAt").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[1].categoryName").value("Books"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[1].updatedAt").exists());
+        mockMvc.perform(get("/categories"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].categoryName").value("Electronics"))
+                .andExpect(jsonPath("$[0].createdAt").exists())
+                .andExpect(jsonPath("$[1].categoryName").value("Books"))
+                .andExpect(jsonPath("$[1].updatedAt").exists());
 
         // THEN
-        Mockito.verify(categoryService).getAllCategories();
-        Mockito.verify(categoryMapper).toDtoList(categories);
+        verify(categoryService).getAllCategories();
+        verify(categoryMapper).toDtoList(categories);
     }
 
     @Test
@@ -200,19 +200,19 @@ class CategoryControllerTest {
         // GIVEN
         byte[] mockData = ("{\"categories\":[{\"categoryName\":\"Electronics\",\"createdAt\":\"" +
                 testTime + "\"}]}").getBytes();
-        Mockito.when(categoryService.exportCategoriesToJson()).thenReturn(mockData);
+        when(categoryService.exportCategoriesToJson()).thenReturn(mockData);
 
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.get("/categories/export"))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.header().string(HttpHeaders.CONTENT_DISPOSITION,
+        mockMvc.perform(get("/categories/export"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION,
                         "attachment; filename=\"categories.json\""))
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.content().string(Matchers.containsString("Electronics")))
-                .andExpect(MockMvcResultMatchers.content().string(Matchers.containsString(testTime.toString())));
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().string(containsString("Electronics")))
+                .andExpect(content().string(containsString(testTime.toString())));
 
         // THEN
-        Mockito.verify(categoryService).exportCategoriesToJson();
+        verify(categoryService).exportCategoriesToJson();
     }
 
     @Test
@@ -230,19 +230,19 @@ class CategoryControllerTest {
                 MediaType.APPLICATION_JSON_VALUE,
                 jsonData);
 
-        Mockito.when(categoryService.importCategoriesFromJson(jsonData))
+        when(categoryService.importCategoriesFromJson(jsonData))
                 .thenReturn(List.of(importedCategory));
 
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/categories/import")
+        mockMvc.perform(multipart("/categories/import")
                         .file(file))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].categoryName").value("Imported"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].createdAt").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].updatedAt").exists());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].categoryName").value("Imported"))
+                .andExpect(jsonPath("$[0].createdAt").exists())
+                .andExpect(jsonPath("$[0].updatedAt").exists());
 
         // THEN
-        Mockito.verify(categoryService).importCategoriesFromJson(jsonData);
+        verify(categoryService).importCategoriesFromJson(jsonData);
     }
 
     @Test
@@ -257,22 +257,22 @@ class CategoryControllerTest {
         CategoryDTO categoryDTO = new CategoryDTO(
                 1L, "Partially Updated", null, testTime, testTime.plusHours(1));
 
-        Mockito.when(categoryService.getCategoryById(1L)).thenReturn(existingCategory);
-        Mockito.doNothing().when(categoryService).updateCategory(ArgumentMatchers.any(Category.class));
-        Mockito.when(categoryMapper.toDto(existingCategory)).thenReturn(categoryDTO);
+        when(categoryService.getCategoryById(1L)).thenReturn(existingCategory);
+        doNothing().when(categoryService).updateCategory(any(Category.class));
+        when(categoryMapper.toDto(existingCategory)).thenReturn(categoryDTO);
 
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.patch("/categories/1")
+        mockMvc.perform(patch("/categories/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateDTO)))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.categoryName").value("Partially Updated"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.createdAt").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.updatedAt").exists());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.categoryName").value("Partially Updated"))
+                .andExpect(jsonPath("$.createdAt").exists())
+                .andExpect(jsonPath("$.updatedAt").exists());
 
         // THEN
-        Mockito.verify(categoryService).getCategoryById(1L);
-        Mockito.verify(categoryService).updateCategory(ArgumentMatchers.any(Category.class));
-        Mockito.verify(categoryMapper).toDto(existingCategory);
+        verify(categoryService).getCategoryById(1L);
+        verify(categoryService).updateCategory(any(Category.class));
+        verify(categoryMapper).toDto(existingCategory);
     }
 }

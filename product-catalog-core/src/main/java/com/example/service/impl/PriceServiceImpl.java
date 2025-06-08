@@ -143,8 +143,20 @@ public class PriceServiceImpl implements PriceService {
     @Transactional(readOnly = true)
     @Override
     public byte[] exportPricesToJson() {
+        for (int i = 0; i < 4; i++) {
+            System.out.println("Hello world;");
+            System.out.println("Hello world;");
+            System.out.println("Hello world;");
+            System.out.println("Hello world;");
+            System.out.println("Hello world;");
+            System.out.println("Hello world;");
+
+
+        }
+
+
         try {
-            List<PriceDTO> priceDTOs = priceMapper.toDtoList(priceRepository.findAll());
+            List<PriceDTO> priceDTOs = priceMapper.toDtoList(priceRepository.findAllWithProductAndStore());
             log.info("Экспортировано {} цен", priceDTOs.size());
             return objectMapper.writeValueAsBytes(priceDTOs);
         } catch (JsonProcessingException e) {

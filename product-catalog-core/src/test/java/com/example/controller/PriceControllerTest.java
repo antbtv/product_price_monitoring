@@ -94,27 +94,27 @@ class PriceControllerTest {
 
         PriceDTO priceDTO = new PriceDTO(1L, 1L, 1L, 100, testTime);
 
-        Mockito.when(productService.getProductById(1L)).thenReturn(product);
-        Mockito.when(storeService.getStoreById(1L)).thenReturn(store);
-        Mockito.when(priceService.createPrice(ArgumentMatchers.any(Price.class))).thenReturn(price);
-        Mockito.when(priceMapper.toDto(price)).thenReturn(priceDTO);
+        when(productService.getProductById(1L)).thenReturn(product);
+        when(storeService.getStoreById(1L)).thenReturn(store);
+        when(priceService.createPrice(any(Price.class))).thenReturn(price);
+        when(priceMapper.toDto(price)).thenReturn(priceDTO);
 
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.post("/prices")
+        mockMvc.perform(post("/prices")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createDTO)))
-                .andExpect(MockMvcResultMatchers.status().isCreated())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.priceId").value(1L))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.productId").value(1L))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.storeId").value(1L))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.price").value(100))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.recordedAt").exists());
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.priceId").value(1L))
+                .andExpect(jsonPath("$.productId").value(1L))
+                .andExpect(jsonPath("$.storeId").value(1L))
+                .andExpect(jsonPath("$.price").value(100))
+                .andExpect(jsonPath("$.recordedAt").exists());
 
         // THEN
-        Mockito.verify(productService).getProductById(1L);
-        Mockito.verify(storeService).getStoreById(1L);
-        Mockito.verify(priceService).createPrice(ArgumentMatchers.any(Price.class));
-        Mockito.verify(priceMapper).toDto(price);
+        verify(productService).getProductById(1L);
+        verify(storeService).getStoreById(1L);
+        verify(priceService).createPrice(any(Price.class));
+        verify(priceMapper).toDto(price);
     }
 
     @Test
@@ -126,33 +126,33 @@ class PriceControllerTest {
 
         PriceDTO priceDTO = new PriceDTO(1L, 1L, 1L, 100, testTime);
 
-        Mockito.when(priceService.getPriceById(1L)).thenReturn(price);
-        Mockito.when(priceMapper.toDto(price)).thenReturn(priceDTO);
+        when(priceService.getPriceById(1L)).thenReturn(price);
+        when(priceMapper.toDto(price)).thenReturn(priceDTO);
 
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.get("/prices/1"))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.priceId").value(1L))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.price").value(100))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.recordedAt").exists());
+        mockMvc.perform(get("/prices/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.priceId").value(1L))
+                .andExpect(jsonPath("$.price").value(100))
+                .andExpect(jsonPath("$.recordedAt").exists());
 
         // THEN
-        Mockito.verify(priceService).getPriceById(1L);
-        Mockito.verify(priceMapper).toDto(price);
+        verify(priceService).getPriceById(1L);
+        verify(priceMapper).toDto(price);
     }
 
     @Test
     void testGetPriceById_NotFound() throws Exception {
         // GIVEN
-        Mockito.when(priceService.getPriceById(1L)).thenReturn(null);
+        when(priceService.getPriceById(1L)).thenReturn(null);
 
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.get("/prices/1"))
-                .andExpect(MockMvcResultMatchers.status().isNotFound());
+        mockMvc.perform(get("/prices/1"))
+                .andExpect(status().isNotFound());
 
         // THEN
-        Mockito.verify(priceService).getPriceById(1L);
-        Mockito.verifyNoInteractions(priceMapper);
+        verify(priceService).getPriceById(1L);
+        verifyNoInteractions(priceMapper);
     }
 
     @Test
@@ -171,24 +171,24 @@ class PriceControllerTest {
         priceEntity.setPrice(150);
         priceEntity.setRecordedAt(testTime);
 
-        Mockito.when(priceMapper.toEntity(ArgumentMatchers.any(PriceDTO.class))).thenReturn(priceEntity);
-        Mockito.doNothing().when(priceService).updatePrice(ArgumentMatchers.any(Price.class));
+        when(priceMapper.toEntity(any(PriceDTO.class))).thenReturn(priceEntity);
+        doNothing().when(priceService).updatePrice(any(Price.class));
 
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.put("/prices/{id}", priceId)
+        mockMvc.perform(put("/prices/{id}", priceId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDTO)))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.priceId").value(priceId))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.price").value(150))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.recordedAt").exists());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.priceId").value(priceId))
+                .andExpect(jsonPath("$.price").value(150))
+                .andExpect(jsonPath("$.recordedAt").exists());
 
         // THEN
-        Mockito.verify(priceMapper).toEntity(ArgumentMatchers.argThat(dto ->
+        verify(priceMapper).toEntity(argThat(dto ->
                 dto.getPriceId().equals(priceId) &&
                         dto.getPrice() == 150
         ));
-        Mockito.verify(priceService).updatePrice(ArgumentMatchers.any(Price.class));
+        verify(priceService).updatePrice(any(Price.class));
     }
 
 
@@ -202,31 +202,31 @@ class PriceControllerTest {
 
         PriceDTO priceDTO = new PriceDTO(1L, 1L, 1L, 200, testTime);
 
-        Mockito.when(priceService.getPriceById(1L)).thenReturn(existingPrice);
-        Mockito.doNothing().when(priceService).updatePrice(ArgumentMatchers.any(Price.class));
-        Mockito.when(priceMapper.toDto(existingPrice)).thenReturn(priceDTO);
+        when(priceService.getPriceById(1L)).thenReturn(existingPrice);
+        doNothing().when(priceService).updatePrice(any(Price.class));
+        when(priceMapper.toDto(existingPrice)).thenReturn(priceDTO);
 
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.patch("/prices/1")
+        mockMvc.perform(patch("/prices/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateDTO)))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.price").value(200));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.price").value(200));
 
         // THEN
-        Mockito.verify(priceService).getPriceById(1L);
-        Mockito.verify(priceService).updatePrice(ArgumentMatchers.any(Price.class));
-        Mockito.verify(priceMapper).toDto(existingPrice);
+        verify(priceService).getPriceById(1L);
+        verify(priceService).updatePrice(any(Price.class));
+        verify(priceMapper).toDto(existingPrice);
     }
 
     @Test
     void testDeletePrice() throws Exception {
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.delete("/prices/1"))
-                .andExpect(MockMvcResultMatchers.status().isNoContent());
+        mockMvc.perform(delete("/prices/1"))
+                .andExpect(status().isNoContent());
 
         // THEN
-        Mockito.verify(priceService).deletePrice(1L);
+        verify(priceService).deletePrice(1L);
     }
 
     @Test
@@ -243,19 +243,19 @@ class PriceControllerTest {
                 new PriceDTO(2L, 2L, 2L, 200, testTime)
         );
 
-        Mockito.when(priceService.getAllPrices()).thenReturn(prices);
-        Mockito.when(priceMapper.toDtoList(prices)).thenReturn(priceDTOs);
+        when(priceService.getAllPrices()).thenReturn(prices);
+        when(priceMapper.toDtoList(prices)).thenReturn(priceDTOs);
 
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.get("/prices"))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(2)))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].price").value(100))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[1].price").value(200));
+        mockMvc.perform(get("/prices"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].price").value(100))
+                .andExpect(jsonPath("$[1].price").value(200));
 
         // THEN
-        Mockito.verify(priceService).getAllPrices();
-        Mockito.verify(priceMapper).toDtoList(prices);
+        verify(priceService).getAllPrices();
+        verify(priceMapper).toDtoList(prices);
     }
 
     @Test
@@ -266,30 +266,30 @@ class PriceControllerTest {
                 new PriceDTO(2L, 1L, 2L, 150, testTime)
         );
 
-        Mockito.when(priceService.getPricesByProductId(1L)).thenReturn(priceDTOs);
+        when(priceService.getPricesByProductId(1L)).thenReturn(priceDTOs);
 
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.get("/prices/compare/1"))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(2)))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].price").value(100))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[1].price").value(150));
+        mockMvc.perform(get("/prices/compare/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].price").value(100))
+                .andExpect(jsonPath("$[1].price").value(150));
 
         // THEN
-        Mockito.verify(priceService).getPricesByProductId(1L);
+        verify(priceService).getPricesByProductId(1L);
     }
 
     @Test
     void testComparePrices_NotFound() throws Exception {
         // GIVEN
-        Mockito.when(priceService.getPricesByProductId(1L)).thenReturn(List.of());
+        when(priceService.getPricesByProductId(1L)).thenReturn(List.of());
 
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.get("/prices/compare/1"))
-                .andExpect(MockMvcResultMatchers.status().isNotFound());
+        mockMvc.perform(get("/prices/compare/1"))
+                .andExpect(status().isNotFound());
 
         // THEN
-        Mockito.verify(priceService).getPricesByProductId(1L);
+        verify(priceService).getPricesByProductId(1L);
     }
 
     @Test
@@ -309,25 +309,25 @@ class PriceControllerTest {
         PriceHistoryDTO historyDTO = new PriceHistoryDTO(1L, 1L, 1L,
                 100, LocalDateTime.now());
 
-        Mockito.when(priceService.getPriceHistoryByProductIdAndDataRange(
-                ArgumentMatchers.eq(productId),
-                ArgumentMatchers.eq(request.getStoreId()),
-                ArgumentMatchers.eq(request.getStartDate()),
-                ArgumentMatchers.eq(request.getEndDate())
+        when(priceService.getPriceHistoryByProductIdAndDataRange(
+                eq(productId),
+                eq(request.getStoreId()),
+                eq(request.getStartDate()),
+                eq(request.getEndDate())
         )).thenReturn(List.of(history));
 
-        Mockito.when(priceHistoryMapper.toDto(history)).thenReturn(historyDTO);
+        when(priceHistoryMapper.toDto(history)).thenReturn(historyDTO);
 
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.post("/prices/history/{productId}", productId)
+        mockMvc.perform(post("/prices/history/{productId}", productId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].price").value(100))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].recordedAt").exists());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].price").value(100))
+                .andExpect(jsonPath("$[0].recordedAt").exists());
 
         // THEN
-        Mockito.verify(priceService).getPriceHistoryByProductIdAndDataRange(
+        verify(priceService).getPriceHistoryByProductIdAndDataRange(
                 productId,
                 request.getStoreId(),
                 request.getStartDate(),
@@ -348,39 +348,39 @@ class PriceControllerTest {
 
         byte[] mockChart = new byte[]{0x00, 0x01, 0x02}; // Пример данных изображения
 
-        Mockito.when(priceService.generatePriceHistoryChart(
-                ArgumentMatchers.eq(productId),
-                ArgumentMatchers.eq(request.getStoreId()),
-                ArgumentMatchers.eq(request.getStartDate()),
-                ArgumentMatchers.eq(request.getEndDate())
+        when(priceService.generatePriceHistoryChart(
+                eq(productId),
+                eq(request.getStoreId()),
+                eq(request.getStartDate()),
+                eq(request.getEndDate())
         )).thenReturn(mockChart);
 
         // WHEN & THEN
-        mockMvc.perform(MockMvcRequestBuilders.post("/prices/history/chart/{productId}", productId)
+        mockMvc.perform(post("/prices/history/chart/{productId}", productId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.header().string("Content-Disposition", "attachment; filename=price_chart.png"))
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.IMAGE_PNG))
-                .andExpect(MockMvcResultMatchers.content().bytes(mockChart));
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Disposition", "attachment; filename=price_chart.png"))
+                .andExpect(content().contentType(MediaType.IMAGE_PNG))
+                .andExpect(content().bytes(mockChart));
     }
 
     @Test
     void testExportPrices() throws Exception {
         // GIVEN
         byte[] mockData = "{\"prices\":[]}".getBytes();
-        Mockito.when(priceService.exportPricesToJson()).thenReturn(mockData);
+        when(priceService.exportPricesToJson()).thenReturn(mockData);
 
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.get("/prices/export"))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.header().string(HttpHeaders.CONTENT_DISPOSITION,
+        mockMvc.perform(get("/prices/export"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION,
                         "attachment; filename=\"prices.json\""))
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.content().bytes(mockData));
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().bytes(mockData));
 
         // THEN
-        Mockito.verify(priceService).exportPricesToJson();
+        verify(priceService).exportPricesToJson();
     }
 
     @Test
@@ -395,17 +395,17 @@ class PriceControllerTest {
                 MediaType.APPLICATION_JSON_VALUE,
                 jsonData);
 
-        Mockito.when(priceService.importPricesFromJson(jsonData))
+        when(priceService.importPricesFromJson(jsonData))
                 .thenReturn(List.of(importedPrice));
 
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/prices/import")
+        mockMvc.perform(multipart("/prices/import")
                         .file(file))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].price").value(100));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].price").value(100));
 
         // THEN
-        Mockito.verify(priceService).importPricesFromJson(jsonData);
+        verify(priceService).importPricesFromJson(jsonData);
     }
 
 }

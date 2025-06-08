@@ -2,6 +2,7 @@ package com.example.mapper;
 
 import com.example.dto.CategoryDTO;
 import com.example.entity.Category;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
@@ -31,12 +32,12 @@ class CategoryMapperTest {
         Category result = categoryMapper.toEntity(categoryDTO);
 
         // THEN
-        Assertions.assertEquals(categoryDTO.getCategoryId(), result.getCategoryId());
-        Assertions.assertEquals(categoryDTO.getCategoryName(), result.getCategoryName());
-        Assertions.assertNotNull(result.getParent());
-        Assertions.assertEquals(categoryDTO.getParentId(), result.getParent().getCategoryId());
-        Assertions.assertNotNull(result.getCreatedAt());
-        Assertions.assertNotNull(result.getUpdatedAt());
+        assertEquals(categoryDTO.getCategoryId(), result.getCategoryId());
+        assertEquals(categoryDTO.getCategoryName(), result.getCategoryName());
+        assertNotNull(result.getParent());
+        assertEquals(categoryDTO.getParentId(), result.getParent().getCategoryId());
+        assertNotNull(result.getCreatedAt());
+        assertNotNull(result.getUpdatedAt());
     }
 
     @Test
@@ -53,9 +54,9 @@ class CategoryMapperTest {
         CategoryDTO result = categoryMapper.toDto(category);
 
         // THEN
-        Assertions.assertEquals(category.getCategoryId(), result.getCategoryId());
-        Assertions.assertEquals(category.getCategoryName(), result.getCategoryName());
-        Assertions.assertEquals(parent.getCategoryId(), result.getParentId());
+        assertEquals(category.getCategoryId(), result.getCategoryId());
+        assertEquals(category.getCategoryName(), result.getCategoryName());
+        assertEquals(parent.getCategoryId(), result.getParentId());
     }
 
     @Test
@@ -71,12 +72,12 @@ class CategoryMapperTest {
         List<Category> result = categoryMapper.toEntityList(categoryDTOs);
 
         // THEN
-        Assertions.assertEquals(2, result.size());
-        Assertions.assertEquals(categoryDTO1.getCategoryId(), result.get(0).getCategoryId());
-        Assertions.assertEquals(categoryDTO2.getCategoryId(), result.get(1).getCategoryId());
-        Assertions.assertEquals(categoryDTO1.getParentId(), result.get(0).getParent().getCategoryId());
-        Assertions.assertNotNull(result.get(0).getCreatedAt());
-        Assertions.assertNotNull(result.get(1).getCreatedAt());
+        assertEquals(2, result.size());
+        assertEquals(categoryDTO1.getCategoryId(), result.get(0).getCategoryId());
+        assertEquals(categoryDTO2.getCategoryId(), result.get(1).getCategoryId());
+        assertEquals(categoryDTO1.getParentId(), result.get(0).getParent().getCategoryId());
+        assertNotNull(result.get(0).getCreatedAt());
+        assertNotNull(result.get(1).getCreatedAt());
     }
 
     @Test
@@ -99,11 +100,11 @@ class CategoryMapperTest {
         List<CategoryDTO> result = categoryMapper.toDtoList(categories);
 
         // THEN
-        Assertions.assertEquals(2, result.size());
-        Assertions.assertEquals(category1.getCategoryId(), result.get(0).getCategoryId());
-        Assertions.assertEquals(category2.getCategoryId(), result.get(1).getCategoryId());
-        Assertions.assertEquals(parent.getCategoryId(), result.get(0).getParentId());
-        Assertions.assertEquals(parent.getCategoryId(), result.get(1).getParentId());
+        assertEquals(2, result.size());
+        assertEquals(category1.getCategoryId(), result.get(0).getCategoryId());
+        assertEquals(category2.getCategoryId(), result.get(1).getCategoryId());
+        assertEquals(parent.getCategoryId(), result.get(0).getParentId());
+        assertEquals(parent.getCategoryId(), result.get(1).getParentId());
     }
 
     @Test
@@ -117,8 +118,8 @@ class CategoryMapperTest {
         CategoryDTO result = categoryMapper.toDto(category);
 
         // THEN
-        Assertions.assertEquals(category.getCategoryId(), result.getCategoryId());
-        Assertions.assertEquals(category.getCategoryName(), result.getCategoryName());
+        assertEquals(category.getCategoryId(), result.getCategoryId());
+        assertEquals(category.getCategoryName(), result.getCategoryName());
         Assertions.assertNull(result.getParentId());
     }
 
@@ -132,8 +133,8 @@ class CategoryMapperTest {
         Category result = categoryMapper.toEntity(categoryDTO);
 
         // THEN
-        Assertions.assertEquals(categoryDTO.getCategoryId(), result.getCategoryId());
-        Assertions.assertNotNull(result.getSubCategories());
-        Assertions.assertEquals(0, result.getSubCategories().size());
+        assertEquals(categoryDTO.getCategoryId(), result.getCategoryId());
+        assertNotNull(result.getSubCategories());
+        assertEquals(0, result.getSubCategories().size());
     }
 }

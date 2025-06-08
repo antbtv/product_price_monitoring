@@ -79,25 +79,25 @@ class ProductControllerTest {
 
         ProductDTO productDTO = new ProductDTO(1L, "Milk", 1L, testTime, testTime);
 
-        Mockito.when(categoryService.getCategoryById(1L)).thenReturn(category);
-        Mockito.when(productService.createProduct(ArgumentMatchers.any(Product.class))).thenReturn(product);
-        Mockito.when(productMapper.toDto(product)).thenReturn(productDTO);
+        when(categoryService.getCategoryById(1L)).thenReturn(category);
+        when(productService.createProduct(any(Product.class))).thenReturn(product);
+        when(productMapper.toDto(product)).thenReturn(productDTO);
 
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.post("/products")
+        mockMvc.perform(post("/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createDTO)))
-                .andExpect(MockMvcResultMatchers.status().isCreated())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.productId").value(1L))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.productName").value("Milk"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.categoryId").value(1L))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.createdAt").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.updatedAt").exists());
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.productId").value(1L))
+                .andExpect(jsonPath("$.productName").value("Milk"))
+                .andExpect(jsonPath("$.categoryId").value(1L))
+                .andExpect(jsonPath("$.createdAt").exists())
+                .andExpect(jsonPath("$.updatedAt").exists());
 
         // THEN
-        Mockito.verify(categoryService).getCategoryById(1L);
-        Mockito.verify(productService).createProduct(ArgumentMatchers.any(Product.class));
-        Mockito.verify(productMapper).toDto(product);
+        verify(categoryService).getCategoryById(1L);
+        verify(productService).createProduct(any(Product.class));
+        verify(productMapper).toDto(product);
     }
 
     @Test
@@ -110,33 +110,33 @@ class ProductControllerTest {
 
         ProductDTO productDTO = new ProductDTO(1L, "Water", 1L, testTime, testTime);
 
-        Mockito.when(productService.getProductById(1L)).thenReturn(product);
-        Mockito.when(productMapper.toDto(product)).thenReturn(productDTO);
+        when(productService.getProductById(1L)).thenReturn(product);
+        when(productMapper.toDto(product)).thenReturn(productDTO);
 
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.get("/products/1"))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.productId").value(1L))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.productName").value("Water"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.createdAt").exists());
+        mockMvc.perform(get("/products/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.productId").value(1L))
+                .andExpect(jsonPath("$.productName").value("Water"))
+                .andExpect(jsonPath("$.createdAt").exists());
 
         // THEN
-        Mockito.verify(productService).getProductById(1L);
-        Mockito.verify(productMapper).toDto(product);
+        verify(productService).getProductById(1L);
+        verify(productMapper).toDto(product);
     }
 
     @Test
     void testGetProductById_NotFound() throws Exception {
         // GIVEN
-        Mockito.when(productService.getProductById(1L)).thenReturn(null);
+        when(productService.getProductById(1L)).thenReturn(null);
 
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.get("/products/1"))
-                .andExpect(MockMvcResultMatchers.status().isNotFound());
+        mockMvc.perform(get("/products/1"))
+                .andExpect(status().isNotFound());
 
         // THEN
-        Mockito.verify(productService).getProductById(1L);
-        Mockito.verifyNoInteractions(productMapper);
+        verify(productService).getProductById(1L);
+        verifyNoInteractions(productMapper);
     }
 
     @Test
@@ -150,23 +150,23 @@ class ProductControllerTest {
         Product updatedProduct = new Product("Updated Product", new Category());
         updatedProduct.setProductId(productId);
 
-        Mockito.when(productMapper.toEntity(ArgumentMatchers.any(ProductDTO.class))).thenReturn(updatedProduct);
-        Mockito.doNothing().when(productService).updateProduct(ArgumentMatchers.any(Product.class));
+        when(productMapper.toEntity(any(ProductDTO.class))).thenReturn(updatedProduct);
+        doNothing().when(productService).updateProduct(any(Product.class));
 
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.put("/products/{id}", productId)
+        mockMvc.perform(put("/products/{id}", productId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDTO)))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.productName").value("Updated Product"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.categoryId").value(2L));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.productName").value("Updated Product"))
+                .andExpect(jsonPath("$.categoryId").value(2L));
 
         // THEN
-        Mockito.verify(productMapper).toEntity(ArgumentMatchers.argThat(dto ->
+        verify(productMapper).toEntity(argThat(dto ->
                 dto.getProductName().equals("Updated Product") &&
                         dto.getCategoryId() == 2L
         ));
-        Mockito.verify(productService).updateProduct(ArgumentMatchers.any(Product.class));
+        verify(productService).updateProduct(any(Product.class));
     }
 
     @Test
@@ -179,31 +179,31 @@ class ProductControllerTest {
 
         ProductDTO productDTO = new ProductDTO(1L, "New Name", 1L, testTime, testTime.plusHours(1));
 
-        Mockito.when(productService.getProductById(1L)).thenReturn(existingProduct);
-        Mockito.doNothing().when(productService).updateProduct(ArgumentMatchers.any(Product.class));
-        Mockito.when(productMapper.toDto(existingProduct)).thenReturn(productDTO);
+        when(productService.getProductById(1L)).thenReturn(existingProduct);
+        doNothing().when(productService).updateProduct(any(Product.class));
+        when(productMapper.toDto(existingProduct)).thenReturn(productDTO);
 
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.patch("/products/1")
+        mockMvc.perform(patch("/products/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateDTO)))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.productName").value("New Name"));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.productName").value("New Name"));
 
         // THEN
-        Mockito.verify(productService).getProductById(1L);
-        Mockito.verify(productService).updateProduct(ArgumentMatchers.any(Product.class));
-        Mockito.verify(productMapper).toDto(existingProduct);
+        verify(productService).getProductById(1L);
+        verify(productService).updateProduct(any(Product.class));
+        verify(productMapper).toDto(existingProduct);
     }
 
     @Test
     void testDeleteProduct() throws Exception {
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.delete("/products/1"))
-                .andExpect(MockMvcResultMatchers.status().isNoContent());
+        mockMvc.perform(delete("/products/1"))
+                .andExpect(status().isNoContent());
 
         // THEN
-        Mockito.verify(productService).deleteProduct(1L);
+        verify(productService).deleteProduct(1L);
     }
 
     @Test
@@ -220,19 +220,19 @@ class ProductControllerTest {
                 new ProductDTO(2L, "Product 2", 1L, testTime, testTime)
         );
 
-        Mockito.when(productService.getAllProducts()).thenReturn(products);
-        Mockito.when(productMapper.toDtoList(products)).thenReturn(productDTOs);
+        when(productService.getAllProducts()).thenReturn(products);
+        when(productMapper.toDtoList(products)).thenReturn(productDTOs);
 
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.get("/products"))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(2)))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].productName").value("Product 1"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[1].productName").value("Product 2"));
+        mockMvc.perform(get("/products"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].productName").value("Product 1"))
+                .andExpect(jsonPath("$[1].productName").value("Product 2"));
 
         // THEN
-        Mockito.verify(productService).getAllProducts();
-        Mockito.verify(productMapper).toDtoList(products);
+        verify(productService).getAllProducts();
+        verify(productMapper).toDtoList(products);
     }
 
     @Test
@@ -246,36 +246,36 @@ class ProductControllerTest {
                 new ProductDTO(1L, "Product 1", 1L, testTime, testTime)
         );
 
-        Mockito.when(productService.getProductsByCategoryId(1L)).thenReturn(products);
-        Mockito.when(productMapper.toDtoList(products)).thenReturn(productDTOs);
+        when(productService.getProductsByCategoryId(1L)).thenReturn(products);
+        when(productMapper.toDtoList(products)).thenReturn(productDTOs);
 
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.get("/products/category/1"))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(1)))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].productName").value("Product 1"));
+        mockMvc.perform(get("/products/category/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].productName").value("Product 1"));
 
         // THEN
-        Mockito.verify(productService).getProductsByCategoryId(1L);
-        Mockito.verify(productMapper).toDtoList(products);
+        verify(productService).getProductsByCategoryId(1L);
+        verify(productMapper).toDtoList(products);
     }
 
     @Test
     void testExportProducts() throws Exception {
         // GIVEN
         byte[] mockData = "{\"products\":[]}".getBytes();
-        Mockito.when(productService.exportProductsToJson()).thenReturn(mockData);
+        when(productService.exportProductsToJson()).thenReturn(mockData);
 
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.get("/products/export"))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.header().string(HttpHeaders.CONTENT_DISPOSITION,
+        mockMvc.perform(get("/products/export"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION,
                         "attachment; filename=\"products.json\""))
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.content().bytes(mockData));
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().bytes(mockData));
 
         // THEN
-        Mockito.verify(productService).exportProductsToJson();
+        verify(productService).exportProductsToJson();
     }
 
     @Test
@@ -290,17 +290,17 @@ class ProductControllerTest {
                 MediaType.APPLICATION_JSON_VALUE,
                 jsonData);
 
-        Mockito.when(productService.importProductsFromJson(jsonData))
+        when(productService.importProductsFromJson(jsonData))
                 .thenReturn(List.of(importedProduct));
 
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/products/import")
+        mockMvc.perform(multipart("/products/import")
                         .file(file))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].productName").value("Imported"));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].productName").value("Imported"));
 
         // THEN
-        Mockito.verify(productService).importProductsFromJson(jsonData);
+        verify(productService).importProductsFromJson(jsonData);
     }
 
     @Test
@@ -313,11 +313,11 @@ class ProductControllerTest {
                 new byte[0]);
 
         // WHEN
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/products/import")
+        mockMvc.perform(multipart("/products/import")
                         .file(emptyFile))
-                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+                .andExpect(status().isBadRequest());
 
         // THEN
-        Mockito.verifyNoInteractions(productService);
+        verifyNoInteractions(productService);
     }
 }

@@ -91,7 +91,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public byte[] exportProductsToJson() {
         try {
-            List<ProductDTO> productDTOs = productMapper.toDtoList(productRepository.findAll());
+            List<ProductDTO> productDTOs = productMapper.toDtoList(productRepository.findAllWithCategory());
             log.info("Экспортировано {} продуктов в JSON", productDTOs.size());
             return objectMapper.writeValueAsBytes(productDTOs);
         } catch (JsonProcessingException e) {

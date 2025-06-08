@@ -13,7 +13,7 @@
 **/MANIFEST.MF
 
 # Properties files
-*.properties
+# *.properties
 .env
 
 # Compiled class file

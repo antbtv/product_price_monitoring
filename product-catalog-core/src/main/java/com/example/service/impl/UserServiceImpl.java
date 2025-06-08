@@ -116,7 +116,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     @Transactional
     @Override
     public void deleteUser(Long id) {
-        if (userRepository.existsById(id)) {
+        if (!userRepository.existsById(id)) {
             throw new UserNotFoundException(id);
         }
         userRepository.deleteById(id);
@@ -126,8 +126,10 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     @Transactional
     @Override
     public void updateUser(User user) {
-        userRepository.findById(user.getUserId())
-                .orElseThrow(() -> new UserNotFoundException(user.getUserId()));
+        Long id = user.getUserId();
+        if (!userRepository.existsById(id)) {
+            throw new UserNotFoundException(id);
+        }
 
         userRepository.save(user);
         log.info("Обновлен пользователь ID={}", user.getUserId());

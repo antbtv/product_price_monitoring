@@ -10,11 +10,14 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.LocalDateTime;
@@ -68,9 +71,9 @@ class UserControllerTest {
         userDTO.setUserId(userId);
         userDTO.setUsername("updatedUser");
 
-        Mockito.when(userService.getUserById(userId)).thenReturn(user);
-        Mockito.when(userMapper.toDto(ArgumentMatchers.any(User.class))).thenReturn(userDTO);
-        Mockito.doNothing().when(userService).updateUser(ArgumentMatchers.any(User.class));
+        when(userService.getUserById(userId)).thenReturn(user);
+        when(userMapper.toDto(ArgumentMatchers.any(User.class))).thenReturn(userDTO);
+        doNothing().when(userService).updateUser(ArgumentMatchers.any(User.class));
 
         // WHEN
         mockMvc.perform(MockMvcRequestBuilders.put("/users/{id}", userId)
@@ -81,14 +84,14 @@ class UserControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.username").value("updatedUser"));
 
         //THEN
-        Mockito.verify(userService).updateUser(ArgumentMatchers.any(User.class));
+        verify(userService).updateUser(ArgumentMatchers.any(User.class));
     }
 
     @Test
     void testUpdateUser_NotFound() throws Exception {
         // GIVEN
         Long userId = 999L;
-        Mockito.when(userService.getUserById(userId)).thenReturn(null);
+        when(userService.getUserById(userId)).thenReturn(null);
 
         // WHEN
         mockMvc.perform(MockMvcRequestBuilders.put("/users/{id}", userId)
@@ -97,7 +100,7 @@ class UserControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
 
         // THEN
-        Mockito.verify(userService, Mockito.never()).updateUser(ArgumentMatchers.any());
+        verify(userService, never()).updateUser(ArgumentMatchers.any());
     }
 
     @Test
@@ -122,8 +125,8 @@ class UserControllerTest {
         responseDTO.setUserId(userId);
         responseDTO.setFirstName("New Name");
 
-        Mockito.when(userService.getUserById(userId)).thenReturn(existingUser);
-        Mockito.when(userMapper.toDto(ArgumentMatchers.any())).thenReturn(responseDTO);
+        when(userService.getUserById(userId)).thenReturn(existingUser);
+        when(userMapper.toDto(ArgumentMatchers.any())).thenReturn(responseDTO);
 
         // WHEN
         mockMvc.perform(MockMvcRequestBuilders.patch("/users/{id}", userId)
@@ -133,35 +136,35 @@ class UserControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.firstName").value("New Name"));
 
         //THEN
-        Mockito.verify(userService).updateUser(existingUser);
+        verify(userService).updateUser(existingUser);
     }
 
     @Test
     void testDeleteUser_Success() throws Exception {
         // GIVEN
         Long userId = 1L;
-        Mockito.when(userService.getUserById(userId)).thenReturn(new User());
+        when(userService.getUserById(userId)).thenReturn(new User());
 
         // WHEN
         mockMvc.perform(MockMvcRequestBuilders.delete("/users/{id}", userId))
                 .andExpect(MockMvcResultMatchers.status().isNoContent());
 
         //THEN
-        Mockito.verify(userService).deleteUser(userId);
+        verify(userService).deleteUser(userId);
     }
 
     @Test
     void testDeleteUser_NotFound() throws Exception {
         // GIVEN
         Long userId = 999L;
-        Mockito.when(userService.getUserById(userId)).thenReturn(null);
+        when(userService.getUserById(userId)).thenReturn(null);
 
         // WHEN & THEN
         mockMvc.perform(MockMvcRequestBuilders.delete("/users/{id}", userId))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
 
         //THEN
-        Mockito.verify(userService, Mockito.never()).deleteUser(ArgumentMatchers.any());
+        verify(userService, never()).deleteUser(ArgumentMatchers.any());
     }
 
     @Test
@@ -173,8 +176,8 @@ class UserControllerTest {
         UserDTO userDTO = new UserDTO();
         userDTO.setUserId(userId);
 
-        Mockito.when(userService.getUserById(userId)).thenReturn(user);
-        Mockito.when(userMapper.toDto(user)).thenReturn(userDTO);
+        when(userService.getUserById(userId)).thenReturn(user);
+        when(userMapper.toDto(user)).thenReturn(userDTO);
 
         // WHEN & THEN
         mockMvc.perform(MockMvcRequestBuilders.get("/users/{id}", userId))
@@ -186,7 +189,7 @@ class UserControllerTest {
     void testGetUser_NotFound() throws Exception {
         // GIVEN
         Long userId = 999L;
-        Mockito.when(userService.getUserById(userId)).thenReturn(null);
+        when(userService.getUserById(userId)).thenReturn(null);
 
         // WHEN & THEN
         mockMvc.perform(MockMvcRequestBuilders.get("/users/{id}", userId))
@@ -197,7 +200,7 @@ class UserControllerTest {
     void testPartialUpdateUser_EmptyBody() throws Exception {
         // GIVEN
         Long userId = 1L;
-        Mockito.when(userService.getUserById(userId)).thenReturn(new User());
+        when(userService.getUserById(userId)).thenReturn(new User());
 
         // WHEN
         mockMvc.perform(MockMvcRequestBuilders.patch("/users/{id}", userId)
@@ -206,7 +209,7 @@ class UserControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isOk());
 
         // THEN
-        Mockito.verify(userService).updateUser(ArgumentMatchers.any());
+        verify(userService).updateUser(ArgumentMatchers.any());
     }
 
     @Test

@@ -89,7 +89,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public byte[] exportCategoriesToJson() {
         try {
-            List<CategoryDTO> dtos = categoryMapper.toDtoList(categoryRepository.findAll());
+            List<CategoryDTO> dtos = categoryMapper.toDtoList(categoryRepository.findAllWithSubCategories());
             log.info("Экспортировано категорий: {}", dtos.size());
             return objectMapper.writeValueAsBytes(dtos);
         } catch (JsonProcessingException e) {

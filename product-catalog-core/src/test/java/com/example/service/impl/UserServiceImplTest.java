@@ -6,7 +6,6 @@ import com.example.repository.security.UserRepository;
 import com.example.entity.security.User;
 import com.example.exceptions.UserNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,12 +20,12 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Collections;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@Disabled
 class UserServiceImplTest {
 
     @Mock
@@ -37,7 +36,9 @@ class UserServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        ReflectionTestUtils.setField(userService, "SECRET_KEY", "test-secret-key");
+        ReflectionTestUtils.setField(userService, "SECRET_KEY",
+                "test-secret-key-ту-лонг-кей-");
+        userService.init();
     }
 
     @Test
@@ -48,17 +49,18 @@ class UserServiceImplTest {
         mockUser.setUsername("testUser");
         mockUser.setPassword("password");
         mockUser.setRole(UserRole.ROLE_USER);
-        Mockito.when(userRepository.findByUsername("testUser")).thenReturn(mockUser);
+        when(userRepository.findByUsername("testUser")).thenReturn(Optional.of(mockUser));
 
-        UserDetails userDetails = new org.springframework.security.core.userdetails.User("testUser", "password",
+        UserDetails userDetails = 
+                new org.springframework.security.core.userdetails.User("testUser", "password",
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
 
         // WHEN
         String token = userService.generateToken(userDetails);
 
         // THEN
-        Assertions.assertNotNull(token);
-        Assertions.assertFalse(token.isEmpty());
+        assertNotNull(token);
+        assertFalse(token.isEmpty());
     }
 
     @Test
@@ -71,16 +73,17 @@ class UserServiceImplTest {
         mockUser.setUsername(username);
         mockUser.setPassword("password");
         mockUser.setRole(UserRole.ROLE_USER);
-        Mockito.when(userRepository.findByUsername(username)).thenReturn(mockUser);
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(mockUser));
 
-        String token = userService.generateToken(new org.springframework.security.core.userdetails.User(username, "password",
+        String token = userService.generateToken(
+                new org.springframework.security.core.userdetails.User(username, "password",
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))));
 
         // WHEN
         String extractedUsername = userService.extractUsername(token);
 
         // THEN
-        Assertions.assertEquals(username, extractedUsername);
+        assertEquals(username, extractedUsername);
     }
 
     @Test
@@ -93,16 +96,17 @@ class UserServiceImplTest {
         mockUser.setUsername(username);
         mockUser.setPassword("password");
         mockUser.setRole(UserRole.ROLE_USER);
-        Mockito.when(userRepository.findByUsername(username)).thenReturn(mockUser);
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(mockUser));
 
-        String token = userService.generateToken(new org.springframework.security.core.userdetails.User("testUser", "password",
+        String token = userService.generateToken(
+                new org.springframework.security.core.userdetails.User("testUser", "password",
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))));
 
         // WHEN
         boolean isExpired = userService.isTokenExpired(token);
 
         // THEN
-        Assertions.assertFalse(isExpired);
+        assertFalse(isExpired);
     }
 
     @Test
@@ -115,9 +119,10 @@ class UserServiceImplTest {
         mockUser.setUsername(username);
         mockUser.setPassword("password");
         mockUser.setRole(UserRole.ROLE_USER);
-        Mockito.when(userRepository.findByUsername(username)).thenReturn(mockUser);
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(mockUser));
 
-        UserDetails userDetails = new org.springframework.security.core.userdetails.User("testUser", "password",
+        UserDetails userDetails = 
+                new org.springframework.security.core.userdetails.User("testUser", "password",
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
         String token = userService.generateToken(userDetails);
 
@@ -125,7 +130,7 @@ class UserServiceImplTest {
         boolean isValid = userService.validateToken(token, userDetails);
 
         // THEN
-        Assertions.assertTrue(isValid);
+        assertTrue(isValid);
     }
 
     @Test
@@ -136,25 +141,25 @@ class UserServiceImplTest {
         user.setUsername(username);
         user.setPassword("password");
         user.setRole(UserRole.ROLE_USER);
-        Mockito.when(userRepository.findByUsername(username)).thenReturn(user);
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
 
         // WHEN
         UserDetails result = userService.loadUserByUsername(username);
 
         // THEN
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(username, result.getUsername());
-        Mockito.verify(userRepository).findByUsername(username);
+        assertNotNull(result);
+        assertEquals(username, result.getUsername());
+        verify(userRepository).findByUsername(username);
     }
 
     @Test
     void testLoadUserByUsername_UserNotFound() {
         // GIVEN
         String username = "nonExistentUser";
-        Mockito.when(userRepository.findByUsername(username)).thenReturn(null);
+        when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
 
         // WHEN & THEN
-        Assertions.assertThrows(UsernameNotFoundException.class, () -> userService.loadUserByUsername(username));
+        assertThrows(UsernameNotFoundException.class, () -> userService.loadUserByUsername(username));
     }
 
     @Test
@@ -163,28 +168,28 @@ class UserServiceImplTest {
         String username = "testUser";
         User user = new User();
         user.setUsername(username);
-        Mockito.when(userRepository.findByUsername(username)).thenReturn(user);
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
 
         // WHEN
         boolean exists = userService.userExists(username);
 
         // THEN
-        Assertions.assertTrue(exists);
-        Mockito.verify(userRepository).findByUsername(username);
+        assertTrue(exists);
+        verify(userRepository).findByUsername(username);
     }
 
     @Test
     void testUserExists_False() {
         // GIVEN
         String username = "nonExistentUser";
-        Mockito.when(userRepository.findByUsername(username)).thenReturn(null);
+        when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
 
         // WHEN
         boolean exists = userService.userExists(username);
 
         // THEN
-        Assertions.assertFalse(exists);
-        Mockito.verify(userRepository).findByUsername(username);
+        assertFalse(exists);
+        verify(userRepository).findByUsername(username);
     }
 
     @Test
@@ -198,7 +203,7 @@ class UserServiceImplTest {
         userService.addUser(user);
 
         // THEN
-        Mockito.verify(userRepository).create(user);
+        verify(userRepository).save(user);
     }
 
     @Test
@@ -209,7 +214,7 @@ class UserServiceImplTest {
         user.setPassword("password");
 
         // WHEN & THEN
-        Assertions.assertThrows(IllegalArgumentException.class, () -> userService.addUser(user));
+        assertThrows(IllegalArgumentException.class, () -> userService.addUser(user));
     }
 
     @Test
@@ -220,7 +225,7 @@ class UserServiceImplTest {
         user.setPassword("123");
 
         // WHEN & THEN
-        Assertions.assertThrows(IllegalArgumentException.class, () -> userService.addUser(user));
+        assertThrows(IllegalArgumentException.class, () -> userService.addUser(user));
     }
 
     @Test
@@ -244,14 +249,14 @@ class UserServiceImplTest {
         );
         SecurityContextHolder.getContext().setAuthentication(auth);
 
-        Mockito.when(userRepository.findByUsername("testUser")).thenReturn(mockUser);
+        when(userRepository.findByUsername("testUser")).thenReturn(Optional.of(mockUser));
 
         // WHEN
         User result = userService.getCurrentUser();
 
         // THEN
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals("testUser", result.getUsername());
+        assertNotNull(result);
+        assertEquals("testUser", result.getUsername());
     }
 
     @Test
@@ -263,7 +268,7 @@ class UserServiceImplTest {
         User result = userService.getCurrentUser();
 
         // THEN
-        Assertions.assertNull(result);
+        assertNull(result);
     }
 
     @Test
@@ -272,51 +277,49 @@ class UserServiceImplTest {
         Long userId = 1L;
         User expectedUser = new User();
         expectedUser.setUserId(userId);
-        Mockito.when(userRepository.findById(userId)).thenReturn(expectedUser);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(expectedUser));
 
         // WHEN
         User result = userService.getUserById(userId);
 
         // THEN
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(userId, result.getUserId());
-        Mockito.verify(userRepository).findById(userId);
+        assertNotNull(result);
+        assertEquals(userId, result.getUserId());
+        verify(userRepository).findById(userId);
     }
 
     @Test
     void testGetUserById_NotExists() {
         // GIVEN
         Long userId = 999L;
-        Mockito.when(userRepository.findById(userId)).thenReturn(null);
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
         // WHEN & THEN
-        Assertions.assertThrows(UserNotFoundException.class, () -> userService.getUserById(userId));
+        assertThrows(UserNotFoundException.class, () -> userService.getUserById(userId));
     }
 
     @Test
     void testDeleteUser_Success() {
         // GIVEN
         Long userId = 1L;
-        User mockUser = new User();
-        mockUser.setUserId(userId);
-        Mockito.when(userRepository.findById(userId)).thenReturn(mockUser);
+        when(userRepository.existsById(userId)).thenReturn(true);
 
         // WHEN
         userService.deleteUser(userId);
 
         // THEN
-        Mockito.verify(userRepository).delete(userId);
+        verify(userRepository).deleteById(userId);
     }
 
     @Test
     void testDeleteUser_UserNotFound() {
         // GIVEN
         Long userId = 999L;
-        Mockito.when(userRepository.findById(userId)).thenReturn(null);
+        when(userRepository.existsById(userId)).thenReturn(false);
 
         // WHEN & THEN
-        Assertions.assertThrows(UserNotFoundException.class, () -> userService.deleteUser(userId));
-        Mockito.verify(userRepository, Mockito.never()).delete(ArgumentMatchers.any());
+        assertThrows(UserNotFoundException.class, () -> userService.deleteUser(userId));
+        verify(userRepository, never()).delete(any());
     }
 
     @Test
@@ -325,13 +328,13 @@ class UserServiceImplTest {
         User user = new User();
         user.setUserId(1L);
         user.setUsername("updatedUser");
-        Mockito.when(userRepository.findById(1L)).thenReturn(user);
+        when(userRepository.existsById(1L)).thenReturn(true);
 
         // WHEN
         userService.updateUser(user);
 
         // THEN
-        Mockito.verify(userRepository).update(user);
+        verify(userRepository).save(user);
     }
 
     @Test
@@ -339,10 +342,10 @@ class UserServiceImplTest {
         // GIVEN
         User user = new User();
         user.setUserId(999L);
-        Mockito.when(userRepository.findById(999L)).thenReturn(null);
+        when(userRepository.existsById(999L)).thenReturn(false);
 
         // WHEN & THEN
-        Assertions.assertThrows(UserNotFoundException.class, () -> userService.updateUser(user));
-        Mockito.verify(userRepository, Mockito.never()).update(ArgumentMatchers.any());
+        assertThrows(UserNotFoundException.class, () -> userService.updateUser(user));
+        verify(userRepository, never()).save(any());
     }
 }
