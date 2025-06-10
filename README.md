@@ -10,6 +10,7 @@ A Spring Boot-based product catalog application with PostgreSQL, Flyway migratio
 - [Functionality](#functionality)
 - [Technology Stack](#technology-stack)
 - [Project Structure](#project-structure)
+- [Testing](#testing)
 - [Configuration](#configuration)
 - [Database Migrations with Flyway](#database-migrations-with-flyway)
 - [Running with Docker](#running-with-docker)
@@ -133,6 +134,36 @@ product_price_monitoring/
 ├── .env                                # Environment variables for Docker
 ├── pom.xml                             # Parent POM listing modules and common settings
 └── README.md                           # This file
+```
+
+---
+
+## Testing
+
+The application includes comprehensive test coverage ensuring reliability:
+
+### Test Coverage
+- **Services**: Full test coverage for all business logic components
+- **Controllers**: Complete testing of all REST API endpoints
+- **Mappers**: Validation of entity-to-DTO mapping functionality using MapStruct
+- **Security**: Authentication and authorization testing 
+
+### Test Types & Scenarios
+- **Positive Test Cases**: Verification of expected functionality under normal conditions
+- **Negative Test Cases**: Error handling and edge case validation
+- **User-centric Testing**: Extensive test scenarios focused on user management and authentication flows
+- **Unit Tests**: Isolated testing of individual components and methods
+
+### Testing Framework & Tools
+- **JUnit 5**: Modern testing framework with advanced features
+- **Spring Boot Test**: Integration testing with Spring context
+- **Spring Security Test**: Security-specific testing utilities
+- **Mockito**: Mocking framework for isolated unit testing
+
+### Running Tests
+```bash
+# Run all tests
+mvn test
 ```
 
 ---
