@@ -2,6 +2,7 @@ package com.example.mapper;
 
 import com.example.dto.CategoryDTO;
 import com.example.entity.Category;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
@@ -119,7 +120,7 @@ class CategoryMapperTest {
         // THEN
         assertEquals(category.getCategoryId(), result.getCategoryId());
         assertEquals(category.getCategoryName(), result.getCategoryName());
-        assertNull(result.getParentId());
+        Assertions.assertNull(result.getParentId());
     }
 
     @Test

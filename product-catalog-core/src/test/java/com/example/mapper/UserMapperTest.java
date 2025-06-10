@@ -3,6 +3,7 @@ package com.example.mapper;
 import com.example.dto.UserDTO;
 import com.example.entity.security.User;
 import com.example.enums.UserRole;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
@@ -12,7 +13,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ExtendWith(MockitoExtension.class)
 class UserMapperTest {
@@ -42,19 +44,19 @@ class UserMapperTest {
         User entity = userMapper.toEntity(dto);
 
         // THEN
-        assertNotNull(entity);
-        assertEquals(dto.getUserId(), entity.getUserId());
-        assertEquals(dto.getUsername(), entity.getUsername());
-        assertEquals(dto.getPassword(), entity.getPassword());
-        assertEquals(dto.getEmail(), entity.getEmail());
-        assertEquals(dto.getRole(), entity.getRole());
-        assertEquals(dto.getFirstName(), entity.getFirstName());
-        assertEquals(dto.getLastName(), entity.getLastName());
-        assertEquals(dto.getBirthDate(), entity.getBirthDate());
-        assertEquals(dto.getPhoneNumber(), entity.getPhoneNumber());
-        assertEquals(dto.getIsVerified(), entity.getIsVerified());
-        assertEquals(dto.getCreatedAt(), entity.getCreatedAt());
-        assertEquals(dto.getUpdatedAt(), entity.getUpdatedAt());
+        Assertions.assertNotNull(entity);
+        Assertions.assertEquals(dto.getUserId(), entity.getUserId());
+        Assertions.assertEquals(dto.getUsername(), entity.getUsername());
+        Assertions.assertEquals(dto.getPassword(), entity.getPassword());
+        Assertions.assertEquals(dto.getEmail(), entity.getEmail());
+        Assertions.assertEquals(dto.getRole(), entity.getRole());
+        Assertions.assertEquals(dto.getFirstName(), entity.getFirstName());
+        Assertions.assertEquals(dto.getLastName(), entity.getLastName());
+        Assertions.assertEquals(dto.getBirthDate(), entity.getBirthDate());
+        Assertions.assertEquals(dto.getPhoneNumber(), entity.getPhoneNumber());
+        Assertions.assertEquals(dto.getIsVerified(), entity.getIsVerified());
+        Assertions.assertEquals(dto.getCreatedAt(), entity.getCreatedAt());
+        Assertions.assertEquals(dto.getUpdatedAt(), entity.getUpdatedAt());
     }
 
     @Test
@@ -79,19 +81,19 @@ class UserMapperTest {
         UserDTO dto = userMapper.toDto(entity);
 
         // THEN
-        assertNotNull(dto);
-        assertEquals(entity.getUserId(), dto.getUserId());
-        assertEquals(entity.getUsername(), dto.getUsername());
-        assertEquals(entity.getPassword(), dto.getPassword());
-        assertEquals(entity.getEmail(), dto.getEmail());
-        assertEquals(entity.getRole(), dto.getRole());
-        assertEquals(entity.getFirstName(), dto.getFirstName());
-        assertEquals(entity.getLastName(), dto.getLastName());
-        assertEquals(entity.getBirthDate(), dto.getBirthDate());
-        assertEquals(entity.getPhoneNumber(), dto.getPhoneNumber());
-        assertEquals(entity.getIsVerified(), dto.getIsVerified());
-        assertEquals(entity.getCreatedAt(), dto.getCreatedAt());
-        assertEquals(entity.getUpdatedAt(), dto.getUpdatedAt());
+        Assertions.assertNotNull(dto);
+        Assertions.assertEquals(entity.getUserId(), dto.getUserId());
+        Assertions.assertEquals(entity.getUsername(), dto.getUsername());
+        Assertions.assertEquals(entity.getPassword(), dto.getPassword());
+        Assertions.assertEquals(entity.getEmail(), dto.getEmail());
+        Assertions.assertEquals(entity.getRole(), dto.getRole());
+        Assertions.assertEquals(entity.getFirstName(), dto.getFirstName());
+        Assertions.assertEquals(entity.getLastName(), dto.getLastName());
+        Assertions.assertEquals(entity.getBirthDate(), dto.getBirthDate());
+        Assertions.assertEquals(entity.getPhoneNumber(), dto.getPhoneNumber());
+        Assertions.assertEquals(entity.getIsVerified(), dto.getIsVerified());
+        Assertions.assertEquals(entity.getCreatedAt(), dto.getCreatedAt());
+        Assertions.assertEquals(entity.getUpdatedAt(), dto.getUpdatedAt());
     }
 
     @Test
@@ -112,13 +114,13 @@ class UserMapperTest {
         List<User> entities = userMapper.toEntityList(dtos);
 
         // THEN
-        assertEquals(2, entities.size());
-        assertEquals(dto1.getUserId(), entities.get(0).getUserId());
-        assertEquals(dto2.getUserId(), entities.get(1).getUserId());
-        assertEquals(dto1.getEmail(), entities.get(0).getEmail());
-        assertEquals(dto2.getPhoneNumber(), entities.get(1).getPhoneNumber());
-        assertEquals(dto1.getRole(), entities.get(0).getRole());
-        assertEquals(dto2.getFirstName(), entities.get(1).getFirstName());
+        Assertions.assertEquals(2, entities.size());
+        Assertions.assertEquals(dto1.getUserId(), entities.get(0).getUserId());
+        Assertions.assertEquals(dto2.getUserId(), entities.get(1).getUserId());
+        Assertions.assertEquals(dto1.getEmail(), entities.get(0).getEmail());
+        Assertions.assertEquals(dto2.getPhoneNumber(), entities.get(1).getPhoneNumber());
+        Assertions.assertEquals(dto1.getRole(), entities.get(0).getRole());
+        Assertions.assertEquals(dto2.getFirstName(), entities.get(1).getFirstName());
     }
 
     @Test
@@ -152,12 +154,12 @@ class UserMapperTest {
         List<UserDTO> dtos = userMapper.toDtoList(entities);
 
         // THEN
-        assertEquals(2, dtos.size());
-        assertEquals(entity1.getUserId(), dtos.get(0).getUserId());
-        assertEquals(entity2.getUserId(), dtos.get(1).getUserId());
-        assertEquals(entity1.getUsername(), dtos.get(0).getUsername());
-        assertEquals(entity2.getEmail(), dtos.get(1).getEmail());
-        assertEquals(entity1.getRole(), dtos.get(0).getRole());
-        assertEquals(entity2.getLastName(), dtos.get(1).getLastName());
+        Assertions.assertEquals(2, dtos.size());
+        Assertions.assertEquals(entity1.getUserId(), dtos.get(0).getUserId());
+        Assertions.assertEquals(entity2.getUserId(), dtos.get(1).getUserId());
+        Assertions.assertEquals(entity1.getUsername(), dtos.get(0).getUsername());
+        Assertions.assertEquals(entity2.getEmail(), dtos.get(1).getEmail());
+        Assertions.assertEquals(entity1.getRole(), dtos.get(0).getRole());
+        Assertions.assertEquals(entity2.getLastName(), dtos.get(1).getLastName());
     }
 }

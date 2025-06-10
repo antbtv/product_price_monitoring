@@ -1,9 +1,9 @@
 package com.example.service.impl;
 
-import com.example.dao.CategoryDao;
 import com.example.dto.CategoryDTO;
 import com.example.entity.Category;
 import com.example.mapper.CategoryMapper;
+import com.example.repository.CategoryRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,8 +12,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -25,7 +25,7 @@ import static org.mockito.Mockito.when;
 class CategoryServiceImplTest {
 
     @Mock
-    private CategoryDao categoryDao;
+    private CategoryRepository categoryRepository;
 
     @Mock
     private CategoryMapper categoryMapper;
@@ -36,21 +36,21 @@ class CategoryServiceImplTest {
     @BeforeEach
     void setUp() {
         ObjectMapper objectMapper = new ObjectMapper();
-        categoryService = new CategoryServiceImpl(categoryDao, categoryMapper, objectMapper);
+        categoryService = new CategoryServiceImpl(categoryRepository, categoryMapper, objectMapper);
     }
 
     @Test
     void testCreateCategory() {
         // GIVEN
         Category category = new Category("Test Category", null);
-        when(categoryDao.create(category)).thenReturn(category);
+        when(categoryRepository.save(category)).thenReturn(category);
 
         // WHEN
         Category result = categoryService.createCategory(category);
 
         // THEN
         assertEquals(category, result);
-        verify(categoryDao).create(category);
+        verify(categoryRepository).save(category);
     }
 
     @Test
@@ -58,14 +58,14 @@ class CategoryServiceImplTest {
         // GIVEN
         Long id = 1L;
         Category category = new Category("Test Category", null);
-        when(categoryDao.findById(id)).thenReturn(category);
+        when(categoryRepository.findById(id)).thenReturn(Optional.of(category));
 
         // WHEN
         Category result = categoryService.getCategoryById(id);
 
         // THEN
         assertEquals(category, result);
-        verify(categoryDao).findById(id);
+        verify(categoryRepository).findById(id);
     }
 
     @Test
@@ -73,27 +73,26 @@ class CategoryServiceImplTest {
         // GIVEN
         Category category = new Category("Test Category", null);
         category.setCategoryId(1L);
-        when(categoryDao.findById(1L)).thenReturn(category);
+        when(categoryRepository.existsById(1L)).thenReturn(true);
 
         // WHEN
         categoryService.updateCategory(category);
 
         // THEN
-        verify(categoryDao).update(category);
+        verify(categoryRepository).save(category);
     }
 
     @Test
     void testDeleteCategory() {
         // GIVEN
-        Category category = new Category("Test Category", null);
-        category.setCategoryId(1L);
-        when(categoryDao.findById(1L)).thenReturn(category);
+        Long id = 1L;
+        when(categoryRepository.existsById(id)).thenReturn(true);
 
         // WHEN
-        categoryService.deleteCategory(1L);
+        categoryService.deleteCategory(id);
 
         // THEN
-        verify(categoryDao).delete(1L);
+        verify(categoryRepository).deleteById(id);
     }
 
     @Test
@@ -101,21 +100,21 @@ class CategoryServiceImplTest {
         // GIVEN
         Category category1 = new Category("Category 1", null);
         Category category2 = new Category("Category 2", null);
-        when(categoryDao.findAll()).thenReturn(List.of(category1, category2));
+        when(categoryRepository.findAllWithSubCategories()).thenReturn(List.of(category1, category2));
 
         // WHEN
         List<Category> result = categoryService.getAllCategories();
 
         // THEN
         assertEquals(2, result.size());
-        verify(categoryDao).findAll();
+        verify(categoryRepository).findAllWithSubCategories();
     }
 
     @Test
-    void testExportCategoriesToJson() throws IOException {
+    void testExportCategoriesToJson() {
         // GIVEN
         Category category = new Category("Test Category", null);
-        when(categoryDao.findAll()).thenReturn(List.of(category));
+        when(categoryRepository.findAllWithSubCategories()).thenReturn(List.of(category));
 
         // WHEN
         byte[] result = categoryService.exportCategoriesToJson();
@@ -126,16 +125,14 @@ class CategoryServiceImplTest {
     }
 
     @Test
-    void testImportCategoriesFromJson() throws IOException {
+    void testImportCategoriesFromJson() {
         // GIVEN
         String jsonData = "[{\"categoryName\":\"Category\", \"parentId\": null}]";
         byte[] data = jsonData.getBytes();
-
         Category category = new Category();
         category.setCategoryName("Category");
         category.setParent(null);
-
-        when(categoryDao.create(any(Category.class))).thenReturn(category);
+        when(categoryRepository.saveAll(anyList())).thenReturn(List.of(category));
         when(categoryMapper.toEntityList(anyList())).thenReturn(List.of(category));
 
         // WHEN
@@ -145,6 +142,6 @@ class CategoryServiceImplTest {
         assertEquals(1, result.size());
         assertNull(result.get(0).getParentId());
         assertEquals("Category", result.get(0).getCategoryName());
-        verify(categoryDao).create(any(Category.class));
+        verify(categoryRepository).saveAll(anyList());
     }
 }

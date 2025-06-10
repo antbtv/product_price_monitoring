@@ -1,20 +1,22 @@
 package com.example.service.impl;
 
-import com.example.dao.ProductDao;
 import com.example.dto.ProductDTO;
 import com.example.entity.Category;
 import com.example.entity.Product;
 import com.example.mapper.ProductMapper;
+import com.example.repository.ProductRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -26,7 +28,7 @@ import static org.mockito.Mockito.when;
 class ProductServiceImplTest {
 
     @Mock
-    private ProductDao productDao;
+    private ProductRepository productRepository;
 
     @Mock
     private ProductMapper productMapper;
@@ -37,7 +39,7 @@ class ProductServiceImplTest {
     @BeforeEach
     void setUp() {
         ObjectMapper objectMapper = new ObjectMapper();
-        productService = new ProductServiceImpl(productDao, productMapper, objectMapper);
+        productService = new ProductServiceImpl(productRepository, productMapper, objectMapper);
     }
 
     @Test
@@ -49,14 +51,14 @@ class ProductServiceImplTest {
         category.setCategoryId(1L);
         product.setProductName("Test");
         product.setCategory(category);
-        when(productDao.create(product)).thenReturn(product);
+        when(productRepository.save(product)).thenReturn(product);
 
         // WHEN
         Product result = productService.createProduct(product);
 
         // THEN
         assertEquals(product, result);
-        verify(productDao).create(product);
+        verify(productRepository).save(product);
     }
 
     @Test
@@ -64,14 +66,14 @@ class ProductServiceImplTest {
         // GIVEN
         Long id = 1L;
         Product product = new Product();
-        when(productDao.findById(id)).thenReturn(product);
+        when(productRepository.findById(id)).thenReturn(Optional.of(product));
 
         // WHEN
         Product result = productService.getProductById(id);
 
         // THEN
         assertEquals(product, result);
-        verify(productDao).findById(id);
+        verify(productRepository).findById(id);
     }
 
     @Test
@@ -80,29 +82,27 @@ class ProductServiceImplTest {
         Product product = new Product();
         product.setProductId(1L);
         product.setProductName("Test Product");
-        when(productDao.findById(1L)).thenReturn(product);
+        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
 
         // WHEN
         productService.updateProduct(product);
 
         // THEN
-        verify(productDao).update(product);
+        verify(productRepository).save(product);
         assertNotNull(product.getUpdatedAt());
     }
 
     @Test
     void testDeleteProduct() {
         // GIVEN
-        Product product = new Product();
-        product.setProductId(1L);
-        product.setProductName("Test Product");
-        when(productDao.findById(1L)).thenReturn(product);
+        Long id = 1L;
+        when(productRepository.existsById(id)).thenReturn(true);
 
         // WHEN
-        productService.deleteProduct(1L);
+        productService.deleteProduct(id);
 
         // THEN
-        verify(productDao).delete(1L);
+        verify(productRepository).deleteById(id);
     }
 
     @Test
@@ -110,14 +110,14 @@ class ProductServiceImplTest {
         // GIVEN
         Product product1 = new Product();
         Product product2 = new Product();
-        when(productDao.findAll()).thenReturn(List.of(product1, product2));
+        when(productRepository.findAllWithCategory()).thenReturn(List.of(product1, product2));
 
         // WHEN
         List<Product> result = productService.getAllProducts();
 
         // THEN
         assertEquals(2, result.size());
-        verify(productDao).findAll();
+        verify(productRepository).findAllWithCategory();
     }
 
     @Test
@@ -125,21 +125,21 @@ class ProductServiceImplTest {
         // GIVEN
         Long categoryId = 1L;
         Product product = new Product();
-        when(productDao.findByCategoryId(categoryId)).thenReturn(List.of(product));
+        when(productRepository.findByCategory_CategoryId(categoryId)).thenReturn(List.of(product));
 
         // WHEN
         List<Product> result = productService.getProductsByCategoryId(categoryId);
 
         // THEN
         assertEquals(1, result.size());
-        verify(productDao).findByCategoryId(categoryId);
+        verify(productRepository).findByCategory_CategoryId(categoryId);
     }
 
     @Test
-    void testExportProductsToJson() throws IOException {
+    void testExportProductsToJson() {
         // GIVEN
         Product product = new Product();
-        when(productDao.findAll()).thenReturn(List.of(product));
+        when(productRepository.findAllWithCategory()).thenReturn(List.of(product));
 
         // WHEN
         byte[] result = productService.exportProductsToJson();
@@ -150,7 +150,7 @@ class ProductServiceImplTest {
     }
 
     @Test
-    void testImportProductsFromJson() throws IOException {
+    void testImportProductsFromJson() {
         // GIVEN
         String jsonData = "[{\"productId\":1,\"productName\":\"Test Product\",\"categoryId\":1}]";
         byte[] data = jsonData.getBytes();
@@ -162,7 +162,7 @@ class ProductServiceImplTest {
         product.setCategory(category);
 
         when(productMapper.toEntityList(anyList())).thenReturn(List.of(product));
-        when(productDao.create(any(Product.class))).thenReturn(new Product());
+        when(productRepository.saveAll(anyList())).thenReturn(List.of(product));
 
         // WHEN
         List<ProductDTO> result = productService.importProductsFromJson(data);
@@ -170,6 +170,6 @@ class ProductServiceImplTest {
         // THEN
         assertEquals(1, result.size());
         assertEquals(product.getProductId(), result.get(0).getProductId());
-        verify(productDao).create(any(Product.class));
+        verify(productRepository).saveAll(anyList());
     }
 }

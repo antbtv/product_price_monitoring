@@ -10,11 +10,14 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.LocalDateTime;
@@ -69,19 +72,19 @@ class UserControllerTest {
         userDTO.setUsername("updatedUser");
 
         when(userService.getUserById(userId)).thenReturn(user);
-        when(userMapper.toDto(any(User.class))).thenReturn(userDTO);
-        doNothing().when(userService).updateUser(any(User.class));
+        when(userMapper.toDto(ArgumentMatchers.any(User.class))).thenReturn(userDTO);
+        doNothing().when(userService).updateUser(ArgumentMatchers.any(User.class));
 
         // WHEN
-        mockMvc.perform(put("/users/{id}", userId)
+        mockMvc.perform(MockMvcRequestBuilders.put("/users/{id}", userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(user)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.userId").value(userId))
-                .andExpect(jsonPath("$.username").value("updatedUser"));
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.userId").value(userId))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.username").value("updatedUser"));
 
         //THEN
-        verify(userService).updateUser(any(User.class));
+        verify(userService).updateUser(ArgumentMatchers.any(User.class));
     }
 
     @Test
@@ -91,13 +94,13 @@ class UserControllerTest {
         when(userService.getUserById(userId)).thenReturn(null);
 
         // WHEN
-        mockMvc.perform(put("/users/{id}", userId)
+        mockMvc.perform(MockMvcRequestBuilders.put("/users/{id}", userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new User())))
-                .andExpect(status().isNotFound());
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
 
         // THEN
-        verify(userService, never()).updateUser(any());
+        verify(userService, never()).updateUser(ArgumentMatchers.any());
     }
 
     @Test
@@ -123,14 +126,14 @@ class UserControllerTest {
         responseDTO.setFirstName("New Name");
 
         when(userService.getUserById(userId)).thenReturn(existingUser);
-        when(userMapper.toDto(any())).thenReturn(responseDTO);
+        when(userMapper.toDto(ArgumentMatchers.any())).thenReturn(responseDTO);
 
         // WHEN
-        mockMvc.perform(patch("/users/{id}", userId)
+        mockMvc.perform(MockMvcRequestBuilders.patch("/users/{id}", userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateDTO)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.firstName").value("New Name"));
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.firstName").value("New Name"));
 
         //THEN
         verify(userService).updateUser(existingUser);
@@ -143,8 +146,8 @@ class UserControllerTest {
         when(userService.getUserById(userId)).thenReturn(new User());
 
         // WHEN
-        mockMvc.perform(delete("/users/{id}", userId))
-                .andExpect(status().isNoContent());
+        mockMvc.perform(MockMvcRequestBuilders.delete("/users/{id}", userId))
+                .andExpect(MockMvcResultMatchers.status().isNoContent());
 
         //THEN
         verify(userService).deleteUser(userId);
@@ -157,11 +160,11 @@ class UserControllerTest {
         when(userService.getUserById(userId)).thenReturn(null);
 
         // WHEN & THEN
-        mockMvc.perform(delete("/users/{id}", userId))
-                .andExpect(status().isNotFound());
+        mockMvc.perform(MockMvcRequestBuilders.delete("/users/{id}", userId))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
 
         //THEN
-        verify(userService, never()).deleteUser(any());
+        verify(userService, never()).deleteUser(ArgumentMatchers.any());
     }
 
     @Test
@@ -177,9 +180,9 @@ class UserControllerTest {
         when(userMapper.toDto(user)).thenReturn(userDTO);
 
         // WHEN & THEN
-        mockMvc.perform(get("/users/{id}", userId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.userId").value(userId));
+        mockMvc.perform(MockMvcRequestBuilders.get("/users/{id}", userId))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.userId").value(userId));
     }
 
     @Test
@@ -189,8 +192,8 @@ class UserControllerTest {
         when(userService.getUserById(userId)).thenReturn(null);
 
         // WHEN & THEN
-        mockMvc.perform(get("/users/{id}", userId))
-                .andExpect(status().isNotFound());
+        mockMvc.perform(MockMvcRequestBuilders.get("/users/{id}", userId))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
     @Test
@@ -200,13 +203,13 @@ class UserControllerTest {
         when(userService.getUserById(userId)).thenReturn(new User());
 
         // WHEN
-        mockMvc.perform(patch("/users/{id}", userId)
+        mockMvc.perform(MockMvcRequestBuilders.patch("/users/{id}", userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andExpect(status().isOk());
+                .andExpect(MockMvcResultMatchers.status().isOk());
 
         // THEN
-        verify(userService).updateUser(any());
+        verify(userService).updateUser(ArgumentMatchers.any());
     }
 
     @Test
@@ -217,9 +220,9 @@ class UserControllerTest {
         user.setUserId(2L);
 
         // WHEN & THEN
-        mockMvc.perform(put("/users/{id}", pathId)
+        mockMvc.perform(MockMvcRequestBuilders.put("/users/{id}", pathId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(user)))
-                .andExpect(status().isNotFound());
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 }

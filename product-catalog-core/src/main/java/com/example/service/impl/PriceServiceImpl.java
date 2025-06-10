@@ -1,8 +1,6 @@
 package com.example.service.impl;
 
-import com.example.chart.ChartGenerator;
-import com.example.dao.PriceDao;
-import com.example.dao.PriceHistoryDao;
+import com.example.utils.ChartGenerator;
 import com.example.dto.PriceDTO;
 import com.example.entity.Price;
 import com.example.entity.PriceHistory;
@@ -11,10 +9,13 @@ import com.example.exceptions.DataImportException;
 import com.example.exceptions.PriceHistoryNotFoundException;
 import com.example.exceptions.PriceNotFoundException;
 import com.example.mapper.PriceMapper;
+import com.example.repository.PriceHistoryRepository;
+import com.example.repository.PriceRepository;
 import com.example.service.PriceService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,32 +23,24 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
 @Slf4j
+@AllArgsConstructor
 public class PriceServiceImpl implements PriceService {
 
-    private final PriceDao priceDao;
-    private final PriceHistoryDao priceHistoryDao;
+    private final PriceRepository priceRepository;
+    private final PriceHistoryRepository priceHistoryRepository;
     private final ChartGenerator chartGenerator;
     private final PriceMapper priceMapper;
     private final ObjectMapper objectMapper;
 
-    public PriceServiceImpl(PriceDao priceDao, PriceHistoryDao priceHistoryDao,
-                            PriceMapper priceMapper, ObjectMapper objectMapper,
-                            ChartGenerator chartGenerator) {
-        this.priceDao = priceDao;
-        this.priceHistoryDao = priceHistoryDao;
-        this.priceMapper = priceMapper;
-        this.objectMapper = objectMapper;
-        this.chartGenerator = chartGenerator;
-    }
-
     @Transactional
     @Override
     public Price createPrice(Price price) {
-        Price createdPrice = priceDao.create(price);
+        Price createdPrice = priceRepository.save(price);
         log.info("Создана цена: ID={}, продукт ID={}, магазин ID={}, значение={}",
                 createdPrice.getPriceId(),
                 createdPrice.getProduct().getProductId(),
@@ -59,7 +52,7 @@ public class PriceServiceImpl implements PriceService {
         priceHistory.setStore(createdPrice.getStore());
         priceHistory.setPrice(createdPrice.getPrice());
         priceHistory.setRecordedAt(LocalDateTime.now());
-        priceHistoryDao.create(priceHistory);
+        priceHistoryRepository.save(priceHistory);
 
         return createdPrice;
     }
@@ -67,47 +60,41 @@ public class PriceServiceImpl implements PriceService {
     @Transactional(readOnly = true)
     @Override
     public Price getPriceById(Long id) {
-        Price price = priceDao.findById(id);
-        if (price == null) {
-            throw new PriceNotFoundException(id);
-        }
-        log.debug("Получена цена ID={}", id);
-        return price;
+        return priceRepository.findById(id)
+                .orElseThrow(() -> new PriceNotFoundException(id));
     }
 
     @Transactional
     @Override
     public void updatePrice(Price price) {
-        Price currentPrice = priceDao.findById(price.getPriceId());
-        if (currentPrice == null) {
-            throw new PriceNotFoundException(price.getPriceId());
-        }
+        Price currentPrice = priceRepository.findById(price.getPriceId())
+                .orElseThrow(() -> new PriceNotFoundException(price.getPriceId()));
 
         PriceHistory priceHistory = new PriceHistory();
         priceHistory.setProduct(currentPrice.getProduct());
         priceHistory.setStore(currentPrice.getStore());
         priceHistory.setPrice(currentPrice.getPrice());
         priceHistory.setRecordedAt(LocalDateTime.now());
-        priceHistoryDao.create(priceHistory);
+        priceHistoryRepository.save(priceHistory);
 
-        priceDao.update(price);
+        priceRepository.save(price);
         log.info("Обновлена цена ID={}", price.getPriceId());
     }
 
     @Transactional
     @Override
     public void deletePrice(Long id) {
-        if (priceDao.findById(id) == null) {
+        if (!priceRepository.existsById(id)) {
             throw new PriceNotFoundException(id);
         }
-        priceDao.delete(id);
+        priceRepository.deleteById(id);
         log.info("Удалена цена ID={}", id);
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<Price> getAllPrices() {
-        List<Price> prices = priceDao.findAll();
+        List<Price> prices = priceRepository.findAllWithProductAndStore();
         log.debug("Получено {} цен", prices.size());
         return prices;
     }
@@ -115,7 +102,7 @@ public class PriceServiceImpl implements PriceService {
     @Transactional(readOnly = true)
     @Override
     public List<PriceDTO> getPricesByProductId(Long productId) {
-        List<Price> prices = priceDao.findByProductId(productId);
+        List<Price> prices = priceRepository.findByProduct_ProductId(productId);
         if (prices.isEmpty()) {
             log.debug("Цены для продукта ID={} не найдены", productId);
         }
@@ -128,8 +115,12 @@ public class PriceServiceImpl implements PriceService {
                                                                      Long storeId,
                                                                      LocalDate startDate,
                                                                      LocalDate endDate) {
-        List<PriceHistory> history = priceHistoryDao.findPriceHistoryByProductAndDateRange(
-                productId, storeId, startDate, endDate);
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
+
+        List<PriceHistory> history = priceHistoryRepository.findByProductIdAndStoreIdAndDateRange(
+                productId, storeId, startDateTime, endDateTime);
+
         log.info("История цен: продукт ID={}, магазин ID={}, найдено {} записей",
                 productId, storeId, history.size());
         return history;
@@ -152,8 +143,20 @@ public class PriceServiceImpl implements PriceService {
     @Transactional(readOnly = true)
     @Override
     public byte[] exportPricesToJson() {
+        for (int i = 0; i < 4; i++) {
+            System.out.println("Hello world;");
+            System.out.println("Hello world;");
+            System.out.println("Hello world;");
+            System.out.println("Hello world;");
+            System.out.println("Hello world;");
+            System.out.println("Hello world;");
+
+
+        }
+
+
         try {
-            List<PriceDTO> priceDTOs = priceMapper.toDtoList(priceDao.findAll());
+            List<PriceDTO> priceDTOs = priceMapper.toDtoList(priceRepository.findAllWithProductAndStore());
             log.info("Экспортировано {} цен", priceDTOs.size());
             return objectMapper.writeValueAsBytes(priceDTOs);
         } catch (JsonProcessingException e) {
@@ -168,7 +171,7 @@ public class PriceServiceImpl implements PriceService {
         try {
             List<PriceDTO> priceDTOs = objectMapper.readValue(data, new TypeReference<>() {});
             List<Price> prices = priceMapper.toEntityList(priceDTOs);
-            prices.forEach(priceDao::create);
+            priceRepository.saveAll(prices);
             log.info("Импортировано {} цен", prices.size());
             return priceDTOs;
         } catch (IOException e) {

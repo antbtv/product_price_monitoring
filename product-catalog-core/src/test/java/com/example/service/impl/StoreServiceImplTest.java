@@ -1,18 +1,20 @@
 package com.example.service.impl;
 
-import com.example.dao.StoreDao;
 import com.example.dto.StoreDTO;
 import com.example.entity.Store;
 import com.example.mapper.StoreMapper;
+import com.example.repository.StoreRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -24,7 +26,7 @@ import static org.mockito.Mockito.when;
 class StoreServiceImplTest {
 
     @Mock
-    private StoreDao storeDao;
+    private StoreRepository storeRepository;
 
     @Mock
     private StoreMapper storeMapper;
@@ -35,21 +37,21 @@ class StoreServiceImplTest {
     @BeforeEach
     void setUp() {
         ObjectMapper objectMapper = new ObjectMapper();
-        storeService = new StoreServiceImpl(storeDao, storeMapper, objectMapper);
+        storeService = new StoreServiceImpl(storeRepository, storeMapper, objectMapper);
     }
 
     @Test
     void testCreateStore() {
         // GIVEN
         Store store = new Store();
-        when(storeDao.create(store)).thenReturn(store);
+        when(storeRepository.save(store)).thenReturn(store);
 
         // WHEN
         Store result = storeService.createStore(store);
 
         // THEN
         assertEquals(store, result);
-        verify(storeDao).create(store);
+        verify(storeRepository).save(store);
     }
 
     @Test
@@ -57,14 +59,14 @@ class StoreServiceImplTest {
         // GIVEN
         Long id = 1L;
         Store store = new Store();
-        when(storeDao.findById(id)).thenReturn(store);
+        when(storeRepository.findById(id)).thenReturn(Optional.of(store));
 
         // WHEN
         Store result = storeService.getStoreById(id);
 
         // THEN
         assertEquals(store, result);
-        verify(storeDao).findById(id);
+        verify(storeRepository).findById(id);
     }
 
     @Test
@@ -73,28 +75,26 @@ class StoreServiceImplTest {
         Store store = new Store();
         store.setStoreId(1L);
         store.setStoreName("Test Store");
-        when(storeDao.findById(store.getStoreId())).thenReturn(store);
+        when(storeRepository.findById(store.getStoreId())).thenReturn(Optional.of(store));
 
         // WHEN
         storeService.updateStore(store);
 
         // THEN
-        verify(storeDao).update(store);
+        verify(storeRepository).save(store);
     }
 
     @Test
     void testDeleteStore() {
         // GIVEN
-        Store store = new Store();
-        store.setStoreId(1L);
-        store.setStoreName("Test Store");
-        when(storeDao.findById(store.getStoreId())).thenReturn(store);
+        Long id = 1L;
+        when(storeRepository.existsById(id)).thenReturn(true);
 
         // WHEN
-        storeService.deleteStore(1L);
+        storeService.deleteStore(id);
 
         // THEN
-        verify(storeDao).delete(1L);
+        verify(storeRepository).deleteById(id);
     }
 
     @Test
@@ -102,21 +102,21 @@ class StoreServiceImplTest {
         // GIVEN
         Store store1 = new Store();
         Store store2 = new Store();
-        when(storeDao.findAll()).thenReturn(List.of(store1, store2));
+        when(storeRepository.findAll()).thenReturn(List.of(store1, store2));
 
         // WHEN
         List<Store> result = storeService.getAllStores();
 
         // THEN
         assertEquals(2, result.size());
-        verify(storeDao).findAll();
+        verify(storeRepository).findAll();
     }
 
     @Test
     void testExportStoresToJson() {
         // GIVEN
         Store store = new Store();
-        when(storeDao.findAll()).thenReturn(List.of(store));
+        when(storeRepository.findAll()).thenReturn(List.of(store));
 
         // WHEN
         byte[] result = storeService.exportStoresToJson();
@@ -136,7 +136,7 @@ class StoreServiceImplTest {
         store.setStoreName("Test Store");
 
         when(storeMapper.toEntityList(anyList())).thenReturn(List.of(store));
-        when(storeDao.create(any(Store.class))).thenReturn(new Store());
+        when(storeRepository.saveAll(anyList())).thenReturn(List.of(new Store()));
 
         // WHEN
         List<StoreDTO> result = storeService.importStoresFromJson(data);
@@ -144,6 +144,6 @@ class StoreServiceImplTest {
         // THEN
         assertEquals(1, result.size());
         assertEquals(store.getStoreId(), result.get(0).getStoreId());
-        verify(storeDao).create(any(Store.class));
+        verify(storeRepository).saveAll(anyList());
     }
 }

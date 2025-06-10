@@ -1,9 +1,10 @@
 package com.example.service.impl;
 
-import com.example.dao.DataLogDao;
 import com.example.entity.DataLog;
 import com.example.entity.security.User;
+import com.example.repository.DataLogRepository;
 import com.example.service.DataLogService;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,12 +13,9 @@ import java.time.LocalDateTime;
 
 @Service
 @Slf4j
+@AllArgsConstructor
 public class DataLogServiceImpl implements DataLogService {
-    private final DataLogDao dataLogDao;
-
-    public DataLogServiceImpl(DataLogDao dataLogDao) {
-        this.dataLogDao = dataLogDao;
-    }
+    private final DataLogRepository dataLogRepository;
 
     @Transactional
     @Override
@@ -28,6 +26,6 @@ public class DataLogServiceImpl implements DataLogService {
         dataLog.setRecordCount(recordCount);
         dataLog.setUser(user);
         dataLog.setOperationTime(LocalDateTime.now());
-        dataLogDao.create(dataLog);
+        dataLogRepository.save(dataLog);
     }
 }

@@ -4,6 +4,7 @@ import com.example.dto.PriceDTO;
 import com.example.entity.Price;
 import com.example.entity.Product;
 import com.example.entity.Store;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
@@ -12,7 +13,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ExtendWith(MockitoExtension.class)
 class PriceMapperTest {
@@ -34,14 +36,14 @@ class PriceMapperTest {
         Price entity = priceMapper.toEntity(dto);
 
         // THEN
-        assertNotNull(entity);
-        assertEquals(dto.getPriceId(), entity.getPriceId());
-        assertEquals(dto.getPrice(), entity.getPrice());
-        assertEquals(dto.getRecordedAt(), entity.getRecordedAt());
-        assertNotNull(entity.getStore());
-        assertEquals(dto.getStoreId(), entity.getStore().getStoreId());
-        assertNotNull(entity.getProduct());
-        assertEquals(dto.getProductId(), entity.getProduct().getProductId());
+        Assertions.assertNotNull(entity);
+        Assertions.assertEquals(dto.getPriceId(), entity.getPriceId());
+        Assertions.assertEquals(dto.getPrice(), entity.getPrice());
+        Assertions.assertEquals(dto.getRecordedAt(), entity.getRecordedAt());
+        Assertions.assertNotNull(entity.getStore());
+        Assertions.assertEquals(dto.getStoreId(), entity.getStore().getStoreId());
+        Assertions.assertNotNull(entity.getProduct());
+        Assertions.assertEquals(dto.getProductId(), entity.getProduct().getProductId());
     }
 
     @Test
@@ -61,12 +63,12 @@ class PriceMapperTest {
         PriceDTO dto = priceMapper.toDto(entity);
 
         // THEN
-        assertNotNull(dto);
-        assertEquals(entity.getPriceId(), dto.getPriceId());
-        assertEquals(entity.getPrice(), dto.getPrice());
-        assertEquals(entity.getRecordedAt(), dto.getRecordedAt());
-        assertEquals(store.getStoreId(), dto.getStoreId());
-        assertEquals(product.getProductId(), dto.getProductId());
+        Assertions.assertNotNull(dto);
+        Assertions.assertEquals(entity.getPriceId(), dto.getPriceId());
+        Assertions.assertEquals(entity.getPrice(), dto.getPrice());
+        Assertions.assertEquals(entity.getRecordedAt(), dto.getRecordedAt());
+        Assertions.assertEquals(store.getStoreId(), dto.getStoreId());
+        Assertions.assertEquals(product.getProductId(), dto.getProductId());
     }
 
     @Test
@@ -80,11 +82,11 @@ class PriceMapperTest {
         List<Price> entities = priceMapper.toEntityList(dtos);
 
         // THEN
-        assertEquals(2, entities.size());
-        assertEquals(dto1.getPriceId(), entities.get(0).getPriceId());
-        assertEquals(dto2.getPriceId(), entities.get(1).getPriceId());
-        assertEquals(dto1.getStoreId(), entities.get(0).getStore().getStoreId());
-        assertEquals(dto2.getProductId(), entities.get(1).getProduct().getProductId());
+        Assertions.assertEquals(2, entities.size());
+        Assertions.assertEquals(dto1.getPriceId(), entities.get(0).getPriceId());
+        Assertions.assertEquals(dto2.getPriceId(), entities.get(1).getPriceId());
+        Assertions.assertEquals(dto1.getStoreId(), entities.get(0).getStore().getStoreId());
+        Assertions.assertEquals(dto2.getProductId(), entities.get(1).getProduct().getProductId());
     }
 
     @Test
@@ -114,11 +116,11 @@ class PriceMapperTest {
         List<PriceDTO> dtos = priceMapper.toDtoList(entities);
 
         // THEN
-        assertEquals(2, dtos.size());
-        assertEquals(entity1.getPriceId(), dtos.get(0).getPriceId());
-        assertEquals(entity2.getPriceId(), dtos.get(1).getPriceId());
-        assertEquals(store1.getStoreId(), dtos.get(0).getStoreId());
-        assertEquals(product2.getProductId(), dtos.get(1).getProductId());
+        Assertions.assertEquals(2, dtos.size());
+        Assertions.assertEquals(entity1.getPriceId(), dtos.get(0).getPriceId());
+        Assertions.assertEquals(entity2.getPriceId(), dtos.get(1).getPriceId());
+        Assertions.assertEquals(store1.getStoreId(), dtos.get(0).getStoreId());
+        Assertions.assertEquals(product2.getProductId(), dtos.get(1).getProductId());
     }
 
     @Test
@@ -128,8 +130,8 @@ class PriceMapperTest {
         PriceDTO dto2 = new PriceDTO(2L, 1L, null, 20000, LocalDateTime.now());
 
         // WHEN & THEN
-        assertThrows(IllegalArgumentException.class, () -> priceMapper.toEntity(dto1));
-        assertThrows(IllegalArgumentException.class, () -> priceMapper.toEntity(dto2));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> priceMapper.toEntity(dto1));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> priceMapper.toEntity(dto2));
     }
 
     @Test
@@ -141,7 +143,7 @@ class PriceMapperTest {
         Price entity = priceMapper.toEntity(dto);
 
         // THEN
-        assertNotNull(entity.getRecordedAt());
+        Assertions.assertNotNull(entity.getRecordedAt());
     }
 
     @Test
@@ -154,7 +156,7 @@ class PriceMapperTest {
         Price entity = new Price(product, store, 10000);
 
         // THEN
-        assertNotNull(entity.getRecordedAt());
+        Assertions.assertNotNull(entity.getRecordedAt());
     }
 
     @Test
@@ -166,6 +168,6 @@ class PriceMapperTest {
         Price entity = priceMapper.toEntity(dto);
 
         // THEN
-        assertEquals(dto.getPrice(), entity.getPrice());
+        Assertions.assertEquals(dto.getPrice(), entity.getPrice());
     }
 }

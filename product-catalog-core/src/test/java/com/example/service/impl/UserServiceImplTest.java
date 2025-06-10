@@ -2,7 +2,7 @@ package com.example.service.impl;
 
 import com.example.entity.security.CustomUserDetails;
 import com.example.enums.UserRole;
-import com.example.dao.security.UserDao;
+import com.example.repository.security.UserRepository;
 import com.example.entity.security.User;
 import com.example.exceptions.UserNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +20,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Collections;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -28,14 +29,16 @@ import static org.mockito.Mockito.*;
 class UserServiceImplTest {
 
     @Mock
-    private UserDao userDAO;
+    private UserRepository userRepository;
 
     @InjectMocks
     private UserServiceImpl userService;
 
     @BeforeEach
     void setUp() {
-        ReflectionTestUtils.setField(userService, "SECRET_KEY", "test-secret-key");
+        ReflectionTestUtils.setField(userService, "SECRET_KEY",
+                "test-secret-key-ту-лонг-кей-");
+        userService.init();
     }
 
     @Test
@@ -46,9 +49,10 @@ class UserServiceImplTest {
         mockUser.setUsername("testUser");
         mockUser.setPassword("password");
         mockUser.setRole(UserRole.ROLE_USER);
-        when(userDAO.findByUsername("testUser")).thenReturn(mockUser);
+        when(userRepository.findByUsername("testUser")).thenReturn(Optional.of(mockUser));
 
-        UserDetails userDetails = new org.springframework.security.core.userdetails.User("testUser", "password",
+        UserDetails userDetails = 
+                new org.springframework.security.core.userdetails.User("testUser", "password",
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
 
         // WHEN
@@ -69,9 +73,10 @@ class UserServiceImplTest {
         mockUser.setUsername(username);
         mockUser.setPassword("password");
         mockUser.setRole(UserRole.ROLE_USER);
-        when(userDAO.findByUsername(username)).thenReturn(mockUser);
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(mockUser));
 
-        String token = userService.generateToken(new org.springframework.security.core.userdetails.User(username, "password",
+        String token = userService.generateToken(
+                new org.springframework.security.core.userdetails.User(username, "password",
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))));
 
         // WHEN
@@ -91,9 +96,10 @@ class UserServiceImplTest {
         mockUser.setUsername(username);
         mockUser.setPassword("password");
         mockUser.setRole(UserRole.ROLE_USER);
-        when(userDAO.findByUsername(username)).thenReturn(mockUser);
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(mockUser));
 
-        String token = userService.generateToken(new org.springframework.security.core.userdetails.User("testUser", "password",
+        String token = userService.generateToken(
+                new org.springframework.security.core.userdetails.User("testUser", "password",
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))));
 
         // WHEN
@@ -113,9 +119,10 @@ class UserServiceImplTest {
         mockUser.setUsername(username);
         mockUser.setPassword("password");
         mockUser.setRole(UserRole.ROLE_USER);
-        when(userDAO.findByUsername(username)).thenReturn(mockUser);
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(mockUser));
 
-        UserDetails userDetails = new org.springframework.security.core.userdetails.User("testUser", "password",
+        UserDetails userDetails = 
+                new org.springframework.security.core.userdetails.User("testUser", "password",
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
         String token = userService.generateToken(userDetails);
 
@@ -134,7 +141,7 @@ class UserServiceImplTest {
         user.setUsername(username);
         user.setPassword("password");
         user.setRole(UserRole.ROLE_USER);
-        when(userDAO.findByUsername(username)).thenReturn(user);
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
 
         // WHEN
         UserDetails result = userService.loadUserByUsername(username);
@@ -142,14 +149,14 @@ class UserServiceImplTest {
         // THEN
         assertNotNull(result);
         assertEquals(username, result.getUsername());
-        verify(userDAO).findByUsername(username);
+        verify(userRepository).findByUsername(username);
     }
 
     @Test
     void testLoadUserByUsername_UserNotFound() {
         // GIVEN
         String username = "nonExistentUser";
-        when(userDAO.findByUsername(username)).thenReturn(null);
+        when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
 
         // WHEN & THEN
         assertThrows(UsernameNotFoundException.class, () -> userService.loadUserByUsername(username));
@@ -161,28 +168,28 @@ class UserServiceImplTest {
         String username = "testUser";
         User user = new User();
         user.setUsername(username);
-        when(userDAO.findByUsername(username)).thenReturn(user);
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
 
         // WHEN
         boolean exists = userService.userExists(username);
 
         // THEN
         assertTrue(exists);
-        verify(userDAO).findByUsername(username);
+        verify(userRepository).findByUsername(username);
     }
 
     @Test
     void testUserExists_False() {
         // GIVEN
         String username = "nonExistentUser";
-        when(userDAO.findByUsername(username)).thenReturn(null);
+        when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
 
         // WHEN
         boolean exists = userService.userExists(username);
 
         // THEN
         assertFalse(exists);
-        verify(userDAO).findByUsername(username);
+        verify(userRepository).findByUsername(username);
     }
 
     @Test
@@ -196,7 +203,7 @@ class UserServiceImplTest {
         userService.addUser(user);
 
         // THEN
-        verify(userDAO).create(user);
+        verify(userRepository).save(user);
     }
 
     @Test
@@ -242,7 +249,7 @@ class UserServiceImplTest {
         );
         SecurityContextHolder.getContext().setAuthentication(auth);
 
-        when(userDAO.findByUsername("testUser")).thenReturn(mockUser);
+        when(userRepository.findByUsername("testUser")).thenReturn(Optional.of(mockUser));
 
         // WHEN
         User result = userService.getCurrentUser();
@@ -270,7 +277,7 @@ class UserServiceImplTest {
         Long userId = 1L;
         User expectedUser = new User();
         expectedUser.setUserId(userId);
-        when(userDAO.findById(userId)).thenReturn(expectedUser);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(expectedUser));
 
         // WHEN
         User result = userService.getUserById(userId);
@@ -278,14 +285,14 @@ class UserServiceImplTest {
         // THEN
         assertNotNull(result);
         assertEquals(userId, result.getUserId());
-        verify(userDAO).findById(userId);
+        verify(userRepository).findById(userId);
     }
 
     @Test
     void testGetUserById_NotExists() {
         // GIVEN
         Long userId = 999L;
-        when(userDAO.findById(userId)).thenReturn(null);
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
         // WHEN & THEN
         assertThrows(UserNotFoundException.class, () -> userService.getUserById(userId));
@@ -295,26 +302,24 @@ class UserServiceImplTest {
     void testDeleteUser_Success() {
         // GIVEN
         Long userId = 1L;
-        User mockUser = new User();
-        mockUser.setUserId(userId);
-        when(userDAO.findById(userId)).thenReturn(mockUser);
+        when(userRepository.existsById(userId)).thenReturn(true);
 
         // WHEN
         userService.deleteUser(userId);
 
         // THEN
-        verify(userDAO).delete(userId);
+        verify(userRepository).deleteById(userId);
     }
 
     @Test
     void testDeleteUser_UserNotFound() {
         // GIVEN
         Long userId = 999L;
-        when(userDAO.findById(userId)).thenReturn(null);
+        when(userRepository.existsById(userId)).thenReturn(false);
 
         // WHEN & THEN
         assertThrows(UserNotFoundException.class, () -> userService.deleteUser(userId));
-        verify(userDAO, never()).delete(any());
+        verify(userRepository, never()).delete(any());
     }
 
     @Test
@@ -323,13 +328,13 @@ class UserServiceImplTest {
         User user = new User();
         user.setUserId(1L);
         user.setUsername("updatedUser");
-        when(userDAO.findById(1L)).thenReturn(user);
+        when(userRepository.existsById(1L)).thenReturn(true);
 
         // WHEN
         userService.updateUser(user);
 
         // THEN
-        verify(userDAO).update(user);
+        verify(userRepository).save(user);
     }
 
     @Test
@@ -337,10 +342,10 @@ class UserServiceImplTest {
         // GIVEN
         User user = new User();
         user.setUserId(999L);
-        when(userDAO.findById(999L)).thenReturn(null);
+        when(userRepository.existsById(999L)).thenReturn(false);
 
         // WHEN & THEN
         assertThrows(UserNotFoundException.class, () -> userService.updateUser(user));
-        verify(userDAO, never()).update(any());
+        verify(userRepository, never()).save(any());
     }
 }

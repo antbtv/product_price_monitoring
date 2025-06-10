@@ -1,8 +1,8 @@
 package com.example.service.impl;
 
-import com.example.chart.ChartGenerator;
-import com.example.dao.PriceDao;
-import com.example.dao.PriceHistoryDao;
+import com.example.repository.PriceHistoryRepository;
+import com.example.repository.PriceRepository;
+import com.example.utils.ChartGenerator;
 import com.example.dto.PriceDTO;
 import com.example.entity.Price;
 import com.example.entity.PriceHistory;
@@ -13,13 +13,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -31,10 +33,10 @@ import static org.mockito.Mockito.when;
 class PriceServiceImplTest {
 
     @Mock
-    private PriceDao priceDao;
+    private PriceRepository priceRepository;
 
     @Mock
-    private PriceHistoryDao priceHistoryDao;
+    private PriceHistoryRepository priceHistoryRepository;
 
     @Mock
     private PriceMapper priceMapper;
@@ -46,8 +48,8 @@ class PriceServiceImplTest {
     void setUp() {
         ObjectMapper objectMapper = new ObjectMapper();
         ChartGenerator chartGenerator = new ChartGenerator();
-        priceService = new PriceServiceImpl(priceDao, priceHistoryDao, priceMapper,
-                objectMapper, chartGenerator);
+        priceService = new PriceServiceImpl(priceRepository, priceHistoryRepository, chartGenerator,
+                priceMapper, objectMapper);
     }
 
     @Test
@@ -65,14 +67,14 @@ class PriceServiceImplTest {
         price.setPriceId(1L);
         price.setProduct(product);
         price.setStore(store);
-        when(priceDao.create(price)).thenReturn(price);
+        when(priceRepository.save(price)).thenReturn(price);
 
         // WHEN
         Price result = priceService.createPrice(price);
 
         // THEN
         assertEquals(price, result);
-        verify(priceDao).create(price);
+        verify(priceRepository).save(price);
     }
 
     @Test
@@ -91,14 +93,14 @@ class PriceServiceImplTest {
         price.setProduct(product);
         price.setStore(store);
 
-        when(priceDao.findById(1L)).thenReturn(price);
+        when(priceRepository.findById(1L)).thenReturn(Optional.of(price));
 
         // WHEN
         Price result = priceService.getPriceById(1L);
 
         // THEN
         assertEquals(price, result);
-        verify(priceDao).findById(1L);
+        verify(priceRepository).findById(1L);
     }
 
     @Test
@@ -112,28 +114,27 @@ class PriceServiceImplTest {
         newPrice.setPriceId(1L);
         newPrice.setPrice(120);
 
-        when(priceDao.findById(currentPrice.getPriceId())).thenReturn(currentPrice);
+        when(priceRepository.findById(currentPrice.getPriceId())).thenReturn(Optional.of(currentPrice));
 
         // WHEN
         priceService.updatePrice(newPrice);
 
         // THEN
-        verify(priceHistoryDao).create(any(PriceHistory.class));
-        verify(priceDao).update(newPrice);
+        verify(priceHistoryRepository).save(ArgumentMatchers.any(PriceHistory.class));
+        verify(priceRepository).save(newPrice);
     }
 
     @Test
     void testDeletePrice() {
         // GIVEN
-        Price currentPrice = new Price();
-        currentPrice.setPriceId(1L);
-        when(priceDao.findById(currentPrice.getPriceId())).thenReturn(currentPrice);
+        Long id = 1L;
+        when(priceRepository.existsById(id)).thenReturn(true);
 
         // WHEN
-        priceService.deletePrice(1L);
+        priceService.deletePrice(id);
 
         // THEN
-        verify(priceDao).delete(1L);
+        verify(priceRepository).deleteById(id);
     }
 
     @Test
@@ -141,14 +142,14 @@ class PriceServiceImplTest {
         // GIVEN
         Price price1 = new Price();
         Price price2 = new Price();
-        when(priceDao.findAll()).thenReturn(List.of(price1, price2));
+        when(priceRepository.findAllWithProductAndStore()).thenReturn(List.of(price1, price2));
 
         // WHEN
         List<Price> result = priceService.getAllPrices();
 
         // THEN
         assertEquals(2, result.size());
-        verify(priceDao).findAll();
+        verify(priceRepository).findAllWithProductAndStore();
     }
 
     @Test
@@ -170,7 +171,7 @@ class PriceServiceImplTest {
         PriceDTO priceDTO = new PriceDTO();
         priceDTO.setPriceId(1L);
         priceDTO.setPrice(price.getPrice());
-        when(priceDao.findByProductId(productId)).thenReturn(List.of(price));
+        when(priceRepository.findByProduct_ProductId(productId)).thenReturn(List.of(price));
         when(priceMapper.toDtoList(List.of(price))).thenReturn(List.of(priceDTO));
 
         // WHEN
@@ -180,7 +181,7 @@ class PriceServiceImplTest {
         assertEquals(1, result.size());
         assertEquals(price.getPriceId(), result.get(0).getPriceId());
         assertEquals(price.getPrice(), result.get(0).getPrice());
-        verify(priceDao).findByProductId(productId);
+        verify(priceRepository).findByProduct_ProductId(productId);
     }
 
 
@@ -189,25 +190,28 @@ class PriceServiceImplTest {
         // GIVEN
         Long productId = 1L;
         Long storeId = 1L;
-        LocalDate startDate = LocalDate.now().minusDays(10);
-        LocalDate endDate = LocalDate.now();
+        LocalDateTime startDateTime = LocalDate.of(2025, 5, 29).atStartOfDay();
+        LocalDateTime endDateTime = LocalDate.of(2025, 6, 8)
+                .atTime(23, 59, 59, 999999999);
         PriceHistory priceHistory = new PriceHistory();
-        when(priceHistoryDao.findPriceHistoryByProductAndDateRange(productId, storeId, startDate, endDate))
+
+        when(priceHistoryRepository.findByProductIdAndStoreIdAndDateRange(productId, storeId, startDateTime, endDateTime))
                 .thenReturn(List.of(priceHistory));
 
         // WHEN
-        List<PriceHistory> result = priceService.getPriceHistoryByProductIdAndDataRange(productId, storeId, startDate, endDate);
+        List<PriceHistory> result = priceService.getPriceHistoryByProductIdAndDataRange(
+                productId, storeId, startDateTime.toLocalDate(), endDateTime.toLocalDate());
 
         // THEN
         assertEquals(1, result.size());
-        verify(priceHistoryDao).findPriceHistoryByProductAndDateRange(productId, storeId, startDate, endDate);
+        verify(priceHistoryRepository).findByProductIdAndStoreIdAndDateRange(productId, storeId, startDateTime, endDateTime);
     }
 
     @Test
-    void testExportPricesToJson() throws IOException {
+    void testExportPricesToJson() {
         // GIVEN
         Price price = new Price();
-        when(priceDao.findAll()).thenReturn(List.of(price));
+        when(priceRepository.findAllWithProductAndStore()).thenReturn(List.of(price));
 
         // WHEN
         byte[] result = priceService.exportPricesToJson();
@@ -218,7 +222,7 @@ class PriceServiceImplTest {
     }
 
     @Test
-    void testImportPricesFromJson() throws IOException {
+    void testImportPricesFromJson() {
         // GIVEN
         String jsonData = "[{\"priceId\":1,\"price\":100,\"productId\":1,\"storeId\":1}]";
         byte[] data = jsonData.getBytes();
@@ -234,8 +238,8 @@ class PriceServiceImplTest {
         price.setProduct(product);
         price.setStore(store);
 
-        when(priceMapper.toEntityList(anyList())).thenReturn(List.of(price));
-        when(priceDao.create(any(Price.class))).thenReturn(new Price());
+        when(priceMapper.toEntityList(ArgumentMatchers.anyList())).thenReturn(List.of(price));
+        when(priceRepository.saveAll(anyList())).thenReturn(List.of(new Price()));
 
         // WHEN
         List<PriceDTO> result = priceService.importPricesFromJson(data);
@@ -243,6 +247,6 @@ class PriceServiceImplTest {
         // THEN
         assertEquals(1, result.size());
         assertEquals(price.getPriceId(), result.get(0).getPriceId());
-        verify(priceDao).create(any(Price.class));
+        verify(priceRepository).saveAll(anyList());
     }
 }

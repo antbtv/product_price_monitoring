@@ -3,6 +3,7 @@ package com.example.mapper;
 import com.example.dto.ProductDTO;
 import com.example.entity.Category;
 import com.example.entity.Product;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
@@ -11,7 +12,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ExtendWith(MockitoExtension.class)
 class ProductMapperTest {
@@ -34,13 +36,13 @@ class ProductMapperTest {
         Product entity = productMapper.toEntity(dto);
 
         // THEN
-        assertNotNull(entity);
-        assertEquals(dto.getProductId(), entity.getProductId());
-        assertEquals(dto.getProductName(), entity.getProductName());
-        assertNotNull(entity.getCategory());
-        assertEquals(dto.getCategoryId(), entity.getCategory().getCategoryId());
-        assertEquals(dto.getCreatedAt(), entity.getCreatedAt());
-        assertEquals(dto.getUpdatedAt(), entity.getUpdatedAt());
+        Assertions.assertNotNull(entity);
+        Assertions.assertEquals(dto.getProductId(), entity.getProductId());
+        Assertions.assertEquals(dto.getProductName(), entity.getProductName());
+        Assertions.assertNotNull(entity.getCategory());
+        Assertions.assertEquals(dto.getCategoryId(), entity.getCategory().getCategoryId());
+        Assertions.assertEquals(dto.getCreatedAt(), entity.getCreatedAt());
+        Assertions.assertEquals(dto.getUpdatedAt(), entity.getUpdatedAt());
     }
 
     @Test
@@ -59,12 +61,12 @@ class ProductMapperTest {
         ProductDTO dto = productMapper.toDto(entity);
 
         // THEN
-        assertNotNull(dto);
-        assertEquals(entity.getProductId(), dto.getProductId());
-        assertEquals(entity.getProductName(), dto.getProductName());
-        assertEquals(category.getCategoryId(), dto.getCategoryId());
-        assertEquals(entity.getCreatedAt(), dto.getCreatedAt());
-        assertEquals(entity.getUpdatedAt(), dto.getUpdatedAt());
+        Assertions.assertNotNull(dto);
+        Assertions.assertEquals(entity.getProductId(), dto.getProductId());
+        Assertions.assertEquals(entity.getProductName(), dto.getProductName());
+        Assertions.assertEquals(category.getCategoryId(), dto.getCategoryId());
+        Assertions.assertEquals(entity.getCreatedAt(), dto.getCreatedAt());
+        Assertions.assertEquals(entity.getUpdatedAt(), dto.getUpdatedAt());
     }
 
     @Test
@@ -79,11 +81,11 @@ class ProductMapperTest {
         List<Product> entities = productMapper.toEntityList(dtos);
 
         // THEN
-        assertEquals(2, entities.size());
-        assertEquals(dto1.getProductId(), entities.get(0).getProductId());
-        assertEquals(dto2.getProductId(), entities.get(1).getProductId());
-        assertEquals(dto1.getCategoryId(), entities.get(0).getCategory().getCategoryId());
-        assertEquals(dto2.getProductName(), entities.get(1).getProductName());
+        Assertions.assertEquals(2, entities.size());
+        Assertions.assertEquals(dto1.getProductId(), entities.get(0).getProductId());
+        Assertions.assertEquals(dto2.getProductId(), entities.get(1).getProductId());
+        Assertions.assertEquals(dto1.getCategoryId(), entities.get(0).getCategory().getCategoryId());
+        Assertions.assertEquals(dto2.getProductName(), entities.get(1).getProductName());
     }
 
     @Test
@@ -112,11 +114,11 @@ class ProductMapperTest {
         List<ProductDTO> dtos = productMapper.toDtoList(entities);
 
         // THEN
-        assertEquals(2, dtos.size());
-        assertEquals(entity1.getProductId(), dtos.get(0).getProductId());
-        assertEquals(entity2.getProductId(), dtos.get(1).getProductId());
-        assertEquals(category1.getCategoryId(), dtos.get(0).getCategoryId());
-        assertEquals(entity2.getProductName(), dtos.get(1).getProductName());
+        Assertions.assertEquals(2, dtos.size());
+        Assertions.assertEquals(entity1.getProductId(), dtos.get(0).getProductId());
+        Assertions.assertEquals(entity2.getProductId(), dtos.get(1).getProductId());
+        Assertions.assertEquals(category1.getCategoryId(), dtos.get(0).getCategoryId());
+        Assertions.assertEquals(entity2.getProductName(), dtos.get(1).getProductName());
     }
 
     @Test
@@ -131,7 +133,7 @@ class ProductMapperTest {
         );
 
         // WHEN & THEN
-        assertThrows(IllegalArgumentException.class, () -> productMapper.toEntity(dto));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> productMapper.toEntity(dto));
     }
 
     @Test
@@ -149,8 +151,8 @@ class ProductMapperTest {
         Product entity = productMapper.toEntity(dto);
 
         // THEN
-        assertNotNull(entity.getCreatedAt());
-        assertNotNull(entity.getUpdatedAt());
+        Assertions.assertNotNull(entity.getCreatedAt());
+        Assertions.assertNotNull(entity.getUpdatedAt());
     }
 
     @Test
@@ -163,8 +165,8 @@ class ProductMapperTest {
         Product entity = new Product("Стандартный продукт", category);
 
         // THEN
-        assertNotNull(entity.getCreatedAt());
-        assertNotNull(entity.getUpdatedAt());
+        Assertions.assertNotNull(entity.getCreatedAt());
+        Assertions.assertNotNull(entity.getUpdatedAt());
     }
 
     @Test
@@ -182,10 +184,10 @@ class ProductMapperTest {
         Product entity = productMapper.toEntity(dto);
 
         // THEN
-        assertNotNull(entity);
-        assertNull(entity.getProductId());
-        assertEquals("Базовый продукт", entity.getProductName());
-        assertNotNull(entity.getCategory());
-        assertEquals(1L, entity.getCategory().getCategoryId());
+        Assertions.assertNotNull(entity);
+        Assertions.assertNull(entity.getProductId());
+        Assertions.assertEquals("Базовый продукт", entity.getProductName());
+        Assertions.assertNotNull(entity.getCategory());
+        Assertions.assertEquals(1L, entity.getCategory().getCategoryId());
     }
 }

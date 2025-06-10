@@ -1,6 +1,6 @@
 package com.example.service.impl;
 
-import com.example.dao.security.UserDao;
+import com.example.repository.security.UserRepository;
 import com.example.entity.security.CustomUserDetails;
 import com.example.entity.security.User;
 import com.example.exceptions.InvalidTokenException;
@@ -8,9 +8,11 @@ import com.example.exceptions.UserAlreadyExistsException;
 import com.example.exceptions.UserNotFoundException;
 import com.example.service.security.UserService;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -23,6 +25,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Date;
 import java.util.stream.Collectors;
@@ -33,45 +37,57 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 
     @Value("${jwt.secret.key}")
     private String SECRET_KEY;
+    private SecretKey secretKey;
+    private static final long JWT_EXPIRATION_MS = 10 * 60 * 60 * 1000;
 
-    private final UserDao userDAO;
+    private final UserRepository userRepository;
 
-    public UserServiceImpl(UserDao userDAO) {
-        this.userDAO = userDAO;
+    public UserServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    @PostConstruct
+    public void init() {
+        this.secretKey = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private SecretKey getSigningKey() {
+        return secretKey;
     }
 
     @Transactional(readOnly = true)
     @Override
     public String generateToken(UserDetails userDetails) {
-        User user = userDAO.findByUsername(userDetails.getUsername());
-        if (user == null) {
-            throw new UserNotFoundException(userDetails.getUsername());
-        }
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new UserNotFoundException(userDetails.getUsername()));
 
-        String token = Jwts.builder()
-                .setSubject(userDetails.getUsername())
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + JWT_EXPIRATION_MS);
+
+        return Jwts.builder()
+                .subject(userDetails.getUsername())
                 .claim("userId", user.getUserId())
                 .claim("roles", userDetails.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
                         .collect(Collectors.toList()))
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+                .issuedAt(now)
+                .expiration(expiryDate)
+                .signWith(getSigningKey())
                 .compact();
-
-        log.info("Сгенерирован токен для пользователя: {}", userDetails.getUsername());
-        return token;
     }
 
     @Transactional(readOnly = true)
     @Override
     public String extractUsername(String token) {
         try {
-            return Jwts.parser()
-                    .setSigningKey(SECRET_KEY)
-                    .parseClaimsJws(token)
-                    .getBody()
-                    .getSubject();
+            SecretKey key = getSigningKey();
+
+            Jwt<?, Claims> jwt = Jwts.parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(token);
+
+            return jwt.getPayload().getSubject();
         } catch (JwtException e) {
             throw new InvalidTokenException("Невалидный токен", e);
         }
@@ -87,36 +103,35 @@ public class UserServiceImpl implements UserDetailsService, UserService {
         }
 
         String username = ((UserDetails) authentication.getPrincipal()).getUsername();
-        return userDAO.findByUsername(username);
+        return userRepository.findByUsername(username).orElse(null);
     }
 
     @Transactional(readOnly = true)
     @Override
     public User getUserById(Long id) {
-        User user = userDAO.findById(id);
-        if (user == null) {
-            throw new UserNotFoundException(id);
-        }
-        return user;
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
     }
 
     @Transactional
     @Override
     public void deleteUser(Long id) {
-        if (userDAO.findById(id) == null) {
+        if (!userRepository.existsById(id)) {
             throw new UserNotFoundException(id);
         }
-        userDAO.delete(id);
+        userRepository.deleteById(id);
         log.info("Удален пользователь ID={}", id);
     }
 
     @Transactional
     @Override
     public void updateUser(User user) {
-        if (userDAO.findById(user.getUserId()) == null) {
-            throw new UserNotFoundException(user.getUserId());
+        Long id = user.getUserId();
+        if (!userRepository.existsById(id)) {
+            throw new UserNotFoundException(id);
         }
-        userDAO.update(user);
+
+        userRepository.save(user);
         log.info("Обновлен пользователь ID={}", user.getUserId());
     }
 
@@ -124,11 +139,15 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     @Override
     public boolean isTokenExpired(String token) {
         try {
-            Claims claims = Jwts.parser()
-                    .setSigningKey(SECRET_KEY)
-                    .parseClaimsJws(token)
-                    .getBody();
-            return claims.getExpiration().before(new Date());
+            SecretKey key = getSigningKey();
+
+            Jwt<?, Claims> jwt = Jwts.parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(token);
+
+            Date expiration = jwt.getPayload().getExpiration();
+            return expiration.before(new Date());
         } catch (JwtException e) {
             throw new InvalidTokenException("Ошибка проверки токена", e);
         }
@@ -149,10 +168,8 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     @Transactional(readOnly = true)
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userDAO.findByUsername(username);
-        if (user == null) {
-            throw new UsernameNotFoundException("Пользователь не найден: " + username);
-        }
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден: " + username));
 
         return new CustomUserDetails(
                 user.getUserId(),
@@ -165,7 +182,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     @Transactional(readOnly = true)
     @Override
     public boolean userExists(String username) {
-        return userDAO.findByUsername(username) != null;
+        return userRepository.findByUsername(username).isPresent();
     }
 
     @Transactional
@@ -175,7 +192,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
         if (userExists(user.getUsername())) {
             throw new UserAlreadyExistsException(user.getUsername());
         }
-        userDAO.create(user);
+        userRepository.save(user);
         log.info("Добавлен новый пользователь: {}", user.getUsername());
     }
 

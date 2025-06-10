@@ -1,6 +1,6 @@
 package com.example.service.impl;
 
-import com.example.dao.CategoryDao;
+import com.example.repository.CategoryRepository;
 import com.example.dto.CategoryDTO;
 import com.example.entity.Category;
 import com.example.exceptions.CategoryNotFoundException;
@@ -11,6 +11,7 @@ import com.example.service.CategoryService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,24 +21,17 @@ import java.util.List;
 
 @Service
 @Slf4j
+@AllArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
 
-    private final CategoryDao categoryDao;
+    private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
     private final ObjectMapper objectMapper;
-
-    public CategoryServiceImpl(CategoryDao categoryDao,
-                               CategoryMapper categoryMapper,
-                               ObjectMapper objectMapper) {
-        this.categoryDao = categoryDao;
-        this.categoryMapper = categoryMapper;
-        this.objectMapper = objectMapper;
-    }
 
     @Transactional
     @Override
     public Category createCategory(Category category) {
-        Category createdCategory = categoryDao.create(category);
+        Category createdCategory = categoryRepository.save(category);
         log.info("Создана категория ID: {}, название: {}",
                 createdCategory.getCategoryId(),
                 createdCategory.getCategoryName());
@@ -47,39 +41,34 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional(readOnly = true)
     @Override
     public Category getCategoryById(Long id) {
-        Category category = categoryDao.findById(id);
-        if (category == null) {
-            log.info("Категория с ID {} не найдена", id);
-            throw new CategoryNotFoundException(id);
-        }
-        log.info("Найдена категория ID: {}", id);
-        return category;
+        return categoryRepository.findById(id)
+                .orElseThrow(() -> new CategoryNotFoundException(id));
     }
 
     @Transactional
     @Override
     public void updateCategory(Category category) {
-        if (categoryDao.findById(category.getCategoryId()) == null) {
+        if (!categoryRepository.existsById(category.getCategoryId())) {
             throw new CategoryNotFoundException(category.getCategoryId());
         }
-        categoryDao.update(category);
+        categoryRepository.save(category);
         log.info("Обновлена категория ID: {}", category.getCategoryId());
     }
 
     @Transactional
     @Override
     public void deleteCategory(Long id) {
-        if (categoryDao.findById(id) == null) {
+        if (!categoryRepository.existsById(id)) {
             throw new CategoryNotFoundException(id);
         }
-        categoryDao.delete(id);
+        categoryRepository.deleteById(id);
         log.info("Удалена категория ID: {}", id);
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<Category> getAllCategories() {
-        List<Category> categories = categoryDao.findAll();
+        List<Category> categories = categoryRepository.findAllWithSubCategories();
         log.info("Найдено категорий: {}", categories.size());
         return categories;
     }
@@ -87,12 +76,11 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional(readOnly = true)
     @Override
     public List<Category> getAllCategoriesByParentId(Long parentId) {
-        if (parentId != null && categoryDao.findById(parentId) == null) {
+        if (parentId != null && !categoryRepository.existsById(parentId)) {
             log.warn("Попытка получить дочерние категории для несуществующего родителя ID: {}", parentId);
             throw new CategoryNotFoundException(parentId);
         }
-
-        List<Category> categories = categoryDao.findAllByParentId(parentId);
+        List<Category> categories = categoryRepository.findAllByParentId(parentId);
         log.info("Найдено дочерних категорий для родителя ID {}: {}", parentId, categories.size());
         return categories;
     }
@@ -101,7 +89,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public byte[] exportCategoriesToJson() {
         try {
-            List<CategoryDTO> dtos = categoryMapper.toDtoList(categoryDao.findAll());
+            List<CategoryDTO> dtos = categoryMapper.toDtoList(categoryRepository.findAllWithSubCategories());
             log.info("Экспортировано категорий: {}", dtos.size());
             return objectMapper.writeValueAsBytes(dtos);
         } catch (JsonProcessingException e) {
@@ -116,7 +104,7 @@ public class CategoryServiceImpl implements CategoryService {
         try {
             List<CategoryDTO> dtos = objectMapper.readValue(data, new TypeReference<>() {});
             List<Category> categories = categoryMapper.toEntityList(dtos);
-            categories.forEach(categoryDao::create);
+            categoryRepository.saveAll(categories);
             log.info("Импортировано категорий: {}", categories.size());
             return dtos;
         } catch (IOException e) {

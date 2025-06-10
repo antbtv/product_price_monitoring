@@ -1,4 +1,4 @@
-package com.example.chart;
+package com.example.utils;
 
 import com.example.entity.PriceHistory;
 import org.jfree.chart.ChartFactory;

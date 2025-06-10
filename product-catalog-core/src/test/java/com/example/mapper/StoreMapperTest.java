@@ -2,6 +2,7 @@ package com.example.mapper;
 
 import com.example.dto.StoreDTO;
 import com.example.entity.Store;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
@@ -10,7 +11,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ExtendWith(MockitoExtension.class)
 class StoreMapperTest {
@@ -33,12 +35,12 @@ class StoreMapperTest {
         Store entity = storeMapper.toEntity(dto);
 
         // THEN
-        assertNotNull(entity);
-        assertEquals(dto.getStoreId(), entity.getStoreId());
-        assertEquals(dto.getStoreName(), entity.getStoreName());
-        assertEquals(dto.getAddress(), entity.getAddress());
-        assertEquals(dto.getCreatedAt(), entity.getCreatedAt());
-        assertEquals(dto.getUpdatedAt(), entity.getUpdatedAt());
+        Assertions.assertNotNull(entity);
+        Assertions.assertEquals(dto.getStoreId(), entity.getStoreId());
+        Assertions.assertEquals(dto.getStoreName(), entity.getStoreName());
+        Assertions.assertEquals(dto.getAddress(), entity.getAddress());
+        Assertions.assertEquals(dto.getCreatedAt(), entity.getCreatedAt());
+        Assertions.assertEquals(dto.getUpdatedAt(), entity.getUpdatedAt());
     }
 
     @Test
@@ -54,12 +56,12 @@ class StoreMapperTest {
         StoreDTO dto = storeMapper.toDto(entity);
 
         // THEN
-        assertNotNull(dto);
-        assertEquals(entity.getStoreId(), dto.getStoreId());
-        assertEquals(entity.getStoreName(), dto.getStoreName());
-        assertEquals(entity.getAddress(), dto.getAddress());
-        assertEquals(entity.getCreatedAt(), dto.getCreatedAt());
-        assertEquals(entity.getUpdatedAt(), dto.getUpdatedAt());
+        Assertions.assertNotNull(dto);
+        Assertions.assertEquals(entity.getStoreId(), dto.getStoreId());
+        Assertions.assertEquals(entity.getStoreName(), dto.getStoreName());
+        Assertions.assertEquals(entity.getAddress(), dto.getAddress());
+        Assertions.assertEquals(entity.getCreatedAt(), dto.getCreatedAt());
+        Assertions.assertEquals(entity.getUpdatedAt(), dto.getUpdatedAt());
     }
 
     @Test
@@ -74,11 +76,11 @@ class StoreMapperTest {
         List<Store> entities = storeMapper.toEntityList(dtos);
 
         // THEN
-        assertEquals(2, entities.size());
-        assertEquals(dto1.getStoreId(), entities.get(0).getStoreId());
-        assertEquals(dto2.getStoreId(), entities.get(1).getStoreId());
-        assertEquals(dto1.getStoreName(), entities.get(0).getStoreName());
-        assertEquals(dto2.getAddress(), entities.get(1).getAddress());
+        Assertions.assertEquals(2, entities.size());
+        Assertions.assertEquals(dto1.getStoreId(), entities.get(0).getStoreId());
+        Assertions.assertEquals(dto2.getStoreId(), entities.get(1).getStoreId());
+        Assertions.assertEquals(dto1.getStoreName(), entities.get(0).getStoreName());
+        Assertions.assertEquals(dto2.getAddress(), entities.get(1).getAddress());
     }
 
     @Test
@@ -101,11 +103,11 @@ class StoreMapperTest {
         List<StoreDTO> dtos = storeMapper.toDtoList(entities);
 
         // THEN
-        assertEquals(2, dtos.size());
-        assertEquals(entity1.getStoreId(), dtos.get(0).getStoreId());
-        assertEquals(entity2.getStoreId(), dtos.get(1).getStoreId());
-        assertEquals(entity1.getAddress(), dtos.get(0).getAddress());
-        assertEquals(entity2.getStoreName(), dtos.get(1).getStoreName());
+        Assertions.assertEquals(2, dtos.size());
+        Assertions.assertEquals(entity1.getStoreId(), dtos.get(0).getStoreId());
+        Assertions.assertEquals(entity2.getStoreId(), dtos.get(1).getStoreId());
+        Assertions.assertEquals(entity1.getAddress(), dtos.get(0).getAddress());
+        Assertions.assertEquals(entity2.getStoreName(), dtos.get(1).getStoreName());
     }
 
     @Test
@@ -123,12 +125,12 @@ class StoreMapperTest {
         Store entity = storeMapper.toEntity(dto);
 
         // THEN
-        assertNotNull(entity);
-        assertNull(entity.getStoreId());
-        assertNull(entity.getStoreName());
-        assertNull(entity.getAddress());
-        assertNotNull(entity.getCreatedAt());
-        assertNotNull(entity.getUpdatedAt());
+        Assertions.assertNotNull(entity);
+        Assertions.assertNull(entity.getStoreId());
+        Assertions.assertNull(entity.getStoreName());
+        Assertions.assertNull(entity.getAddress());
+        Assertions.assertNotNull(entity.getCreatedAt());
+        Assertions.assertNotNull(entity.getUpdatedAt());
     }
 
     @Test
@@ -143,12 +145,12 @@ class StoreMapperTest {
         StoreDTO dto = storeMapper.toDto(entity);
 
         // THEN
-        assertNotNull(dto);
-        assertNull(dto.getStoreId());
-        assertNull(dto.getStoreName());
-        assertNull(dto.getAddress());
-        assertNull(dto.getCreatedAt());
-        assertNull(dto.getUpdatedAt());
+        Assertions.assertNotNull(dto);
+        Assertions.assertNull(dto.getStoreId());
+        Assertions.assertNull(dto.getStoreName());
+        Assertions.assertNull(dto.getAddress());
+        Assertions.assertNull(dto.getCreatedAt());
+        Assertions.assertNull(dto.getUpdatedAt());
     }
 
     @Test
@@ -166,12 +168,12 @@ class StoreMapperTest {
         Store entity = storeMapper.toEntity(dto);
 
         // THEN
-        assertNotNull(entity);
-        assertEquals(dto.getStoreId(), entity.getStoreId());
-        assertEquals(dto.getStoreName(), entity.getStoreName());
-        assertNull(entity.getAddress());
-        assertNotNull(entity.getCreatedAt());
-        assertNotNull(entity.getUpdatedAt());
+        Assertions.assertNotNull(entity);
+        Assertions.assertEquals(dto.getStoreId(), entity.getStoreId());
+        Assertions.assertEquals(dto.getStoreName(), entity.getStoreName());
+        Assertions.assertNull(entity.getAddress());
+        Assertions.assertNotNull(entity.getCreatedAt());
+        Assertions.assertNotNull(entity.getUpdatedAt());
     }
 
     @Test
@@ -181,8 +183,8 @@ class StoreMapperTest {
         Store entity = new Store("Новый магазин", "Новый адрес");
 
         // THEN
-        assertNotNull(entity.getCreatedAt());
-        assertNotNull(entity.getUpdatedAt());
+        Assertions.assertNotNull(entity.getCreatedAt());
+        Assertions.assertNotNull(entity.getUpdatedAt());
     }
 
     @Test
@@ -200,9 +202,9 @@ class StoreMapperTest {
         Store entity = storeMapper.toEntity(dto);
 
         // THEN
-        assertNotNull(entity);
-        assertEquals(dto.getStoreName(), entity.getStoreName());
-        assertEquals(dto.getAddress(), entity.getAddress());
+        Assertions.assertNotNull(entity);
+        Assertions.assertEquals(dto.getStoreName(), entity.getStoreName());
+        Assertions.assertEquals(dto.getAddress(), entity.getAddress());
     }
 
     @Test
@@ -220,7 +222,7 @@ class StoreMapperTest {
         Store entity = storeMapper.toEntity(dto);
 
         // THEN
-        assertNotNull(entity.getCreatedAt());
-        assertNotNull(entity.getUpdatedAt());
+        Assertions.assertNotNull(entity.getCreatedAt());
+        Assertions.assertNotNull(entity.getUpdatedAt());
     }
 }
