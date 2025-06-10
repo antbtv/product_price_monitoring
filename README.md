@@ -38,7 +38,7 @@ Below are the main technologies, frameworks, and versions used in this project:
 - **Flyway** (11.9.0) for database migrations
 - **Lombok** (1.18.32) for reducing boilerplate
 - **MapStruct** (1.5.5.Final) for mapping between entities and DTOs
-- **JFreeChart** (1.5.3) for charts (if needed)
+- **JFreeChart** (1.5.3) for price charts 
 - **JWT (io.jsonwebtoken 0.12.6)** for authentication tokens
 - **Maven** for build and dependency management
 - **Docker & Docker Compose** for containerized runtime
