@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS users
     date_of_birth DATE,
     phone_number  VARCHAR(15) UNIQUE  NOT NULL,
     is_verified   BOOLEAN   DEFAULT FALSE,
-    created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS categories
     category_id   SERIAL PRIMARY KEY,
     category_name VARCHAR(100) UNIQUE NOT NULL,
     parent_id     INT REFERENCES categories (category_id) ON DELETE SET NULL,
-    created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS stores
     store_id   SERIAL PRIMARY KEY,
     store_name VARCHAR(100) NOT NULL,
     address    VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS products
     product_id   SERIAL PRIMARY KEY,
     product_name VARCHAR(100) NOT NULL,
     category_id  INT NOT NULL REFERENCES categories (category_id) ON DELETE CASCADE,
-    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS prices
     product_id  INT NOT NULL REFERENCES products (product_id) ON DELETE CASCADE,
     store_id    INT NOT NULL REFERENCES stores (store_id) ON DELETE CASCADE,
     price       INT NOT NULL,
-    recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    recorded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (product_id, store_id)
 );
 
@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS price_history
     product_id       INT NOT NULL REFERENCES products (product_id) ON DELETE CASCADE,
     store_id         INT NOT NULL REFERENCES stores (store_id) ON DELETE CASCADE,
     price            INT NOT NULL,
-    recorded_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    recorded_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS data_log

@@ -41,5 +41,5 @@
 hs_err_pid*
 replay_pid*
 
-# Hibernate
-# **/hibernate.cfg.xml
+# Tools
+build_and_deploy.sh
