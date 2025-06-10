@@ -7,6 +7,7 @@ A Spring Boot-based product catalog application with PostgreSQL, Flyway migratio
 ## Table of Contents
 
 - [Overview](#overview)
+- [Functionality](#functionality)
 - [Technology Stack](#technology-stack)
 - [Project Structure](#project-structure)
 - [Configuration](#configuration)
@@ -27,6 +28,48 @@ All modules use Java 17 and Maven. Docker and Docker Compose are used to run the
 
 ---
 
+## Functionality
+
+The application provides comprehensive product catalog and price monitoring capabilities:
+
+### User Management & Authentication
+- **User Registration**: Support for two types of users - administrators and regular users
+- **Profile Management**: Users can edit their personal profiles and account information
+- **JWT-based Authentication**: Secure authentication using JSON Web Tokens
+
+### Product & Store Management
+- **Product Categories Directory**: Hierarchical categorization system for organizing products
+- **Store Directory**: Management of retail locations and trading points
+- **Product CRUD Operations**: Add, edit, delete, and view products with full administrative control
+
+### Product Discovery & Search
+- **Category-based Browsing**: Browse products organized by categories
+- **Advanced Search**: Search products by name, description, and other attributes
+- **Filtering System**: Filter products by various criteria (price range, category, store availability)
+
+### Price Management & Monitoring
+- **Price History**: Track price changes over time with detailed historical data
+- **Dynamic Price Analysis**: Monitor price fluctuations for any product within specified time periods
+- **Tabular Price Display**: View price data in structured table format
+
+### Price Comparison & Analytics
+- **Multi-store Price Comparison**: Compare prices for the same product across different stores
+- **Graphical Price Charts**: Visual representation of price trends using JFreeChart integration
+- **Price Dynamics Visualization**: Interactive charts showing price changes over time
+
+### Data Import & Batch Operations
+- **Bulk Data Import**: Import product and pricing information in batch mode
+- **Multiple Format Support**: Support for JSON
+- **Automated Data Processing**: Streamlined import process for large datasets
+
+### Additional Features
+- **Role-based Access Control**: Different permissions for administrators and regular users
+- **Data Validation**: Comprehensive input validation and error handling
+- **RESTful API**: Well-structured REST endpoints for all operations
+- **Database Migrations**: Automated schema management with Flyway
+
+---
+
 ## Technology Stack
 
 Below are the main technologies, frameworks, and versions used in this project:
@@ -38,7 +81,7 @@ Below are the main technologies, frameworks, and versions used in this project:
 - **Flyway** (11.9.0) for database migrations
 - **Lombok** (1.18.32) for reducing boilerplate
 - **MapStruct** (1.5.5.Final) for mapping between entities and DTOs
-- **JFreeChart** (1.5.3) for price charts 
+- **JFreeChart** (1.5.3) for price charts
 - **JWT (io.jsonwebtoken 0.12.6)** for authentication tokens
 - **Maven** for build and dependency management
 - **Docker & Docker Compose** for containerized runtime
@@ -65,7 +108,7 @@ Maven properties are set in parent POM, for example:
     <jfreechart.version>1.5.3</jfreechart.version>
     <jwt.version>0.12.6</jwt.version>
 </properties>
-````
+```
 
 ---
 
@@ -151,17 +194,17 @@ product_price_monitoring/
    ```
 2. **Behavior**:
 
-    * The `postgres` container starts with an empty or existing database.
-    * On first run (empty volume), Flyway migrations run automatically when the Spring Boot app connects.
-    * On subsequent runs (with data), migrations only apply new scripts.
+   * The `postgres` container starts with an empty or existing database.
+   * On first run (empty volume), Flyway migrations run automatically when the Spring Boot app connects.
+   * On subsequent runs (with data), migrations only apply new scripts.
 3. **Logs**: check app logs:
    ```bash
    docker-compose logs app
    ```
 4. **Access**:
 
-    * API endpoints available at `http://localhost:8080/api/...`
-    * Connect to Postgres if needed: `psql -h localhost -p 5432 -U <user> -d <db>`.
+   * API endpoints available at `http://localhost:8080/api/...`
+   * Connect to Postgres if needed: `psql -h localhost -p 5432 -U <user> -d <db>`.
 
 ---
 
